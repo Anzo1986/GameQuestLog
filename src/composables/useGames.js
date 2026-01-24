@@ -2,10 +2,15 @@ import { ref, computed, watch } from 'vue';
 
 const GAMES_STORAGE_KEY = 'game-tracker-games';
 const API_KEY_STORAGE_KEY = 'game-tracker-api-key';
+const GEMINI_API_KEY_STORAGE_KEY = 'game-tracker-gemini-api-key';
+import { GeminiService } from '../services/GeminiService';
 
 // Shared Global State
 const games = ref([]);
 const apiKey = ref(localStorage.getItem(API_KEY_STORAGE_KEY) || '');
+const geminiApiKey = ref(localStorage.getItem(GEMINI_API_KEY_STORAGE_KEY) || '');
+const updates = ref([]); // { gameId, title, date, summary, originalLink, seen: false }
+const isScanning = ref(false);
 const searchQuery = ref('');
 const searchResults = ref([]);
 const isSearching = ref(false);
@@ -79,6 +84,11 @@ export function useGames() {
     const setApiKey = (key) => {
         apiKey.value = key;
         localStorage.setItem(API_KEY_STORAGE_KEY, key);
+    };
+
+    const setGeminiApiKey = (key) => {
+        geminiApiKey.value = key;
+        localStorage.setItem(GEMINI_API_KEY_STORAGE_KEY, key);
     };
 
     const setUserName = (name) => {
@@ -236,6 +246,48 @@ export function useGames() {
         });
     };
 
+    const scanForUpdates = async () => {
+        if (!geminiApiKey.value) {
+            console.warn("No Gemini API Key provided");
+            return;
+        }
+
+        isScanning.value = true;
+
+        try {
+            // Filter games: Playing and Backlog
+            const targetGames = games.value.filter(g => g.status === 'playing' || g.status === 'backlog');
+
+            for (const game of targetGames) {
+                try {
+                    const result = await GeminiService.checkGameUpdate(game.title, game.platform || 'PC', geminiApiKey.value);
+                    if (result.hasUpdate) {
+                        const exists = updates.value.some(u => u.gameId === game.id && u.version === result.version);
+                        if (!exists) {
+                            updates.value.push({
+                                gameId: game.id,
+                                gameTitle: game.title,
+                                ...result,
+                                seen: false,
+                                fetchedAt: new Date().toISOString()
+                            });
+                        }
+                    }
+                } catch (e) {
+                    console.error(`Failed to scan for ${game.title}`, e);
+                }
+            }
+        } finally {
+            isScanning.value = false;
+        }
+    };
+
+    const markUpdateSeen = (gameId, version) => {
+        const update = updates.value.find(u => u.gameId === gameId && u.version === version);
+        if (update) update.seen = true;
+    };
+
+
     return {
         games,
         apiKey,
@@ -263,6 +315,12 @@ export function useGames() {
         userLevel,
         userTitle,
         xpProgress,
-        awardXP
+        awardXP,
+        geminiApiKey,
+        setGeminiApiKey,
+        updates,
+        scanForUpdates,
+        markUpdateSeen,
+        isScanning
     };
 }

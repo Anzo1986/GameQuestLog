@@ -1,20 +1,23 @@
-<script setup>
 import { ref, computed } from 'vue';
-import { Settings, Plus, Gamepad2, Layers, CheckCircle2, LayoutDashboard, Ban, Timer } from 'lucide-vue-next';
+import { Settings, Plus, Gamepad2, Layers, CheckCircle2, LayoutDashboard, Ban, Timer, Bell } from 'lucide-vue-next';
 import GameCard from './components/GameCard.vue';
 import AddGameModal from './components/AddGameModal.vue';
 import GameDetailModal from './components/GameDetailModal.vue';
+import UpdatesModal from './components/UpdatesModal.vue';
 import SettingsSection from './components/SettingsSection.vue';
 import UserProfile from './components/UserProfile.vue';
 import { useGames } from './composables/useGames';
 
-const { playingGames, backlogGames, completedGames, droppedGames, pileOfShameHours, updateStatus, removeGame } = useGames();
+const { playingGames, backlogGames, completedGames, droppedGames, pileOfShameHours, updateStatus, removeGame, updates } = useGames();
 
 const showAddModal = ref(false);
 const showSettings = ref(false);
 const showDetailModal = ref(false);
+const showUpdatesModal = ref(false);
 const selectedGameId = ref(null);
 const currentTab = ref('dashboard'); // 'dashboard', 'backlog', 'completed'
+
+const unseenUpdatesCount = computed(() => updates.value.filter(u => !u.seen).length);
 
 const toggleSettings = () => {
   showSettings.value = !showSettings.value;
@@ -41,10 +44,22 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
         <h1 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 tracking-wider drop-shadow-sm" style="font-family: 'Orbitron', sans-serif;">
             GAME<span class="text-white">QUEST</span>LOG
         </h1>
+        </h1>
       </div>
-      <button @click="toggleSettings" class="p-2 text-gray-400 hover:text-white transition-colors rounded-full hover:bg-gray-800">
-        <Settings class="w-6 h-6" />
-      </button>
+      <div class="flex items-center gap-2">
+        <!-- Updates Bell -->
+        <button @click="showUpdatesModal = true" class="relative p-2 text-gray-400 hover:text-white transition-colors rounded-full hover:bg-gray-800">
+            <Bell class="w-6 h-6" />
+            <span v-if="unseenUpdatesCount > 0" class="absolute top-1 right-1 flex h-3 w-3">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+            </span>
+        </button>
+
+        <button @click="toggleSettings" class="p-2 text-gray-400 hover:text-white transition-colors rounded-full hover:bg-gray-800">
+            <Settings class="w-6 h-6" />
+        </button>
+      </div>
     </header>
 
     <!-- User Profile -->
@@ -210,6 +225,9 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
       @update-status="updateStatus"
       @delete="removeGame"
     />
+
+    <UpdatesModal :is-open="showUpdatesModal" @close="showUpdatesModal = false" />
+
 
   </div>
 </template>

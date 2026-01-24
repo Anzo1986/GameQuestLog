@@ -3,15 +3,17 @@ import { ref } from 'vue';
 import { Download, Upload, Key, Save, User } from 'lucide-vue-next';
 import { useGames } from '../composables/useGames';
 
-const { apiKey, setApiKey, exportData, importData, userAvatar, setUserAvatar } = useGames();
+const { apiKey, setApiKey, geminiApiKey, setGeminiApiKey, exportData, importData, userAvatar, setUserAvatar } = useGames();
 const newKey = ref(apiKey.value);
+const newGeminiKey = ref(geminiApiKey.value);
 const fileInput = ref(null);
 const avatarInput = ref(null);
 const importStatus = ref('');
 
 const saveKey = () => {
   setApiKey(newKey.value);
-  alert('API Key saved!');
+  setGeminiApiKey(newGeminiKey.value);
+  alert('API Keys saved!');
 };
 
 const triggerImport = () => {
@@ -109,6 +111,23 @@ const handleFileChange = async (event) => {
         </div>
         <p class="mt-2 text-xs text-gray-400">
           Don't have a key? <a href="https://rawg.io/apidocs" target="_blank" class="text-blue-400 hover:underline">Get one here</a>.
+        </p>
+      </div>
+
+      <!-- Gemini API Key Section -->
+      <div>
+        <label class="block text-sm font-medium text-gray-300 mb-1">Gemini API Key <span class="text-xs text-gray-500">(for AI Updates)</span></label>
+        <div class="relative">
+             <Key class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+             <input 
+              v-model="newGeminiKey" 
+              type="text" 
+              placeholder="Enter your Gemini API Key" 
+              class="w-full bg-gray-900 border border-gray-700 rounded-lg py-2 pl-10 pr-4 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+            />
+        </div>
+        <p class="mt-2 text-xs text-gray-400">
+          Get your free key from <a href="https://aistudio.google.com/" target="_blank" class="text-blue-400 hover:underline">Google AI Studio</a>.
         </p>
       </div>
 
