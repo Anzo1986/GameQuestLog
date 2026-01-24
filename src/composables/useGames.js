@@ -288,8 +288,15 @@ export function useGames() {
                     }
                 } catch (e) {
                     console.error(`Failed to scan for ${game.title}`, e);
+                    if (e.message.includes('429') || e.message.includes('Quota')) {
+                        errors.push(`${game.title}: Rate limit reached. Stopping scan.`);
+                        break; // Stop completely if we hit a hard limit
+                    }
                     errors.push(`${game.title}: ${e.message}`);
                 }
+
+                // Rate Limiting Strategy: Wait 4 seconds between requests
+                await new Promise(resolve => setTimeout(resolve, 4000));
             }
 
             return {
