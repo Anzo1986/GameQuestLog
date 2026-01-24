@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { Settings, Plus, Gamepad2, Layers, CheckCircle2, LayoutDashboard, Ban, Timer, Bell } from 'lucide-vue-next';
 import GameCard from './components/GameCard.vue';
 import AddGameModal from './components/AddGameModal.vue';
@@ -24,7 +24,20 @@ const toggleSettings = () => {
 const openGameDetails = (gameId) => {
   selectedGameId.value = gameId;
   showDetailModal.value = true;
+  history.pushState({ modal: 'gameDetail' }, '', '');
 };
+
+const closeGameDetails = () => {
+    history.back();
+};
+
+onMounted(() => {
+    window.addEventListener('popstate', (event) => {
+        if (showDetailModal.value) {
+            showDetailModal.value = false;
+        }
+    });
+});
 
 const handleWebCheck = async () => {
     // Generate prompt from games list
@@ -157,7 +170,6 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
         <h2 class="text-lg font-bold text-gray-200 mb-3">Backlog</h2>
         
 
-
         <div class="grid grid-cols-[1fr_1fr] sm:grid-cols-3 md:grid-cols-4 gap-1.5 sm:gap-2">
           <GameCard 
             v-for="game in backlogGames" 
@@ -236,7 +248,7 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
     <GameDetailModal 
       :is-open="showDetailModal" 
       :game-id="selectedGameId" 
-      @close="showDetailModal = false"
+      @close="closeGameDetails"
       @update-status="updateStatus"
       @delete="removeGame"
     />
