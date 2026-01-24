@@ -7,8 +7,9 @@ export const GeminiService = {
 
         const genAI = new GoogleGenerativeAI(apiKey);
         // Use a model that supports search grounding
+        // gemini-2.0-flash-exp is the latest and often supports tools best in beta
         const model = genAI.getGenerativeModel({
-            model: "gemini-1.5-flash-001",
+            model: "gemini-2.0-flash-exp",
             tools: [{
                 googleSearch: {}
             }]
