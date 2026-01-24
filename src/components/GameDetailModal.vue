@@ -130,7 +130,7 @@ const handleAction = async (action, val) => {
             <!-- Status Badge -->
             <div class="flex items-center gap-2 flex-shrink-0">
                 <span v-if="gameDetails.status === 'completed'" class="text-green-400 font-bold flex items-center gap-1 text-sm"><Check class="w-4 h-4"/> Completed</span>
-                <span v-else-if="gameDetails.status === 'playing'" class="text-blue-400 font-bold flex items-center gap-1 text-sm"><Play class="w-4 h-4"/> Playing</span>
+                <span v-else-if="gameDetails.status === 'playing'" class="text-primary font-bold flex items-center gap-1 text-sm"><Play class="w-4 h-4"/> Playing</span>
                 <span v-else-if="gameDetails.status === 'dropped'" class="text-gray-400 font-bold flex items-center gap-1 text-sm"><Ban class="w-4 h-4"/> Dropped</span>
                 <span v-else class="text-yellow-400 font-bold flex items-center gap-1 text-sm"><Layers class="w-4 h-4"/> Backlog</span>
             </div>
@@ -151,7 +151,7 @@ const handleAction = async (action, val) => {
 
             <!-- Playtime / HLTB (Days Played Only) -->
             <div class="flex items-center gap-1 text-sm flex-shrink-0" v-if="gameDetails.startedAt">
-                <Timer class="w-4 h-4 text-purple-400" />
+                <Timer class="w-4 h-4 text-primary" />
                 <span class="text-white font-bold">{{ calculateDaysPlayed(gameDetails.startedAt) }} Days</span>
             </div>
 
@@ -173,7 +173,7 @@ const handleAction = async (action, val) => {
               <span v-for="g in gameDetails.genres" :key="g.id" class="px-2 py-1 bg-gray-800 rounded text-xs text-gray-300 border border-gray-700">
                   {{ g.name }}
               </span>
-              <a v-if="gameDetails.website" :href="gameDetails.website" target="_blank" class="flex items-center gap-1 px-2 py-1 bg-blue-900/30 hover:bg-blue-900/50 rounded text-xs text-blue-300 border border-blue-800/50 transition-colors ml-auto">
+              <a v-if="gameDetails.website" :href="gameDetails.website" target="_blank" class="flex items-center gap-1 px-2 py-1 bg-primary/20 hover:bg-primary/40 rounded text-xs text-primary border border-primary/40 transition-colors ml-auto">
                   <Globe class="w-3 h-3" /> Website
               </a>
            </div>
@@ -182,7 +182,7 @@ const handleAction = async (action, val) => {
 
         <!-- Footer Actions -->
         <div class="p-4 border-t border-gray-800 bg-gray-900/95 backdrop-blur flex items-center gap-3">
-             <button @click="handleAction('update-status', 'playing')" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-transform active:scale-95">
+             <button @click="handleAction('update-status', 'playing')" class="flex-1 bg-primary hover:bg-primary/90 text-white py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-transform active:scale-95">
                 <Play class="w-5 h-5" /> Playing
             </button>
             <button @click="handleAction('update-status', 'completed')" class="flex-1 bg-green-600 hover:bg-green-500 text-white py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-transform active:scale-95">

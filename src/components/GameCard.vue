@@ -59,7 +59,7 @@ const backgroundImage = computed(() => {
       
       <!-- Status Badge (Mini) -->
       <div class="flex items-center gap-1 mt-0.5">
-          <span v-if="game.status === 'playing'" class="text-[9px] uppercase font-bold text-blue-400 bg-blue-900/30 px-1 py-0.5 rounded">Play</span>
+          <span v-if="game.status === 'playing'" class="text-[9px] uppercase font-bold text-primary bg-primary/30 px-1 py-0.5 rounded">Play</span>
           <span v-else-if="game.status === 'completed'" class="text-[9px] uppercase font-bold text-green-400 bg-green-900/30 px-1 py-0.5 rounded">Done</span>
           <span v-else-if="game.status === 'dropped'" class="text-[9px] uppercase font-bold text-gray-400 bg-gray-700/50 px-1 py-0.5 rounded">Drop</span>
           <div v-if="game.rating > 0" class="flex text-yellow-400 text-[9px] items-center gap-0.5"><Star class="w-2.5 h-2.5 fill-yellow-400" /> {{ game.rating }}</div>
@@ -72,7 +72,7 @@ const backgroundImage = computed(() => {
         <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Update Status</h4>
         
         <div class="grid grid-cols-2 gap-2 w-full">
-            <button @click="updateAndClose('playing')" :class="['p-2 rounded text-xs font-bold flex items-center justify-center gap-1', game.status === 'playing' ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700']">
+            <button @click="updateAndClose('playing')" :class="['p-2 rounded text-xs font-bold flex items-center justify-center gap-1', game.status === 'playing' ? 'bg-primary text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700']">
                 <Play class="w-3 h-3" /> Play
             </button>
             <button @click="updateAndClose('completed')" :class="['p-2 rounded text-xs font-bold flex items-center justify-center gap-1', game.status === 'completed' ? 'bg-green-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700']">

@@ -28,9 +28,9 @@ const saveName = () => {
 </script>
 
 <template>
-  <div class="bg-gradient-to-r from-blue-900 to-gray-900 rounded-xl p-6 shadow-xl relative overflow-hidden mb-6 border border-blue-800">
+  <div class="bg-gradient-to-r from-primary/30 to-gray-900 rounded-xl p-6 shadow-xl relative overflow-hidden mb-6 border border-primary/30">
     <!-- Decorative Circle -->
-    <div class="absolute -top-10 -right-10 w-40 h-40 bg-blue-500/20 rounded-full blur-3xl"></div>
+    <div class="absolute -top-10 -right-10 w-40 h-40 bg-primary/20 rounded-full blur-3xl"></div>
 
     <div class="relative z-10 flex items-center justify-between gap-4">
         
@@ -41,7 +41,7 @@ const saveName = () => {
                     <img v-if="userAvatar" :src="userAvatar" class="w-full h-full object-cover" />
                     <Trophy v-else class="w-8 h-8 text-yellow-500" />
                 </div>
-                <div class="absolute -bottom-2 -right-1 bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded-full border border-gray-900">
+                <div class="absolute -bottom-2 -right-1 bg-primary text-white text-xs font-bold px-2 py-0.5 rounded-full border border-gray-900">
                     Lvl {{ userLevel }}
                 </div>
             </div>
@@ -55,7 +55,7 @@ const saveName = () => {
                         v-model="editName"
                         @blur="saveName"
                         @keyup.enter="saveName"
-                        class="bg-gray-800/50 text-white rounded px-2 py-0.5 outline-none border border-blue-500 w-32"
+                        class="bg-gray-800/50 text-white rounded px-2 py-0.5 outline-none border border-primary w-32"
                     />
                     <button v-if="!isEditing" @click="startEditing" class="text-gray-400 hover:text-white transition-colors">
                         <Edit2 class="w-3 h-3" />
@@ -73,13 +73,13 @@ const saveName = () => {
 
     <!-- XP Bar -->
     <div class="mt-4">
-        <div class="flex justify-between text-xs text-blue-200 mb-1">
+        <div class="flex justify-between text-xs text-primary/80 mb-1">
             <span>Progress</span>
             <span>{{ Math.floor(xpProgress) }}%</span>
         </div>
         <div class="h-3 bg-gray-800 rounded-full overflow-hidden border border-gray-700/50">
             <div 
-                class="h-full bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full transition-all duration-1000 ease-out relative"
+                class="h-full bg-primary rounded-full transition-all duration-1000 ease-out relative"
                 :style="{ width: `${xpProgress}%` }"
             >
                 <div class="absolute inset-0 bg-white/20 animate-pulse"></div>
