@@ -2,11 +2,11 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export const GeminiService = {
 
-    async checkGameUpdate(gameTitle, platform, apiKey) {
+    async checkUpdatesBatch(gamesList, apiKey) {
         if (!apiKey) throw new Error("API Key is missing");
 
         const genAI = new GoogleGenerativeAI(apiKey);
-        // Use a model that supports search grounding
+
         // gemini-2.0-flash-exp is the latest and often supports tools best in beta
         const model = genAI.getGenerativeModel({
             model: "gemini-2.0-flash-exp",
@@ -15,17 +15,24 @@ export const GeminiService = {
             }]
         });
 
-        const prompt = `Find the most recent major update, patch, or content release for the game "${gameTitle}" on ${platform}. 
-    Do not restrict by time. Find the absolute latest update available, even if it is old.
+        // Construct a prompt listing all games
+        const gamesListText = gamesList.map(g => `- ${g.title} (Platform: ${g.platform || 'PC'})`).join('\n');
+
+        const prompt = `Find the most recent major update, patch, or content release for the following games:
+        
+${gamesListText}
+
+    For EACH game in the list above, find the absolute latest update available (do not restrict by time).
     
-    Return a JSON object with the following fields:
+    Return a SINGLE JSON ARRAY containing an object for each game with the following fields:
+    - gameTitle (string): The name of the game (must match input).
     - hasUpdate (boolean): Always true if any update history exists.
-    - version (string): The version number or name of the update (e.g., "v1.2" or "Shadow of the Erdtree").
-    - date (string): Release date of the update (YYYY-MM-DD format if possible).
-    - summary (string): A short, exciting summary of the key changes (max 3 bullet points).
-    - originalLink (string): A link to the official patch notes or news source if available (optional).
+    - version (string): The version number or name of the update.
+    - date (string): Release date of the update (YYYY-MM-DD).
+    - summary (string): A short, exciting summary of the key changes.
+    - originalLink (string): A link to the official patch notes if available.
     
-    Ensure the response is valid JSON.`;
+    Ensure the response is a valid JSON Array.`;
 
         try {
             const result = await model.generateContent(prompt);
@@ -34,10 +41,13 @@ export const GeminiService = {
 
             // Clean up markdown code blocks if present
             const jsonString = text.replace(/```json\n|\n```/g, "").trim();
-            return JSON.parse(jsonString);
+            const parsed = JSON.parse(jsonString);
+
+            // Ensure we return an array
+            return Array.isArray(parsed) ? parsed : [parsed];
         } catch (error) {
-            console.error("Gemini Scan Error:", error);
-            return { hasUpdate: false, error: error.message };
+            console.error("Gemini Batch Scan Error:", error);
+            return { error: error.message };
         }
     }
 };

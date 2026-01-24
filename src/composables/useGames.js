@@ -264,39 +264,56 @@ export function useGames() {
             let errors = [];
             let scannedCount = 0;
 
-            for (const game of targetGames) {
-                try {
-                    const result = await GeminiService.checkGameUpdate(game.title, game.platform || 'PC', geminiApiKey.value);
-                    scannedCount++;
+            // Batch processing: Chunk games into groups of 5 to avoid overwhelming the prompt context
+            const CHUNK_SIZE = 5;
+            for (let i = 0; i < targetGames.length; i += CHUNK_SIZE) {
+                const chunk = targetGames.slice(i, i + CHUNK_SIZE);
 
-                    if (result.error) {
-                        errors.push(`${game.title}: ${result.error}`);
+                try {
+                    const results = await GeminiService.checkUpdatesBatch(chunk, geminiApiKey.value);
+
+                    if (results.error) {
+                        errors.push(`Batch ${Math.floor(i / CHUNK_SIZE) + 1} failed: ${results.error}`);
+                        // If rate limit, stop everything
+                        if (results.error.includes('429') || results.error.includes('Quota')) {
+                            break;
+                        }
                         continue;
                     }
 
-                    if (result.hasUpdate) {
-                        const exists = updates.value.some(u => u.gameId === game.id && u.version === result.version);
-                        if (!exists) {
-                            updates.value.push({
-                                gameId: game.id,
-                                gameTitle: game.title,
-                                ...result,
-                                seen: false,
-                                fetchedAt: new Date().toISOString()
-                            });
-                        }
-                    }
-                } catch (e) {
-                    console.error(`Failed to scan for ${game.title}`, e);
-                    if (e.message.includes('429') || e.message.includes('Quota')) {
-                        errors.push(`${game.title}: Rate limit reached. Stopping scan.`);
-                        break; // Stop completely if we hit a hard limit
-                    }
-                    errors.push(`${game.title}: ${e.message}`);
-                }
+                    if (Array.isArray(results)) {
+                        for (const res of results) {
+                            if (res.hasUpdate) {
+                                // Find original game ID by title matching
+                                // Note: AI might return slightly different title, so we try fuzzy match or just trust exact match first
+                                const originalGame = chunk.find(g => g.title === res.gameTitle) || chunk.find(g => res.gameTitle.includes(g.title));
 
-                // Rate Limiting Strategy: Wait 4 seconds between requests
-                await new Promise(resolve => setTimeout(resolve, 4000));
+                                if (originalGame) {
+                                    const exists = updates.value.some(u => u.gameId === originalGame.id && u.version === res.version);
+                                    if (!exists) {
+                                        updates.value.push({
+                                            gameId: originalGame.id,
+                                            gameTitle: originalGame.title,
+                                            ...res,
+                                            seen: false,
+                                            fetchedAt: new Date().toISOString()
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                        scannedCount += chunk.length;
+                    }
+
+                    // Small delay between batches
+                    if (i + CHUNK_SIZE < targetGames.length) {
+                        await new Promise(resolve => setTimeout(resolve, 5000));
+                    }
+
+                } catch (e) {
+                    console.error("Batch scan error", e);
+                    errors.push(`Batch error: ${e.message}`);
+                }
             }
 
             return {
