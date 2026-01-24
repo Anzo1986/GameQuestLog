@@ -1,7 +1,13 @@
 @import "tailwindcss";
 
+@theme {
+  --color-primary: rgb(var(--primary-rgb));
+}
+
 :root {
   color-scheme: dark;
+  --primary-rgb: 59 130 246;
+  /* Default Blue */
 }
 
 body {
