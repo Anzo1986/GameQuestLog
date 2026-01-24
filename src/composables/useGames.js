@@ -248,8 +248,7 @@ export function useGames() {
 
     const scanForUpdates = async () => {
         if (!geminiApiKey.value) {
-            console.warn("No Gemini API Key provided");
-            return;
+            return { success: false, error: "Please save your Gemini API Key in Settings first." };
         }
 
         isScanning.value = true;
@@ -280,6 +279,8 @@ export function useGames() {
         } finally {
             isScanning.value = false;
         }
+
+        return { success: true, newUpdates: updates.value.filter(u => !u.seen).length };
     };
 
     const markUpdateSeen = (gameId, version) => {

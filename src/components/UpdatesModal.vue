@@ -21,7 +21,14 @@ const handleMarkSeen = (update) => {
 };
 
 const handleScan = async () => {
-    await scanForUpdates();
+    const result = await scanForUpdates();
+    if (!result.success) {
+        alert(result.error);
+    } else if (result.newUpdates === 0) {
+        // Optional: could show a toast here, or just let the "No updates found" text remain if list is empty
+        // But if list wasn't empty, user might wonder.
+        if (updates.value.length === 0) alert("No new updates found for your games.");
+    }
 };
 
 const openLink = (url) => {
