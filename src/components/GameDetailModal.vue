@@ -78,8 +78,15 @@ const handleAction = async (action, val) => {
         }
     } else if (action === 'refresh') {
         isRefreshing.value = true;
-        await refreshGame(props.gameId);
+        const result = await refreshGame(props.gameId);
         isRefreshing.value = false;
+        
+        if (result.success) {
+            const msg = `Updated! Playtime found: ${result.playtime}h, Avg: ${result.avg}h. Used: ${result.used}h.`;
+            alert(msg);
+        } else {
+            alert("Update failed: " + (result.error || "Unknown error"));
+        }
         // No close needed, user sees update
     } else {
         emit('update-status', props.gameId, val);

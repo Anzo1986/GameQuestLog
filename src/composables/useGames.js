@@ -185,6 +185,7 @@ export function useGames() {
             if (response.ok) {
                 const details = await response.json();
 
+                const newPlaytime = Math.max(details.playtime || 0, details.average_playtime || 0) || game.playtime;
                 // Smart update: preserve user-specific fields
                 Object.assign(game, {
                     ...details,
@@ -195,14 +196,15 @@ export function useGames() {
                     startedAt: game.startedAt,
                     completedAt: game.completedAt,
                     // Force update playtime with better data if available
-                    playtime: Math.max(details.playtime || 0, details.average_playtime || 0) || game.playtime
+                    playtime: newPlaytime
                 });
-                return true;
+                return { success: true, playtime: details.playtime, avg: details.average_playtime, used: newPlaytime };
             }
         } catch (e) {
             console.error('Failed to refresh game', e);
+            return { success: false, error: e.message };
         }
-        return false;
+        return { success: false, error: 'Network or API Key error' };
     };
 
     const rateGame = (id, rating) => {
