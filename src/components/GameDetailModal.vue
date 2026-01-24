@@ -82,12 +82,14 @@ const handleAction = async (action, val) => {
         isRefreshing.value = false;
         
         if (result.success) {
-            const msg = `Updated! Playtime found: ${result.playtime}h, Avg: ${result.avg}h. Used: ${result.used}h.`;
-            alert(msg);
+            if (result.used > 0) {
+                 alert(`Success! Updated playtime to ${result.used} hours.`);
+            } else {
+                 alert("Server has no playtime data for this game (0h).\n\nPlease click the number to set it manually!");
+            }
         } else {
-            alert("Update failed: " + (result.error || "Unknown error"));
+            alert("Update failed. Check your internet or API Key.");
         }
-        // No close needed, user sees update
     } else {
         emit('update-status', props.gameId, val);
         emit('close');
