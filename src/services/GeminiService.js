@@ -15,16 +15,15 @@ export const GeminiService = {
         });
 
         const prompt = `Find the most recent major update, patch, or content release for the game "${gameTitle}" on ${platform}. 
-    Focus on updates released in the last 6 months.
+    Do not restrict by time. Find the absolute latest update available, even if it is old.
     
     Return a JSON object with the following fields:
-    - hasUpdate (boolean): true if a relevant update was found in the last 6 months.
+    - hasUpdate (boolean): Always true if any update history exists.
     - version (string): The version number or name of the update (e.g., "v1.2" or "Shadow of the Erdtree").
     - date (string): Release date of the update (YYYY-MM-DD format if possible).
     - summary (string): A short, exciting summary of the key changes (max 3 bullet points).
     - originalLink (string): A link to the official patch notes or news source if available (optional).
     
-    If no major update is found in the last 6 months, set hasUpdate to false.
     Ensure the response is valid JSON.`;
 
         try {
