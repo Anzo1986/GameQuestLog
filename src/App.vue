@@ -8,7 +8,7 @@ import SettingsSection from './components/SettingsSection.vue';
 import UserProfile from './components/UserProfile.vue';
 import { useGames } from './composables/useGames';
 
-const { playingGames, backlogGames, completedGames, droppedGames, pileOfShameHours, updateStatus, removeGame, games } = useGames();
+const { playingGames, backlogGames, completedGames, droppedGames, updateStatus, removeGame, games } = useGames();
 
 const showAddModal = ref(false);
 const showSettings = ref(false);
@@ -156,17 +156,7 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
       <section v-if="currentTab === 'backlog'" class="animate-in fade-in duration-300 slide-in-from-bottom-2">
         <h2 class="text-lg font-bold text-gray-200 mb-3">Backlog</h2>
         
-        <!-- Pile of Shame Widget -->
-        <div v-if="pileOfShameHours > 0" class="bg-red-900/20 border border-red-900/50 rounded-lg p-4 mb-4 flex items-center justify-between">
-           <div>
-              <h3 class="text-red-400 font-bold text-sm uppercase tracking-wider">Pile of Shame</h3>
-              <p class="text-xs text-red-300">Total estimated playtime required</p>
-           </div>
-           <div class="text-2xl font-black text-white flex items-center gap-1">
-               <Timer class="w-6 h-6 text-red-500" />
-               {{ pileOfShameHours }}h
-           </div>
-        </div>
+
 
         <div class="grid grid-cols-[1fr_1fr] sm:grid-cols-3 md:grid-cols-4 gap-1.5 sm:gap-2">
           <GameCard 

@@ -94,10 +94,7 @@ export function useGames() {
     const completedGames = computed(() => games.value.filter(g => g.status === 'completed').sort((a, b) => new Date(b.completedAt || 0) - new Date(a.completedAt || 0)));
     const droppedGames = computed(() => games.value.filter(g => g.status === 'dropped'));
 
-    // Pile of Shame (Total hours in backlog)
-    const pileOfShameHours = computed(() => {
-        return backlogGames.value.reduce((total, game) => total + (game.playtime || 0), 0);
-    });
+
 
     const addGame = async (gameData, platform = 'PC') => {
         if (games.value.some(g => g.id === gameData.id)) return; // Prevent duplicates
@@ -279,7 +276,6 @@ export function useGames() {
         playingGames,
         completedGames,
         droppedGames,
-        pileOfShameHours,
         addGame,
         updateStatus,
         updateGame,
