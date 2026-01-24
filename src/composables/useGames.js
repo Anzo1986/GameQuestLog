@@ -176,6 +176,35 @@ export function useGames() {
         }
     };
 
+    const refreshGame = async (id) => {
+        const game = games.value.find(g => g.id === id);
+        if (!game || !apiKey.value) return;
+
+        try {
+            const response = await fetch(`https://api.rawg.io/api/games/${id}?key=${apiKey.value}`);
+            if (response.ok) {
+                const details = await response.json();
+
+                // Smart update: preserve user-specific fields
+                Object.assign(game, {
+                    ...details,
+                    status: game.status,
+                    platform: game.platform,
+                    rating: game.rating,
+                    addedAt: game.addedAt,
+                    startedAt: game.startedAt,
+                    completedAt: game.completedAt,
+                    // Force update playtime with better data if available
+                    playtime: Math.max(details.playtime || 0, details.average_playtime || 0) || game.playtime
+                });
+                return true;
+            }
+        } catch (e) {
+            console.error('Failed to refresh game', e);
+        }
+        return false;
+    };
+
     const rateGame = (id, rating) => {
         const game = games.value.find(g => g.id === id);
         if (game) {
@@ -252,6 +281,7 @@ export function useGames() {
         addGame,
         updateStatus,
         updateGame,
+        refreshGame,
         rateGame,
         removeGame,
         searchGames,
