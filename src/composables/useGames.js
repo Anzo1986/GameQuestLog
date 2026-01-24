@@ -257,9 +257,23 @@ export function useGames() {
             // Filter games: Playing and Backlog
             const targetGames = games.value.filter(g => g.status === 'playing' || g.status === 'backlog');
 
+            if (targetGames.length === 0) {
+                return { success: false, error: "No games found in 'Playing' or 'Backlog' status to scan." };
+            }
+
+            let errors = [];
+            let scannedCount = 0;
+
             for (const game of targetGames) {
                 try {
                     const result = await GeminiService.checkGameUpdate(game.title, game.platform || 'PC', geminiApiKey.value);
+                    scannedCount++;
+
+                    if (result.error) {
+                        errors.push(`${game.title}: ${result.error}`);
+                        continue;
+                    }
+
                     if (result.hasUpdate) {
                         const exists = updates.value.some(u => u.gameId === game.id && u.version === result.version);
                         if (!exists) {
@@ -274,13 +288,19 @@ export function useGames() {
                     }
                 } catch (e) {
                     console.error(`Failed to scan for ${game.title}`, e);
+                    errors.push(`${game.title}: ${e.message}`);
                 }
             }
+
+            return {
+                success: true,
+                newUpdates: updates.value.filter(u => !u.seen).length,
+                scannedCount,
+                errors
+            };
         } finally {
             isScanning.value = false;
         }
-
-        return { success: true, newUpdates: updates.value.filter(u => !u.seen).length };
     };
 
     const markUpdateSeen = (gameId, version) => {

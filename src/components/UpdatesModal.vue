@@ -22,12 +22,22 @@ const handleMarkSeen = (update) => {
 
 const handleScan = async () => {
     const result = await scanForUpdates();
+    
     if (!result.success) {
+        // Critical failures (missing key, no games)
         alert(result.error);
+        return;
+    }
+
+    // Check for partial errors during loop
+    if (result.errors && result.errors.length > 0) {
+        // Just show the first error to keep it simple, or a summary
+        alert(`Scan finished with issues.\n\nFailed games: ${result.errors.length}\nFirst error: ${result.errors[0]}`);
     } else if (result.newUpdates === 0) {
-        // Optional: could show a toast here, or just let the "No updates found" text remain if list is empty
-        // But if list wasn't empty, user might wonder.
-        if (updates.value.length === 0) alert("No new updates found for your games.");
+        alert(`Scanned ${result.scannedCount} games successfully.\nNo new updates found (latest versions already tracked?)`);
+    } else {
+        // Success case - new updates found
+        // No alert needed, the UI will update
     }
 };
 
