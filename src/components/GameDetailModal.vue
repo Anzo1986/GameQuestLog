@@ -82,11 +82,7 @@ const handleAction = async (action, val) => {
         isRefreshing.value = false;
         
         if (result.success) {
-            if (result.used > 0) {
-                 alert(`Success! Updated playtime to ${result.used} hours.`);
-            } else {
-                 alert("Server has no playtime data for this game (0h).\n\nPlease click the number to set it manually!");
-            }
+            alert("Game details updated from server!");
         } else {
             alert("Update failed. Check your internet or API Key.");
         }
@@ -163,23 +159,10 @@ const handleAction = async (action, val) => {
                 {{ formatDate(gameDetails.released) }}
             </div>
 
-            <!-- Playtime / HLTB -->
-            <div class="flex items-center gap-1 text-sm flex-shrink-0 cursor-pointer hover:text-white group relative" @click="startEditingPlaytime" title="Click to Edit Playtime">
+            <!-- Playtime / HLTB (Days Played Only) -->
+            <div class="flex items-center gap-1 text-sm flex-shrink-0" v-if="gameDetails.startedAt">
                 <Timer class="w-4 h-4 text-purple-400" />
-                
-                <div v-if="isEditingPlaytime" class="absolute top-8 left-0 z-50 bg-gray-800 p-2 rounded shadow-xl border border-gray-600 flex gap-1" @click.stop>
-                    <input 
-                        ref="playtimeInput"
-                        v-model.number="tempPlaytime" 
-                        type="number" 
-                        class="w-16 bg-gray-900 border border-gray-600 rounded px-1 py-0.5 text-white text-xs"
-                        @keyup.enter="savePlaytime"
-                    />
-                    <button @click="savePlaytime" class="bg-green-600 px-2 rounded text-xs text-white">OK</button>
-                </div>
-
-                <span v-if="gameDetails.startedAt" class="text-white font-bold">{{ calculateDaysPlayed(gameDetails.startedAt) }} Days</span>
-                <span v-else class="text-gray-400 group-hover:text-blue-300 transition-colors">~{{ gameDetails.playtime || 0 }}h <span class="text-[10px] opacity-50 ml-1">(Edit)</span></span>
+                <span class="text-white font-bold">{{ calculateDaysPlayed(gameDetails.startedAt) }} Days</span>
             </div>
 
         </div>
