@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue';
-import { X, Calendar, Gamepad2, Globe, Star, Play, Check, Trash2, Timer, Ban, Layers, RefreshCw } from 'lucide-vue-next';
+import { X, Calendar, Gamepad2, Globe, Star, Play, Check, Trash2, Timer, Ban, Layers } from 'lucide-vue-next';
 import { useGames } from '../composables/useGames';
 
 const props = defineProps({
@@ -13,7 +13,7 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'update-status', 'delete']);
 
-const { games, rateGame, updateGame, refreshGame } = useGames();
+const { games, rateGame, updateGame } = useGames();
 
 const gameDetails = ref(null);
 
@@ -75,16 +75,6 @@ const handleAction = async (action, val) => {
         if(confirm('Are you sure you want to delete this game?')) {
             emit('delete', props.gameId);
             emit('close');
-        }
-    } else if (action === 'refresh') {
-        isRefreshing.value = true;
-        const result = await refreshGame(props.gameId);
-        isRefreshing.value = false;
-        
-        if (result.success) {
-            alert("Game details updated from server!");
-        } else {
-            alert("Update failed. Check your internet or API Key.");
         }
     } else {
         emit('update-status', props.gameId, val);
@@ -203,9 +193,7 @@ const handleAction = async (action, val) => {
                 <Ban class="w-5 h-5 text-gray-400" />
             </button>
 
-            <button @click="handleAction('refresh')" class="bg-gray-800 hover:bg-gray-700 text-purple-400 hover:text-purple-300 py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-transform active:scale-95" title="Refresh Data">
-                <RefreshCw class="w-5 h-5" :class="{ 'animate-spin': isRefreshing }" />
-            </button>
+
 
              <button @click="handleAction('delete')" class="p-3 bg-red-900/20 text-red-400 hover:bg-red-900/40 rounded-xl transition-transform active:scale-95" title="Delete Game">
                 <Trash2 class="w-5 h-5" />
