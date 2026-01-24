@@ -1,3 +1,4 @@
+<script setup>
 import { ref, computed } from 'vue';
 import { Settings, Plus, Gamepad2, Layers, CheckCircle2, LayoutDashboard, Ban, Timer, Bell } from 'lucide-vue-next';
 import GameCard from './components/GameCard.vue';
@@ -43,7 +44,6 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
         </div>
         <h1 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 tracking-wider drop-shadow-sm" style="font-family: 'Orbitron', sans-serif;">
             GAME<span class="text-white">QUEST</span>LOG
-        </h1>
         </h1>
       </div>
       <div class="flex items-center gap-2">
