@@ -9,7 +9,7 @@ const props = defineProps({
 
 const emit = defineEmits(['close']);
 
-const { updates, markUpdateSeen, scanForUpdates, isScanning } = useGames();
+const { updates, markUpdateSeen, scanForUpdates, isScanning, scanLogs } = useGames();
 
 // Sort updates by date (newest first)
 const sortedUpdates = computed(() => {
@@ -55,23 +55,32 @@ const openLink = (url) => {
     <div class="relative bg-gray-900 w-full max-w-2xl rounded-2xl shadow-2xl border border-gray-700 flex flex-col max-h-[85vh] overflow-hidden animate-in fade-in zoom-in duration-200">
       
       <!-- Header -->
-      <div class="p-5 border-b border-gray-700 flex items-center justify-between bg-gray-800/50">
-        <div class="flex items-center gap-4">
+      <div class="p-5 border-b border-gray-700 flex flex-col gap-4 bg-gray-800/50">
+        <div class="flex items-center justify-between">
             <h2 class="text-xl font-bold text-white flex items-center gap-2">
             <span class="text-blue-400">✨</span> Game Updates
             </h2>
-            <button 
-                @click="handleScan" 
-                :disabled="isScanning"
-                class="text-xs bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-3 py-1.5 rounded-full font-bold transition-all flex items-center gap-1 shadow-lg border border-blue-400/30"
-            >
-                <span v-if="isScanning" class="animate-spin">⟳</span>
-                <span v-else>Scan Now</span>
-            </button>
+            <div class="flex items-center gap-2">
+                <button 
+                    @click="handleScan" 
+                    :disabled="isScanning"
+                    class="text-xs bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-3 py-1.5 rounded-full font-bold transition-all flex items-center gap-1 shadow-lg border border-blue-400/30"
+                >
+                    <span v-if="isScanning" class="animate-spin">⟳</span>
+                    <span v-else>Scan Now</span>
+                </button>
+                <button @click="$emit('close')" class="p-2 text-gray-400 hover:text-white rounded-full hover:bg-gray-700 transition-colors">
+                    <X class="w-5 h-5" />
+                </button>
+            </div>
         </div>
-        <button @click="$emit('close')" class="p-2 -mr-2 text-gray-400 hover:text-white rounded-full hover:bg-gray-700 transition-colors">
-          <X class="w-5 h-5" />
-        </button>
+        
+        <!-- DEBUG LOGS -->
+        <div v-if="scanLogs && scanLogs.length > 0" class="w-full p-2 bg-black/50 border border-gray-700 rounded text-xs font-mono h-32 overflow-y-auto">
+            <div v-for="(log, i) in scanLogs" :key="i" :class="{'text-red-400': log.startsWith('❌') || log.startsWith('Error'), 'text-green-400': log.startsWith('✅') || log.startsWith('✔'), 'text-gray-400': true}">
+                {{ log }}
+            </div>
+        </div>
       </div>
 
       <!-- Content -->

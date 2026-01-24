@@ -14,6 +14,7 @@ const isScanning = ref(false);
 const searchQuery = ref('');
 const searchResults = ref([]);
 const isSearching = ref(false);
+const scanLogs = ref([]); // Public logs for UI debugging
 
 const USER_STORAGE_KEY = 'game-tracker-user';
 const userXP = ref(0);
@@ -248,49 +249,64 @@ export function useGames() {
 
     const scanForUpdates = async () => {
         if (!geminiApiKey.value) {
+            scanLogs.value.push("Error: API Key missing.");
             return { success: false, error: "Please save your Gemini API Key in Settings first." };
         }
 
         isScanning.value = true;
+        scanLogs.value = ["Starting scan...", "Checking games list..."];
 
         try {
             // Filter games: Playing and Backlog
             const targetGames = games.value.filter(g => g.status === 'playing' || g.status === 'backlog');
 
             if (targetGames.length === 0) {
+                scanLogs.value.push("No relevant games found to scan.");
                 return { success: false, error: "No games found in 'Playing' or 'Backlog' status to scan." };
             }
+
+            scanLogs.value.push(`Found ${targetGames.length} games to scan.`);
 
             let errors = [];
             let scannedCount = 0;
 
-            // Batch processing: Chunk games into groups of 5 to avoid overwhelming the prompt context
-            const CHUNK_SIZE = 5;
+            // Batch processing: Chunk games into groups of 3 (Safe Mode)
+            const CHUNK_SIZE = 3;
+            const totalBatches = Math.ceil(targetGames.length / CHUNK_SIZE);
+
             for (let i = 0; i < targetGames.length; i += CHUNK_SIZE) {
                 const chunk = targetGames.slice(i, i + CHUNK_SIZE);
+                const batchNum = Math.floor(i / CHUNK_SIZE) + 1;
+
+                scanLogs.value.push(`Scanning Batch ${batchNum}/${totalBatches} (${chunk.map(g => g.title).join(', ')})...`);
 
                 try {
                     const results = await GeminiService.checkUpdatesBatch(chunk, geminiApiKey.value);
 
                     if (results.error) {
-                        errors.push(`Batch ${Math.floor(i / CHUNK_SIZE) + 1} failed: ${results.error}`);
+                        const errMsg = `Batch ${batchNum} Failed: ${results.error}`;
+                        console.error(errMsg);
+                        scanLogs.value.push(`❌ ${errMsg}`);
                         // If rate limit, stop everything
                         if (results.error.includes('429') || results.error.includes('Quota')) {
+                            scanLogs.value.push("⛔ Rate Limit Hit. Stops.");
                             break;
                         }
+                        errors.push(errMsg);
                         continue;
                     }
 
                     if (Array.isArray(results)) {
+                        scanLogs.value.push(`✔ Batch ${batchNum} Success. Received ${results.length} updates.`);
                         for (const res of results) {
                             if (res.hasUpdate) {
                                 // Find original game ID by title matching
-                                // Note: AI might return slightly different title, so we try fuzzy match or just trust exact match first
                                 const originalGame = chunk.find(g => g.title === res.gameTitle) || chunk.find(g => res.gameTitle.includes(g.title));
 
                                 if (originalGame) {
                                     const exists = updates.value.some(u => u.gameId === originalGame.id && u.version === res.version);
                                     if (!exists) {
+                                        scanLogs.value.push(`  ➤ New Update: ${originalGame.title} - ${res.version}`);
                                         updates.value.push({
                                             gameId: originalGame.id,
                                             gameTitle: originalGame.title,
@@ -298,24 +314,31 @@ export function useGames() {
                                             seen: false,
                                             fetchedAt: new Date().toISOString()
                                         });
+                                    } else {
+                                        scanLogs.value.push(`  (Skipped existing: ${originalGame.title})`);
                                     }
                                 }
                             }
                         }
                         scannedCount += chunk.length;
+                    } else {
+                        scanLogs.value.push(`⚠ Batch ${batchNum} returned invalid format.`);
                     }
 
-                    // Small delay between batches
+                    // Delay between batches
                     if (i + CHUNK_SIZE < targetGames.length) {
+                        scanLogs.value.push("⏳ Waiting 5s for rate limit...");
                         await new Promise(resolve => setTimeout(resolve, 5000));
                     }
 
                 } catch (e) {
                     console.error("Batch scan error", e);
+                    scanLogs.value.push(`❌ Critical Batch Error: ${e.message}`);
                     errors.push(`Batch error: ${e.message}`);
                 }
             }
 
+            scanLogs.value.push("✅ Scan Complete.");
             return {
                 success: true,
                 newUpdates: updates.value.filter(u => !u.seen).length,
@@ -366,6 +389,7 @@ export function useGames() {
         updates,
         scanForUpdates,
         markUpdateSeen,
-        isScanning
+        isScanning,
+        scanLogs
     };
 }
