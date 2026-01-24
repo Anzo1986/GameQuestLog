@@ -13,6 +13,8 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'update-status', 'delete']);
 
+const { games, rateGame, updateGame, refreshGame } = useGames();
+
 const gameDetails = ref(null);
 
 watch(() => props.isOpen, (newVal) => {
@@ -45,7 +47,7 @@ const isEditingPlaytime = ref(false);
 const tempPlaytime = ref(0);
 const playtimeInput = ref(null);
 
-const { updateGame, refreshGame } = useGames();
+
 
 const startEditingPlaytime = () => {
     if (gameDetails.value.startedAt) return; // Don't edit estimated playtime if already playing? Actually users might still want to see estimate. Let's allow it but UI shows Days Played.
