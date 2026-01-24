@@ -13,7 +13,6 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'update-status', 'delete']);
 
-const { games, rateGame } = useGames();
 const gameDetails = ref(null);
 
 watch(() => props.isOpen, (newVal) => {
@@ -40,6 +39,31 @@ const calculateDaysPlayed = (startDate) => {
     const now = new Date();
     const diffTime = Math.abs(now - start);
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+};
+
+const isEditingPlaytime = ref(false);
+const tempPlaytime = ref(0);
+const playtimeInput = ref(null);
+
+const { games, rateGame, updateGame } = useGames();
+
+const startEditingPlaytime = () => {
+    if (gameDetails.value.startedAt) return; // Don't edit estimated playtime if already playing? Actually users might still want to see estimate. Let's allow it but UI shows Days Played.
+    // Wait, the UI only shows "click to edit" if NOT startedAt.
+    // If we want to allow editing estimate even while playing, we need to change template logic. 
+    // For now, let's strictly follow the template structure: editing is for Backlog estimation mainly.
+    // But wait, the user wants to fix Pile of Shame which is Backlog. So this is fine.
+    
+    tempPlaytime.value = gameDetails.value.playtime || 0;
+    isEditingPlaytime.value = true;
+    setTimeout(() => playtimeInput.value?.focus(), 50);
+};
+
+const savePlaytime = () => {
+    if (tempPlaytime.value >= 0) {
+        updateGame(props.gameId, { playtime: tempPlaytime.value });
+    }
+    isEditingPlaytime.value = false;
 };
 
 const handleAction = (action, val) => {
@@ -122,10 +146,22 @@ const handleAction = (action, val) => {
             </div>
 
             <!-- Playtime / HLTB -->
-            <div class="flex items-center gap-1 text-sm flex-shrink-0">
+            <div class="flex items-center gap-1 text-sm flex-shrink-0 cursor-pointer hover:text-white group relative" @click="startEditingPlaytime" title="Click to Edit Playtime">
                 <Timer class="w-4 h-4 text-purple-400" />
+                
+                <div v-if="isEditingPlaytime" class="absolute top-8 left-0 z-50 bg-gray-800 p-2 rounded shadow-xl border border-gray-600 flex gap-1" @click.stop>
+                    <input 
+                        ref="playtimeInput"
+                        v-model.number="tempPlaytime" 
+                        type="number" 
+                        class="w-16 bg-gray-900 border border-gray-600 rounded px-1 py-0.5 text-white text-xs"
+                        @keyup.enter="savePlaytime"
+                    />
+                    <button @click="savePlaytime" class="bg-green-600 px-2 rounded text-xs text-white">OK</button>
+                </div>
+
                 <span v-if="gameDetails.startedAt" class="text-white font-bold">{{ calculateDaysPlayed(gameDetails.startedAt) }} Days</span>
-                <span v-else class="text-gray-400">~{{ gameDetails.playtime || '?' }}h</span>
+                <span v-else class="text-gray-400 group-hover:text-blue-300 transition-colors">~{{ gameDetails.playtime || 0 }}h <span class="text-[10px] opacity-50 ml-1">(Edit)</span></span>
             </div>
 
         </div>

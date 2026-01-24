@@ -169,6 +169,13 @@ export function useGames() {
         }
     };
 
+    const updateGame = (id, updates) => {
+        const game = games.value.find(g => g.id === id);
+        if (game) {
+            Object.assign(game, updates);
+        }
+    };
+
     const rateGame = (id, rating) => {
         const game = games.value.find(g => g.id === id);
         if (game) {
@@ -244,6 +251,7 @@ export function useGames() {
         pileOfShameHours,
         addGame,
         updateStatus,
+        updateGame,
         rateGame,
         removeGame,
         searchGames,
