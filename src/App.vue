@@ -4,21 +4,18 @@ import { Settings, Plus, Gamepad2, Layers, CheckCircle2, LayoutDashboard, Ban, T
 import GameCard from './components/GameCard.vue';
 import AddGameModal from './components/AddGameModal.vue';
 import GameDetailModal from './components/GameDetailModal.vue';
-import UpdatesModal from './components/UpdatesModal.vue';
 import SettingsSection from './components/SettingsSection.vue';
 import UserProfile from './components/UserProfile.vue';
 import { useGames } from './composables/useGames';
 
-const { playingGames, backlogGames, completedGames, droppedGames, pileOfShameHours, updateStatus, removeGame, updates } = useGames();
+const { playingGames, backlogGames, completedGames, droppedGames, pileOfShameHours, updateStatus, removeGame, games } = useGames();
 
 const showAddModal = ref(false);
 const showSettings = ref(false);
 const showDetailModal = ref(false);
-const showUpdatesModal = ref(false);
 const selectedGameId = ref(null);
 const currentTab = ref('dashboard'); // 'dashboard', 'backlog', 'completed'
-
-const unseenUpdatesCount = computed(() => updates.value.filter(u => !u.seen).length);
+const showCopyFeedback = ref(false);
 
 const toggleSettings = () => {
   showSettings.value = !showSettings.value;
@@ -27,6 +24,31 @@ const toggleSettings = () => {
 const openGameDetails = (gameId) => {
   selectedGameId.value = gameId;
   showDetailModal.value = true;
+};
+
+const handleWebCheck = async () => {
+    // Generate prompt from games list
+    const targetGames = games.value.filter(g => g.status === 'playing' || g.status === 'backlog');
+    
+    let prompt = "";
+    if (targetGames.length === 0) {
+        prompt = "Please find updates for my games.";
+    } else {
+        const gameTitles = targetGames.map(g => g.title).join(', ');
+        prompt = `Find the most recent major update, patch, or content release for the following games: ${gameTitles}. Provide the version number, status, and a short summary for each.`;
+    }
+
+    try {
+        await navigator.clipboard.writeText(prompt);
+        showCopyFeedback.value = true;
+        setTimeout(() => showCopyFeedback.value = false, 3000);
+        
+        // Open Gemini
+        window.open('https://gemini.google.com/app', '_blank');
+    } catch (err) {
+        console.error('Failed to copy: ', err);
+        window.open('https://gemini.google.com/app', '_blank');
+    }
 };
 
 const logoPath = `${import.meta.env.BASE_URL}logo.png`;
@@ -47,12 +69,15 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
         </h1>
       </div>
       <div class="flex items-center gap-2">
-        <!-- Updates Bell -->
-        <button @click="showUpdatesModal = true" class="relative p-2 text-gray-400 hover:text-white transition-colors rounded-full hover:bg-gray-800">
+        <!-- Updates Bell (Web Check) -->
+        <button 
+            @click="handleWebCheck" 
+            class="relative p-2 text-gray-400 hover:text-white transition-colors rounded-full hover:bg-gray-800"
+            title="Check Game Updates on Web"
+        >
             <Bell class="w-6 h-6" />
-            <span v-if="unseenUpdatesCount > 0" class="absolute top-1 right-1 flex h-3 w-3">
-                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+            <span v-if="showCopyFeedback" class="absolute -bottom-8 right-0 bg-green-500 text-black text-xs font-bold px-2 py-1 rounded shadow animate-bounce whitespace-nowrap z-50">
+                Copied!
             </span>
         </button>
 
@@ -226,7 +251,7 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
       @delete="removeGame"
     />
 
-    <UpdatesModal :is-open="showUpdatesModal" @close="showUpdatesModal = false" />
+
 
 
   </div>

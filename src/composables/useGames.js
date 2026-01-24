@@ -2,19 +2,13 @@ import { ref, computed, watch } from 'vue';
 
 const GAMES_STORAGE_KEY = 'game-tracker-games';
 const API_KEY_STORAGE_KEY = 'game-tracker-api-key';
-const GEMINI_API_KEY_STORAGE_KEY = 'game-tracker-gemini-api-key';
-import { GeminiService } from '../services/GeminiService';
 
 // Shared Global State
 const games = ref([]);
 const apiKey = ref(localStorage.getItem(API_KEY_STORAGE_KEY) || '');
-const geminiApiKey = ref(localStorage.getItem(GEMINI_API_KEY_STORAGE_KEY) || '');
-const updates = ref([]); // { gameId, title, date, summary, originalLink, seen: false }
-const isScanning = ref(false);
 const searchQuery = ref('');
 const searchResults = ref([]);
 const isSearching = ref(false);
-const scanLogs = ref([]); // Public logs for UI debugging
 
 const USER_STORAGE_KEY = 'game-tracker-user';
 const userXP = ref(0);
@@ -77,7 +71,6 @@ export function useGames() {
 
     const awardXP = (amount) => {
         userXP.value += amount;
-        // Ideally trigger a toast notification here
         console.log(`Awarded ${amount} XP! New Total: ${userXP.value}`);
     };
 
@@ -85,11 +78,6 @@ export function useGames() {
     const setApiKey = (key) => {
         apiKey.value = key;
         localStorage.setItem(API_KEY_STORAGE_KEY, key);
-    };
-
-    const setGeminiApiKey = (key) => {
-        geminiApiKey.value = key;
-        localStorage.setItem(GEMINI_API_KEY_STORAGE_KEY, key);
     };
 
     const setUserName = (name) => {
@@ -115,7 +103,6 @@ export function useGames() {
         if (games.value.some(g => g.id === gameData.id)) return; // Prevent duplicates
 
         // 1. Create Basic Object (Optimistic)
-        // Use the playtime provided by the search result (usually integers) as a temporary value
         const newGame = {
             id: gameData.id,
             title: gameData.name,
@@ -142,18 +129,14 @@ export function useGames() {
                     // 4. Update the existing object in the array deeply
                     const gameToUpdate = games.value.find(g => g.id === gameData.id);
                     if (gameToUpdate) {
-                        // We use Object.assign to mutate the reactive object in place
-                        // This ensures 'gameDetails' refs in Modals stay valid
                         Object.assign(gameToUpdate, {
                             ...details,
-                            // Preserve these local overrides just in case API conflicts (unlikely but safe)
                             status: gameToUpdate.status,
                             platform: gameToUpdate.platform,
                             rating: gameToUpdate.rating,
                             addedAt: gameToUpdate.addedAt,
                             startedAt: gameToUpdate.startedAt,
                             completedAt: gameToUpdate.completedAt,
-                            // Prefer API playtime if non-zero, else keep existing
                             playtime: details.playtime || gameToUpdate.playtime
                         });
                     }
@@ -247,119 +230,6 @@ export function useGames() {
         });
     };
 
-    const scanForUpdates = async () => {
-        if (!geminiApiKey.value) {
-            scanLogs.value.push("Error: API Key missing.");
-            return { success: false, error: "Please save your Gemini API Key in Settings first." };
-        }
-
-        isScanning.value = true;
-        scanLogs.value = ["Starting scan...", "Checking games list..."];
-
-        try {
-            // Filter games: Playing and Backlog
-            const targetGames = games.value.filter(g => g.status === 'playing' || g.status === 'backlog');
-
-            if (targetGames.length === 0) {
-                scanLogs.value.push("No relevant games found to scan.");
-                return { success: false, error: "No games found in 'Playing' or 'Backlog' status to scan." };
-            }
-
-            scanLogs.value.push(`Found ${targetGames.length} games to scan.`);
-
-            let errors = [];
-            let scannedCount = 0;
-
-            // Batch processing: Chunk games into groups of 3 (Safe Mode)
-            const CHUNK_SIZE = 3;
-            const totalBatches = Math.ceil(targetGames.length / CHUNK_SIZE);
-
-            for (let i = 0; i < targetGames.length; i += CHUNK_SIZE) {
-                const chunk = targetGames.slice(i, i + CHUNK_SIZE);
-                const batchNum = Math.floor(i / CHUNK_SIZE) + 1;
-
-                scanLogs.value.push(`Scanning Batch ${batchNum}/${totalBatches} (${chunk.map(g => g.title).join(', ')})...`);
-
-                try {
-                    const results = await GeminiService.checkUpdatesBatch(chunk, geminiApiKey.value);
-
-                    if (results.error) {
-                        const errMsg = `Batch ${batchNum} Failed: ${results.error}`;
-                        console.error(errMsg);
-                        scanLogs.value.push(`❌ ${errMsg}`);
-                        // If rate limit, stop everything
-                        if (results.error.includes('429') || results.error.includes('Quota')) {
-                            scanLogs.value.push("⛔ Rate Limit Hit. Stops.");
-                            break;
-                        }
-                        errors.push(errMsg);
-                        continue;
-                    }
-
-                    if (Array.isArray(results)) {
-                        scanLogs.value.push(`✔ Batch ${batchNum} Success. Received ${results.length} updates.`);
-                        for (const res of results) {
-                            if (res.hasUpdate) {
-                                // Find original game ID by title matching
-                                const originalGame = chunk.find(g => g.title === res.gameTitle) || chunk.find(g => res.gameTitle.includes(g.title));
-
-                                if (originalGame) {
-                                    const exists = updates.value.some(u => u.gameId === originalGame.id && u.version === res.version);
-                                    if (!exists) {
-                                        scanLogs.value.push(`  ➤ New Update: ${originalGame.title} - ${res.version}`);
-                                        updates.value.push({
-                                            gameId: originalGame.id,
-                                            gameTitle: originalGame.title,
-                                            ...res,
-                                            seen: false,
-                                            fetchedAt: new Date().toISOString()
-                                        });
-                                    } else {
-                                        scanLogs.value.push(`  (Skipped existing: ${originalGame.title})`);
-                                    }
-                                }
-                            }
-                        }
-                        scannedCount += chunk.length;
-                    } else {
-                        scanLogs.value.push(`⚠ Batch ${batchNum} returned invalid format.`);
-                    }
-
-                    // Delay between batches
-                    // Gemini 1.5 Pro Free Tier has a limit of 2 Requests Per Minute (RPM).
-                    // We must wait 35 seconds to be safe.
-                    if (i + CHUNK_SIZE < targetGames.length) {
-                        scanLogs.value.push("⏳ Waiting 35s for rate limit (Gemini Pro)...");
-                        await new Promise(resolve => setTimeout(resolve, 35000));
-                    }
-
-                } catch (e) {
-                    console.error("Batch scan error", e);
-                    scanLogs.value.push(`❌ Critical Batch Error: ${e.message}`);
-                    errors.push(`Batch error: ${e.message}`);
-                }
-            }
-
-            scanLogs.value.push("✅ Scan Complete.");
-            return {
-                success: true,
-                newUpdates: updates.value.filter(u => !u.seen).length,
-                scannedCount,
-                errors
-            };
-        } finally {
-            isScanning.value = false;
-        }
-    };
-
-    const markUpdateSeen = (gameId, version) => {
-        const update = updates.value.find(u => u.gameId === gameId && u.version === version);
-        if (update) update.seen = true;
-    };
-
-
-
-
     return {
         games,
         apiKey,
@@ -387,13 +257,6 @@ export function useGames() {
         userLevel,
         userTitle,
         xpProgress,
-        awardXP,
-        geminiApiKey,
-        setGeminiApiKey,
-        updates,
-        scanForUpdates,
-        markUpdateSeen,
-        isScanning,
-        scanLogs
+        awardXP
     };
 }
