@@ -403,6 +403,6 @@ export function useGames() {
         markUpdateSeen,
         isScanning,
         scanLogs,
-        generateWebScanUrl
+        getScanPromptString
     };
 }

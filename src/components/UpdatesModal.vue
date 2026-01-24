@@ -9,7 +9,9 @@ const props = defineProps({
 
 const emit = defineEmits(['close']);
 
-const { updates, markUpdateSeen, scanForUpdates, isScanning, scanLogs, generateWebScanUrl } = useGames();
+const { updates, markUpdateSeen, scanForUpdates, isScanning, scanLogs, getScanPromptString } = useGames();
+import { ref } from 'vue';
+const showCopyFeedback = ref(false);
 
 // Sort updates by date (newest first)
 const sortedUpdates = computed(() => {
@@ -44,6 +46,21 @@ const handleScan = async () => {
 const openLink = (url) => {
     if (url) window.open(url, '_blank');
 };
+
+const handleWebScan = async () => {
+    const prompt = getScanPromptString();
+    try {
+        await navigator.clipboard.writeText(prompt);
+        showCopyFeedback.value = true;
+        setTimeout(() => showCopyFeedback.value = false, 3000);
+        
+        // Open Gemini
+        window.open('https://gemini.google.com/app', '_blank');
+    } catch (err) {
+        console.error('Failed to copy: ', err);
+        window.open('https://gemini.google.com/app', '_blank');
+    }
+};
 </script>
 
 <template>
@@ -70,15 +87,14 @@ const openLink = (url) => {
                     <span v-else>Scan API</span>
                 </button>
                 
-                <a 
-                    :href="generateWebScanUrl()" 
-                    target="_blank"
-                    class="text-xs bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded-full font-bold transition-all flex items-center gap-1 shadow-lg border border-purple-400/30 no-underline"
-                    title="Open Gemini in Browser (Reliable)"
+                <button 
+                    @click="handleWebScan" 
+                    class="text-xs bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded-full font-bold transition-all flex items-center gap-1 shadow-lg border border-purple-400/30"
+                    title="Copy Prompt & Open Gemini"
                 >
                     <ExternalLink class="w-3 h-3" />
-                    <span>Ask Web</span>
-                </a>
+                    <span>{{ showCopyFeedback ? 'Copied!' : 'Ask Web' }}</span>
+                </button>
 
                 <button @click="$emit('close')" class="p-2 text-gray-400 hover:text-white rounded-full hover:bg-gray-700 transition-colors">
                     <X class="w-5 h-5" />
