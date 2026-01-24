@@ -9,7 +9,7 @@ const props = defineProps({
 
 const emit = defineEmits(['close']);
 
-const { updates, markUpdateSeen, scanForUpdates, isScanning, scanLogs, getScanPromptString } = useGames();
+const { games, updates, markUpdateSeen, scanForUpdates, isScanning, scanLogs } = useGames();
 const showCopyFeedback = ref(false);
 
 // Sort updates by date (newest first)
@@ -47,7 +47,18 @@ const openLink = (url) => {
 };
 
 const handleWebScan = async () => {
-    const prompt = getScanPromptString();
+    // Re-implemented logic locally to avoid ReferenceError
+    // Use top-level games ref
+    const targetGames = games.value.filter(g => g.status === 'playing' || g.status === 'backlog');
+    
+    let prompt = "";
+    if (targetGames.length === 0) {
+        prompt = "Please find updates for my games.";
+    } else {
+        const gameTitles = targetGames.map(g => g.title).join(', ');
+        prompt = `Find the most recent major update, patch, or content release for the following games: ${gameTitles}. Provide the version number, status, and a short summary for each.`;
+    }
+
     try {
         await navigator.clipboard.writeText(prompt);
         showCopyFeedback.value = true;
