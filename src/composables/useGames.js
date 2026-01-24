@@ -115,6 +115,7 @@ export function useGames() {
     const setTheme = (color) => {
         if (THEMES[color]) {
             themeColor.value = color;
+            applyTheme(color); // Force update
         }
     };
 

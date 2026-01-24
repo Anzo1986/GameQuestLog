@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import { Download, Upload, Key, Save, User } from 'lucide-vue-next';
+import { Download, Upload, Key, Save, User, Check } from 'lucide-vue-next';
 import { useGames } from '../composables/useGames';
 
 const { apiKey, setApiKey, exportData, importData, userAvatar, setUserAvatar, themeColor, setTheme, THEMES } = useGames();
