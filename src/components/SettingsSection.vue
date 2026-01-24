@@ -93,42 +93,48 @@ const handleFileChange = async (event) => {
     <div class="space-y-6">
       
       <!-- API Key Section -->
-      <div>
-        <label class="block text-sm font-medium text-gray-300 mb-1">RAWG.io API Key</label>
-        <div class="flex gap-2">
-          <div class="relative flex-1">
-             <Key class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-             <input 
-              v-model="newKey" 
-              type="text" 
-              placeholder="Enter your API Key" 
-              class="w-full bg-gray-900 border border-gray-700 rounded-lg py-2 pl-10 pr-4 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-            />
-          </div>
-          <button @click="saveKey" class="bg-blue-600 hover:bg-blue-500 text-white px-4 rounded-lg font-medium transition-colors flex items-center gap-2">
-            <Save class="w-4 h-4" /> Save
-          </button>
+      <!-- API Configuration -->
+      <div class="space-y-4">
+        <div class="flex items-center justify-between">
+            <h3 class="text-sm font-medium text-gray-300">API Configuration</h3>
+            <button @click="saveKey" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 text-sm shadow-lg">
+                <Save class="w-4 h-4" /> Save Keys
+            </button>
         </div>
-        <p class="mt-2 text-xs text-gray-400">
-          Don't have a key? <a href="https://rawg.io/apidocs" target="_blank" class="text-blue-400 hover:underline">Get one here</a>.
-        </p>
-      </div>
+        
+        <!-- RAWG Key -->
+        <div class="bg-gray-700/30 p-4 rounded-lg border border-gray-700">
+            <label class="block text-sm font-medium text-gray-300 mb-2">RAWG.io API Key</label>
+            <div class="relative">
+                 <Key class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                 <input 
+                  v-model="newKey" 
+                  type="text" 
+                  placeholder="Enter your RAWG API Key" 
+                  class="w-full bg-gray-900 border border-gray-600 rounded-lg py-2 pl-10 pr-4 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                />
+            </div>
+            <p class="mt-2 text-xs text-gray-400">
+              Required for game data. <a href="https://rawg.io/apidocs" target="_blank" class="text-blue-400 hover:underline">Get key</a>.
+            </p>
+        </div>
 
-      <!-- Gemini API Key Section -->
-      <div>
-        <label class="block text-sm font-medium text-gray-300 mb-1">Gemini API Key <span class="text-xs text-gray-500">(for AI Updates)</span></label>
-        <div class="relative">
-             <Key class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-             <input 
-              v-model="newGeminiKey" 
-              type="text" 
-              placeholder="Enter your Gemini API Key" 
-              class="w-full bg-gray-900 border border-gray-700 rounded-lg py-2 pl-10 pr-4 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-            />
+        <!-- Gemini Key -->
+        <div class="bg-gray-700/30 p-4 rounded-lg border border-gray-700">
+            <label class="block text-sm font-medium text-gray-300 mb-2">Gemini API Key</label>
+            <div class="relative">
+                 <Key class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                 <input 
+                  v-model="newGeminiKey" 
+                  type="text" 
+                  placeholder="Enter your Gemini API Key" 
+                  class="w-full bg-gray-900 border border-gray-600 rounded-lg py-2 pl-10 pr-4 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                />
+            </div>
+            <p class="mt-2 text-xs text-gray-400">
+              Required for AI updates. <a href="https://aistudio.google.com/" target="_blank" class="text-blue-400 hover:underline">Get key</a>.
+            </p>
         </div>
-        <p class="mt-2 text-xs text-gray-400">
-          Get your free key from <a href="https://aistudio.google.com/" target="_blank" class="text-blue-400 hover:underline">Google AI Studio</a>.
-        </p>
       </div>
 
       <hr class="border-gray-700" />
