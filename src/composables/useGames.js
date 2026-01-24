@@ -326,9 +326,11 @@ export function useGames() {
                     }
 
                     // Delay between batches
+                    // Gemini 1.5 Pro Free Tier has a limit of 2 Requests Per Minute (RPM).
+                    // We must wait 35 seconds to be safe.
                     if (i + CHUNK_SIZE < targetGames.length) {
-                        scanLogs.value.push("⏳ Waiting 5s for rate limit...");
-                        await new Promise(resolve => setTimeout(resolve, 5000));
+                        scanLogs.value.push("⏳ Waiting 35s for rate limit (Gemini Pro)...");
+                        await new Promise(resolve => setTimeout(resolve, 35000));
                     }
 
                 } catch (e) {
