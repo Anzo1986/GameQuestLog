@@ -9,7 +9,7 @@ const props = defineProps({
 
 const emit = defineEmits(['close']);
 
-const { updates, markUpdateSeen, scanForUpdates, isScanning, scanLogs } = useGames();
+const { updates, markUpdateSeen, scanForUpdates, isScanning, scanLogs, generateWebScanUrl } = useGames();
 
 // Sort updates by date (newest first)
 const sortedUpdates = computed(() => {
@@ -67,8 +67,19 @@ const openLink = (url) => {
                     class="text-xs bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-3 py-1.5 rounded-full font-bold transition-all flex items-center gap-1 shadow-lg border border-blue-400/30"
                 >
                     <span v-if="isScanning" class="animate-spin">⟳</span>
-                    <span v-else>Scan Now</span>
+                    <span v-else>Scan API</span>
                 </button>
+                
+                <a 
+                    :href="generateWebScanUrl()" 
+                    target="_blank"
+                    class="text-xs bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded-full font-bold transition-all flex items-center gap-1 shadow-lg border border-purple-400/30 no-underline"
+                    title="Open Gemini in Browser (Reliable)"
+                >
+                    <ExternalLink class="w-3 h-3" />
+                    <span>Ask Web</span>
+                </a>
+
                 <button @click="$emit('close')" class="p-2 text-gray-400 hover:text-white rounded-full hover:bg-gray-700 transition-colors">
                     <X class="w-5 h-5" />
                 </button>

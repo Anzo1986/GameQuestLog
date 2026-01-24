@@ -357,6 +357,16 @@ export function useGames() {
         if (update) update.seen = true;
     };
 
+    const generateWebScanUrl = () => {
+        const targetGames = games.value.filter(g => g.status === 'playing' || g.status === 'backlog');
+        if (targetGames.length === 0) return 'https://gemini.google.com/app';
+
+        const gameTitles = targetGames.map(g => g.title).join(', ');
+        const prompt = `Find the most recent major update, patch, or content release for the following games: ${gameTitles}. Provide the version number, status, and a short summary for each.`;
+
+        return `https://gemini.google.com/app?text=${encodeURIComponent(prompt)}`;
+    };
+
 
     return {
         games,
@@ -392,6 +402,7 @@ export function useGames() {
         scanForUpdates,
         markUpdateSeen,
         isScanning,
-        scanLogs
+        scanLogs,
+        generateWebScanUrl
     };
 }
