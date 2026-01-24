@@ -43,6 +43,18 @@ const calculateDaysPlayed = (startDate) => {
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
 };
 
+const isOwnedPlatform = (platformName) => {
+    if (!gameDetails.value || !gameDetails.value.platform) return false;
+    const owned = gameDetails.value.platform.toLowerCase();
+    const current = platformName.toLowerCase();
+    
+    if (owned === current) return true;
+    if ((owned === 'ps5' || owned === 'ps4') && current === 'playstation') return true;
+    if (owned === 'switch' && current === 'nintendo') return true;
+    if (owned.includes('xbox') && current === 'xbox') return true;
+    
+    return false;};
+
 const isEditingPlaytime = ref(false);
 const tempPlaytime = ref(0);
 const playtimeInput = ref(null);
@@ -167,7 +179,12 @@ const handleAction = async (action, val) => {
 
            <!-- Platforms & Genres & Web -->
            <div class="flex flex-wrap gap-2 pt-4 border-t border-gray-800">
-              <span v-for="p in gameDetails.parent_platforms" :key="p.platform.id" class="px-2 py-1 bg-gray-800 rounded text-xs text-gray-300 border border-gray-700">
+              <span v-for="p in gameDetails.parent_platforms" :key="p.platform.id" 
+                  class="px-2 py-1 rounded text-xs border transition-colors duration-300"
+                  :class="isOwnedPlatform(p.platform.name) 
+                    ? 'bg-primary/20 text-primary border-primary/50 font-bold shadow-[0_0_10px_rgba(var(--primary-rgb),0.3)] scale-105' 
+                    : 'bg-gray-800 text-gray-300 border-gray-700 opacity-80 hover:opacity-100'"
+              >
                   {{ p.platform.name }}
               </span>
               <span v-for="g in gameDetails.genres" :key="g.id" class="px-2 py-1 bg-gray-800 rounded text-xs text-gray-300 border border-gray-700">
