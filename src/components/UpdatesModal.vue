@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { X, ExternalLink, Calendar, CheckCircle2 } from 'lucide-vue-next';
 import { useGames } from '../composables/useGames';
 
@@ -10,7 +10,6 @@ const props = defineProps({
 const emit = defineEmits(['close']);
 
 const { updates, markUpdateSeen, scanForUpdates, isScanning, scanLogs, getScanPromptString } = useGames();
-import { ref } from 'vue';
 const showCopyFeedback = ref(false);
 
 // Sort updates by date (newest first)
