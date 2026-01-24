@@ -1,11 +1,12 @@
 <script setup>
 import { ref } from 'vue';
-import { Download, Upload, Key, Save } from 'lucide-vue-next';
+import { Download, Upload, Key, Save, User } from 'lucide-vue-next';
 import { useGames } from '../composables/useGames';
 
-const { apiKey, setApiKey, exportData, importData } = useGames();
+const { apiKey, setApiKey, exportData, importData, userAvatar, setUserAvatar } = useGames();
 const newKey = ref(apiKey.value);
 const fileInput = ref(null);
+const avatarInput = ref(null);
 const importStatus = ref('');
 
 const saveKey = () => {
@@ -15,6 +16,53 @@ const saveKey = () => {
 
 const triggerImport = () => {
   fileInput.value.click();
+};
+
+const triggerAvatarUpload = () => {
+    avatarInput.value.click();
+};
+
+const handleAvatarChange = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Resize image logic
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Max dimensions
+            const MAX_WIDTH = 250;
+            const MAX_HEIGHT = 250;
+            let width = img.width;
+            let height = img.height;
+
+            if (width > height) {
+                if (width > MAX_WIDTH) {
+                    height *= MAX_WIDTH / width;
+                    width = MAX_WIDTH;
+                }
+            } else {
+                if (height > MAX_HEIGHT) {
+                    width *= MAX_HEIGHT / height;
+                    height = MAX_HEIGHT;
+                }
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.8); // Compress slightly
+            setUserAvatar(dataUrl);
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+    event.target.value = '';
 };
 
 const handleFileChange = async (event) => {
@@ -62,6 +110,29 @@ const handleFileChange = async (event) => {
         <p class="mt-2 text-xs text-gray-400">
           Don't have a key? <a href="https://rawg.io/apidocs" target="_blank" class="text-blue-400 hover:underline">Get one here</a>.
         </p>
+      </div>
+
+      <hr class="border-gray-700" />
+
+      <!-- Avatar Upload -->
+      <div>
+        <h3 class="text-sm font-medium text-gray-300 mb-3">Profile Avatar</h3>
+        <div class="flex items-center gap-4">
+            <div class="relative group cursor-pointer" @click="triggerAvatarUpload">
+                <div class="w-16 h-16 rounded-full bg-gray-700 overflow-hidden border-2 border-gray-600 group-hover:border-blue-500 transition-colors flex items-center justify-center">
+                    <img v-if="userAvatar" :src="userAvatar" class="w-full h-full object-cover" />
+                    <User v-else class="w-8 h-8 text-gray-400" />
+                </div>
+                <div class="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Upload class="w-4 h-4 text-white" />
+                </div>
+            </div>
+            <div class="flex-1">
+                <p class="text-sm text-gray-400 mb-2">Upload a custom profile picture (max 250px).</p>
+                <button @click="triggerAvatarUpload" class="text-sm text-blue-400 hover:text-blue-300 font-medium">Click to upload</button>
+            </div>
+            <input ref="avatarInput" type="file" accept="image/*" class="hidden" @change="handleAvatarChange" />
+        </div>
       </div>
 
       <hr class="border-gray-700" />

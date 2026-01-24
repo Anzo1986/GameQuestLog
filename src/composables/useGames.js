@@ -13,6 +13,7 @@ const isSearching = ref(false);
 const USER_STORAGE_KEY = 'game-tracker-user';
 const userXP = ref(0);
 const userName = ref('Guest');
+const userAvatar = ref(null);
 
 // Initialization logic
 const savedGames = localStorage.getItem(GAMES_STORAGE_KEY);
@@ -30,6 +31,7 @@ if (savedUser) {
         const userData = JSON.parse(savedUser);
         userXP.value = userData.xp || 0;
         userName.value = userData.name || 'Guest';
+        userAvatar.value = userData.avatar || null;
     } catch (e) {
         console.error('Failed to parse user data', e);
     }
@@ -40,10 +42,11 @@ watch(games, (newGames) => {
     localStorage.setItem(GAMES_STORAGE_KEY, JSON.stringify(newGames));
 }, { deep: true });
 
-watch([userXP, userName], () => {
+watch([userXP, userName, userAvatar], () => {
     localStorage.setItem(USER_STORAGE_KEY, JSON.stringify({
         xp: userXP.value,
-        name: userName.value
+        name: userName.value,
+        avatar: userAvatar.value
     }));
 });
 
@@ -80,6 +83,10 @@ export function useGames() {
 
     const setUserName = (name) => {
         userName.value = name;
+    };
+
+    const setUserAvatar = (dataUrl) => {
+        userAvatar.value = dataUrl;
     };
 
     // Enhance Status with 'dropped'
@@ -250,7 +257,9 @@ export function useGames() {
         importData,
         userXP,
         userName,
+        userAvatar,
         setUserName,
+        setUserAvatar,
         userLevel,
         userTitle,
         xpProgress,

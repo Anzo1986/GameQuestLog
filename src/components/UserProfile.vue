@@ -3,7 +3,7 @@ import { ref, watch, nextTick } from 'vue';
 import { Edit2, Trophy, Crown } from 'lucide-vue-next';
 import { useGames } from '../composables/useGames';
 
-const { userName, userLevel, userTitle, xpProgress, setUserName } = useGames();
+const { userName, userLevel, userTitle, xpProgress, setUserName, userAvatar } = useGames();
 
 const isEditing = ref(false);
 const editName = ref(userName.value);
@@ -37,8 +37,9 @@ const saveName = () => {
         <!-- Left: Avatar & Level -->
         <div class="flex items-center gap-4">
             <div class="relative">
-                <div class="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center border-2 border-yellow-500 shadow-lg">
-                    <Trophy class="w-8 h-8 text-yellow-500" />
+                <div class="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center border-2 border-yellow-500 shadow-lg overflow-hidden">
+                    <img v-if="userAvatar" :src="userAvatar" class="w-full h-full object-cover" />
+                    <Trophy v-else class="w-8 h-8 text-yellow-500" />
                 </div>
                 <div class="absolute -bottom-2 -right-1 bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded-full border border-gray-900">
                     Lvl {{ userLevel }}
