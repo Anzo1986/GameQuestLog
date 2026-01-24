@@ -11,9 +11,28 @@ const searchResults = ref([]);
 const isSearching = ref(false);
 
 const USER_STORAGE_KEY = 'game-tracker-user';
+const THEME_STORAGE_KEY = 'game-tracker-theme';
+
 const userXP = ref(0);
 const userName = ref('Guest');
 const userAvatar = ref(null);
+const themeColor = ref(localStorage.getItem(THEME_STORAGE_KEY) || 'blue');
+
+const THEMES = {
+    blue: { name: 'Blue', rgb: '59 130 246' },   // blue-500
+    pink: { name: 'Pink', rgb: '236 72 153' },   // pink-500
+    green: { name: 'Green', rgb: '34 197 94' },    // green-500
+    purple: { name: 'Purple', rgb: '168 85 247' },   // purple-500
+    orange: { name: 'Orange', rgb: '249 115 22' },   // orange-500
+    red: { name: 'Red', rgb: '239 68 68' },    // red-500
+};
+
+// Apply theme immediately
+const applyTheme = (color) => {
+    const theme = THEMES[color] || THEMES.blue;
+    document.documentElement.style.setProperty('--primary-rgb', theme.rgb);
+};
+applyTheme(themeColor.value);
 
 // Initialization logic
 const savedGames = localStorage.getItem(GAMES_STORAGE_KEY);
@@ -41,6 +60,11 @@ if (savedUser) {
 watch(games, (newGames) => {
     localStorage.setItem(GAMES_STORAGE_KEY, JSON.stringify(newGames));
 }, { deep: true });
+
+watch(themeColor, (newColor) => {
+    localStorage.setItem(THEME_STORAGE_KEY, newColor);
+    applyTheme(newColor);
+});
 
 watch([userXP, userName, userAvatar], () => {
     localStorage.setItem(USER_STORAGE_KEY, JSON.stringify({
@@ -86,6 +110,12 @@ export function useGames() {
 
     const setUserAvatar = (dataUrl) => {
         userAvatar.value = dataUrl;
+    };
+
+    const setTheme = (color) => {
+        if (THEMES[color]) {
+            themeColor.value = color;
+        }
     };
 
     // Enhance Status with 'dropped'
@@ -290,6 +320,9 @@ export function useGames() {
         userAvatar,
         setUserName,
         setUserAvatar,
+        themeColor,
+        setTheme,
+        THEMES,
         userLevel,
         userTitle,
         xpProgress,

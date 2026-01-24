@@ -3,7 +3,7 @@ import { ref } from 'vue';
 import { Download, Upload, Key, Save, User } from 'lucide-vue-next';
 import { useGames } from '../composables/useGames';
 
-const { apiKey, setApiKey, exportData, importData, userAvatar, setUserAvatar } = useGames();
+const { apiKey, setApiKey, exportData, importData, userAvatar, setUserAvatar, themeColor, setTheme, THEMES } = useGames();
 const newKey = ref(apiKey.value);
 const fileInput = ref(null);
 const avatarInput = ref(null);
@@ -140,6 +140,32 @@ const handleFileChange = async (event) => {
                 <button @click="triggerAvatarUpload" class="text-sm text-blue-400 hover:text-blue-300 font-medium">Click to upload</button>
             </div>
             <input ref="avatarInput" type="file" accept="image/*" class="hidden" @change="handleAvatarChange" />
+        </div>
+      </div>
+
+      <hr class="border-gray-700" />
+
+      <!-- Theme Color -->
+      <div>
+        <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Appearance</h3>
+        
+        <div class="bg-gray-700/30 p-4 rounded-lg border border-gray-700">
+             <label class="block text-sm font-medium text-gray-300 mb-3">Theme Color</label>
+             <div class="flex flex-wrap gap-3">
+                <button 
+                  v-for="(theme, key) in THEMES" 
+                  :key="key"
+                  @click="setTheme(key)"
+                  class="w-10 h-10 rounded-full border-2 transition-all hover:scale-110 flex items-center justify-center"
+                  :class="[
+                     themeColor === key ? 'border-white scale-110 ring-2 ring-white/20' : 'border-transparent'
+                  ]"
+                  :style="{ backgroundColor: `rgb(${theme.rgb})` }"
+                  :title="theme.name"
+                >
+                  <Check v-if="themeColor === key" class="w-5 h-5 text-white drop-shadow-md" />
+                </button>
+             </div>
         </div>
       </div>
 

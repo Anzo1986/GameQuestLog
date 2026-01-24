@@ -72,7 +72,7 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
         <!-- Updates Bell (Web Check) -->
         <button 
             @click="handleWebCheck" 
-            class="relative p-2 text-gray-400 hover:text-white transition-colors rounded-full hover:bg-gray-800"
+            class="relative p-2 text-gray-400 hover:text-primary transition-colors rounded-full hover:bg-gray-800"
             title="Check Game Updates on Web"
         >
             <Bell class="w-6 h-6" />
@@ -99,14 +99,14 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
     <nav class="flex p-1 bg-gray-800 rounded-xl mb-6 sticky top-2 z-30 shadow-lg border border-gray-700">
       <button 
         @click="currentTab = 'dashboard'"
-        :class="['flex-1 py-2 px-4 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-all', currentTab === 'dashboard' ? 'bg-blue-600 text-white shadow' : 'text-gray-400 hover:text-white']"
+        :class="['flex-1 py-2 px-4 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-all', currentTab === 'dashboard' ? 'bg-primary text-white shadow' : 'text-gray-400 hover:text-white']"
       >
         <LayoutDashboard class="w-4 h-4" />
         <span class="hidden sm:inline">Dashboard</span>
       </button>
       <button 
         @click="currentTab = 'backlog'"
-        :class="['flex-1 py-2 px-4 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-all', currentTab === 'backlog' ? 'bg-blue-600 text-white shadow' : 'text-gray-400 hover:text-white']"
+        :class="['flex-1 py-2 px-4 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-all', currentTab === 'backlog' ? 'bg-primary text-white shadow' : 'text-gray-400 hover:text-white']"
       >
         <Layers class="w-4 h-4" />
         <span class="hidden sm:inline">Backlog</span>
@@ -225,7 +225,7 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
     <!-- FAB -->
     <button 
       @click="showAddModal = true"
-      class="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-500 text-white p-4 rounded-full shadow-2xl transition-transform active:scale-90 z-40 border-4 border-gray-900 group"
+      class="fixed bottom-6 right-6 bg-primary hover:bg-primary/90 text-white p-4 rounded-full shadow-2xl transition-transform active:scale-90 z-40 border-4 border-gray-900 group"
     >
       <Plus class="w-6 h-6 group-hover:rotate-90 transition-transform duration-300" />
     </button>
