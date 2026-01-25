@@ -49,11 +49,11 @@ const completionPercentage = computed(() => Math.round((unlockCount.value / tota
       <!-- Header -->
       <div class="p-6 border-b border-gray-800 flex justify-between items-center bg-gray-900/50 backdrop-blur z-20 sticky top-0 relative overflow-hidden">
            <!-- Progress Background -->
-          <div class="absolute inset-0 bg-blue-600/5 transition-all duration-1000" :style="{ width: completionPercentage + '%' }"></div>
+          <div class="absolute inset-0 bg-primary/10 transition-all duration-1000" :style="{ width: completionPercentage + '%' }"></div>
           
           <div class="relative z-10">
-            <h2 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500 uppercase tracking-widest flex items-center gap-2">
-                <Trophy class="w-8 h-8 text-yellow-500" />
+            <h2 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-500 uppercase tracking-widest flex items-center gap-2">
+                <Trophy class="w-8 h-8 text-primary" />
                 Achievements
             </h2>
             <p class="text-gray-400 text-sm mt-1 flex items-center gap-2">
@@ -73,17 +73,17 @@ const completionPercentage = computed(() => Math.round((unlockCount.value / tota
                 :key="achievement.id"
                 class="relative p-4 rounded-2xl border transition-all duration-300 group overflow-hidden"
                 :class="unlockedAchievements[achievement.id] 
-                    ? 'bg-gray-800/60 border-yellow-500/30 hover:border-yellow-500/50 hover:bg-gray-800' 
+                    ? 'bg-gray-800/60 border-primary/30 hover:border-primary/50 hover:bg-gray-800' 
                     : 'bg-gray-900 border-gray-800 opacity-60 grayscale hover:opacity-100 hover:grayscale-0'"
               >
                 <!-- Glow Effect for Unlocked -->
-                <div v-if="unlockedAchievements[achievement.id]" class="absolute -inset-1 bg-yellow-500/10 blur opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div v-if="unlockedAchievements[achievement.id]" class="absolute -inset-1 bg-primary/10 blur opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
                 <div class="relative flex items-start gap-4">
                     <!-- Icon -->
                     <div 
                         class="p-3 rounded-xl flex items-center justify-center shrink-0"
-                        :class="unlockedAchievements[achievement.id] ? 'bg-gradient-to-br from-yellow-500 to-orange-600 text-white shadow-lg shadow-orange-500/20' : 'bg-gray-800 text-gray-500'"
+                        :class="unlockedAchievements[achievement.id] ? 'bg-gradient-to-br from-primary to-purple-600 text-white shadow-lg shadow-primary/20' : 'bg-gray-800 text-gray-500'"
                     >
                         <component :is="icons[achievement.icon] || Trophy" class="w-6 h-6" />
                     </div>
@@ -98,7 +98,7 @@ const completionPercentage = computed(() => Math.round((unlockCount.value / tota
                                 {{ achievement.title }}
                             </h3>
                             <Lock v-if="!unlockedAchievements[achievement.id]" class="w-4 h-4 text-gray-600" />
-                            <span v-else class="text-[10px] text-yellow-500/80 font-mono border border-yellow-500/20 px-1 rounded bg-yellow-500/10">
+                            <span v-else class="text-[10px] text-primary/80 font-mono border border-primary/20 px-1 rounded bg-primary/10">
                                 {{ getUnlockDate(achievement.id) }}
                             </span>
                         </div>
