@@ -1,7 +1,9 @@
 <script setup>
 import { ref } from 'vue';
-import { Download, Upload, Key, Save, User, Check } from 'lucide-vue-next';
+import { Download, Upload, Key, Save, User, Check, X } from 'lucide-vue-next';
 import { useGames } from '../composables/useGames';
+
+const emit = defineEmits(['close']);
 
 const { apiKey, setApiKey, exportData, importData, userAvatar, setUserAvatar, themeColor, setTheme, THEMES } = useGames();
 const newKey = ref(apiKey.value);
@@ -83,109 +85,120 @@ const handleFileChange = async (event) => {
 </script>
 
 <template>
-  <div class="bg-gray-800 rounded-xl p-6 shadow-lg mb-8">
-    <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
-      Settings
-    </h2>
+<template>
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-black/90 backdrop-blur-sm" @click="$emit('close')"></div>
 
-    <div class="space-y-6">
+    <!-- Modal Content -->
+    <div class="relative bg-gray-900 w-full max-w-lg rounded-2xl shadow-2xl border border-gray-700 max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in duration-200">
       
-      <!-- API Key Section -->
-      <!-- API Configuration -->
-      <div class="space-y-4">
-        <div class="flex items-center justify-between">
-            <h3 class="text-sm font-medium text-gray-300">API Configuration</h3>
-            <button @click="saveKey" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 text-sm shadow-lg">
-                <Save class="w-4 h-4" /> Save Keys
+      <!-- Header -->
+      <div class="sticky top-0 bg-gray-900/95 backdrop-blur z-10 p-4 border-b border-gray-800 flex items-center justify-between">
+        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+          Settings
+        </h2>
+        <button @click="$emit('close')" class="p-2 -mr-2 text-gray-400 hover:text-white rounded-full hover:bg-gray-800 transition-colors">
+            <X class="w-6 h-6" />
+        </button>
+      </div>
+
+      <div class="p-6 space-y-6">
+        
+        <!-- API Configuration -->
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+              <h3 class="text-sm font-medium text-gray-300">API Configuration</h3>
+              <button @click="saveKey" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 text-sm shadow-lg">
+                  <Save class="w-4 h-4" /> Save Keys
+              </button>
+          </div>
+          
+          <!-- RAWG Key -->
+          <div class="bg-gray-800 p-4 rounded-lg border border-gray-700">
+              <label class="block text-sm font-medium text-gray-300 mb-2">RAWG.io API Key</label>
+              <div class="relative">
+                   <Key class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                   <input 
+                    v-model="newKey" 
+                    type="text" 
+                    placeholder="Enter your RAWG API Key" 
+                    class="w-full bg-gray-950 border border-gray-600 rounded-lg py-2 pl-10 pr-4 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                  />
+              </div>
+              <p class="mt-2 text-xs text-gray-400">
+                Required for game data. <a href="https://rawg.io/apidocs" target="_blank" class="text-blue-400 hover:underline">Get key</a>.
+              </p>
+          </div>
+        </div>
+
+        <hr class="border-gray-800" />
+
+        <!-- Avatar Upload -->
+        <div>
+          <h3 class="text-sm font-medium text-gray-300 mb-3">Profile Avatar</h3>
+          <div class="flex items-center gap-4">
+              <div class="relative group cursor-pointer" @click="triggerAvatarUpload">
+                  <div class="w-16 h-16 rounded-full bg-gray-800 overflow-hidden border-2 border-gray-600 group-hover:border-blue-500 transition-colors flex items-center justify-center">
+                      <img v-if="userAvatar" :src="userAvatar" class="w-full h-full object-cover" />
+                      <User v-else class="w-8 h-8 text-gray-400" />
+                  </div>
+                  <div class="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Upload class="w-4 h-4 text-white" />
+                  </div>
+              </div>
+              <div class="flex-1">
+                  <p class="text-sm text-gray-400 mb-2">Upload a custom profile picture.</p>
+                  <button @click="triggerAvatarUpload" class="text-sm text-blue-400 hover:text-blue-300 font-medium">Click to upload</button>
+              </div>
+              <input ref="avatarInput" type="file" accept="image/*" class="hidden" @change="handleAvatarChange" />
+          </div>
+        </div>
+
+        <hr class="border-gray-800" />
+
+        <!-- Theme Color -->
+        <div>
+          <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Appearance</h3>
+          
+          <div class="bg-gray-800 p-4 rounded-lg border border-gray-700">
+               <label class="block text-sm font-medium text-gray-300 mb-3">Theme Color</label>
+               <div class="flex flex-wrap gap-3">
+                  <button 
+                    v-for="(theme, key) in THEMES" 
+                    :key="key"
+                    @click="setTheme(key)"
+                    class="w-10 h-10 rounded-full border-2 transition-all hover:scale-110 flex items-center justify-center"
+                    :class="[
+                       themeColor === key ? 'border-white scale-110 ring-2 ring-white/20' : 'border-transparent'
+                    ]"
+                    :style="{ backgroundColor: `rgb(${theme.rgb})` }"
+                    :title="theme.name"
+                  >
+                    <Check v-if="themeColor === key" class="w-5 h-5 text-white drop-shadow-md" />
+                  </button>
+               </div>
+          </div>
+        </div>
+
+        <hr class="border-gray-800" />
+
+        <!-- Data Management -->
+        <div>
+          <h3 class="text-sm font-medium text-gray-300 mb-3">Data Management</h3>
+          <div class="flex gap-3">
+            <button @click="exportData" class="flex-1 bg-gray-800 hover:bg-gray-700 text-white py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors border border-gray-700">
+              <Download class="w-4 h-4" /> Export JSON
             </button>
+            <button @click="triggerImport" class="flex-1 bg-gray-800 hover:bg-gray-700 text-white py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors border border-gray-700">
+              <Upload class="w-4 h-4" /> Import JSON
+            </button>
+            <input ref="fileInput" type="file" accept=".json" class="hidden" @change="handleFileChange" />
+          </div>
+          <p v-if="importStatus" class="mt-2 text-sm text-green-400 text-center">{{ importStatus }}</p>
         </div>
-        
-        <!-- RAWG Key -->
-        <div class="bg-gray-700/30 p-4 rounded-lg border border-gray-700">
-            <label class="block text-sm font-medium text-gray-300 mb-2">RAWG.io API Key</label>
-            <div class="relative">
-                 <Key class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                 <input 
-                  v-model="newKey" 
-                  type="text" 
-                  placeholder="Enter your RAWG API Key" 
-                  class="w-full bg-gray-900 border border-gray-600 rounded-lg py-2 pl-10 pr-4 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                />
-            </div>
-            <p class="mt-2 text-xs text-gray-400">
-              Required for game data. <a href="https://rawg.io/apidocs" target="_blank" class="text-blue-400 hover:underline">Get key</a>.
-            </p>
-        </div>
-
 
       </div>
-
-      <hr class="border-gray-700" />
-
-      <!-- Avatar Upload -->
-      <div>
-        <h3 class="text-sm font-medium text-gray-300 mb-3">Profile Avatar</h3>
-        <div class="flex items-center gap-4">
-            <div class="relative group cursor-pointer" @click="triggerAvatarUpload">
-                <div class="w-16 h-16 rounded-full bg-gray-700 overflow-hidden border-2 border-gray-600 group-hover:border-blue-500 transition-colors flex items-center justify-center">
-                    <img v-if="userAvatar" :src="userAvatar" class="w-full h-full object-cover" />
-                    <User v-else class="w-8 h-8 text-gray-400" />
-                </div>
-                <div class="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Upload class="w-4 h-4 text-white" />
-                </div>
-            </div>
-            <div class="flex-1">
-                <p class="text-sm text-gray-400 mb-2">Upload a custom profile picture (max 250px).</p>
-                <button @click="triggerAvatarUpload" class="text-sm text-blue-400 hover:text-blue-300 font-medium">Click to upload</button>
-            </div>
-            <input ref="avatarInput" type="file" accept="image/*" class="hidden" @change="handleAvatarChange" />
-        </div>
-      </div>
-
-      <hr class="border-gray-700" />
-
-      <!-- Theme Color -->
-      <div>
-        <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Appearance</h3>
-        
-        <div class="bg-gray-700/30 p-4 rounded-lg border border-gray-700">
-             <label class="block text-sm font-medium text-gray-300 mb-3">Theme Color</label>
-             <div class="flex flex-wrap gap-3">
-                <button 
-                  v-for="(theme, key) in THEMES" 
-                  :key="key"
-                  @click="setTheme(key)"
-                  class="w-10 h-10 rounded-full border-2 transition-all hover:scale-110 flex items-center justify-center"
-                  :class="[
-                     themeColor === key ? 'border-white scale-110 ring-2 ring-white/20' : 'border-transparent'
-                  ]"
-                  :style="{ backgroundColor: `rgb(${theme.rgb})` }"
-                  :title="theme.name"
-                >
-                  <Check v-if="themeColor === key" class="w-5 h-5 text-white drop-shadow-md" />
-                </button>
-             </div>
-        </div>
-      </div>
-
-      <hr class="border-gray-700" />
-
-      <!-- Data Management -->
-      <div>
-        <h3 class="text-sm font-medium text-gray-300 mb-3">Data Management</h3>
-        <div class="flex gap-3">
-          <button @click="exportData" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors">
-            <Download class="w-4 h-4" /> Export JSON
-          </button>
-          <button @click="triggerImport" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors">
-            <Upload class="w-4 h-4" /> Import JSON
-          </button>
-          <input ref="fileInput" type="file" accept=".json" class="hidden" @change="handleFileChange" />
-        </div>
-        <p v-if="importStatus" class="mt-2 text-sm text-green-400 text-center">{{ importStatus }}</p>
-      </div>
-
     </div>
   </div>
 </template>

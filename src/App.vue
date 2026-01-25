@@ -17,8 +17,13 @@ const selectedGameId = ref(null);
 const currentTab = ref('dashboard'); // 'dashboard', 'backlog', 'completed'
 const showCopyFeedback = ref(false);
 
-const toggleSettings = () => {
-  showSettings.value = !showSettings.value;
+const openSettings = () => {
+    showSettings.value = true;
+    history.pushState({ modal: 'settings' }, '', '');
+};
+
+const closeSettings = () => {
+    history.back();
 };
 
 const openGameDetails = (gameId) => {
@@ -35,6 +40,8 @@ onMounted(() => {
     window.addEventListener('popstate', (event) => {
         if (showDetailModal.value) {
             showDetailModal.value = false;
+        } else if (showSettings.value) {
+            showSettings.value = false;
         }
     });
 });
@@ -94,7 +101,7 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
             </span>
         </button>
 
-        <button @click="toggleSettings" class="p-2 text-gray-400 hover:text-white transition-colors rounded-full hover:bg-gray-800">
+        <button @click="openSettings" class="p-2 text-gray-400 hover:text-white transition-colors rounded-full hover:bg-gray-800">
             <Settings class="w-6 h-6" />
         </button>
       </div>
@@ -103,10 +110,8 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
     <!-- User Profile -->
     <UserProfile />
 
-    <!-- Settings Section -->
-    <transition enter-active-class="transition duration-200 ease-out" enter-from-class="transform -translate-y-2 opacity-0" enter-to-class="transform translate-y-0 opacity-100" leave-active-class="transition duration-150 ease-in" leave-from-class="transform translate-y-0 opacity-100" leave-to-class="transform -translate-y-2 opacity-0">
-      <SettingsSection v-if="showSettings" />
-    </transition>
+    <!-- Settings Section (Modal) -->
+    <SettingsSection v-if="showSettings" @close="closeSettings" />
 
     <!-- Navigation Tabs (Desktop / Mobile Hybrid) -->
     <nav class="flex p-1 bg-gray-800 rounded-xl mb-6 sticky top-2 z-30 shadow-lg border border-gray-700">
