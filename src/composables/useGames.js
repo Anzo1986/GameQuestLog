@@ -125,6 +125,54 @@ export function useGames() {
     const completedGames = computed(() => games.value.filter(g => g.status === 'completed').sort((a, b) => new Date(b.completedAt || 0) - new Date(a.completedAt || 0)));
     const droppedGames = computed(() => games.value.filter(g => g.status === 'dropped'));
 
+    const gameStats = computed(() => {
+        const totalGames = games.value.length;
+        if (totalGames === 0) return null;
+
+        const statusCounts = {
+            backlog: 0,
+            playing: 0,
+            completed: 0,
+            dropped: 0
+        };
+
+        const genreCounts = {};
+        const platformCounts = {};
+        let totalPlaytime = 0;
+
+        games.value.forEach(game => {
+            // Status
+            if (statusCounts[game.status] !== undefined) {
+                statusCounts[game.status]++;
+            }
+
+            // Playtime
+            totalPlaytime += (game.playtime || 0);
+
+            // Platform
+            const platform = game.platform || 'Unknown';
+            platformCounts[platform] = (platformCounts[platform] || 0) + 1;
+
+            // Genres (if available from API)
+            if (game.genres && Array.isArray(game.genres)) {
+                game.genres.forEach(g => {
+                    genreCounts[g.name] = (genreCounts[g.name] || 0) + 1;
+                });
+            }
+        });
+
+        const completionRate = totalGames > 0 ? Math.round((statusCounts.completed / totalGames) * 100) : 0;
+
+        return {
+            totalGames,
+            statusCounts,
+            genreCounts,
+            platformCounts,
+            totalPlaytime: Math.round(totalPlaytime),
+            completionRate
+        };
+    });
+
 
 
     const addGame = async (gameData, platform = 'PC') => {
@@ -316,6 +364,7 @@ export function useGames() {
         playingGames,
         completedGames,
         droppedGames,
+        gameStats,
         addGame,
         updateStatus,
         updateGame,

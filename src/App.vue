@@ -6,12 +6,14 @@ import AddGameModal from './components/AddGameModal.vue';
 import GameDetailModal from './components/GameDetailModal.vue';
 import SettingsSection from './components/SettingsSection.vue';
 import UserProfile from './components/UserProfile.vue';
+import StatsModal from './components/StatsModal.vue';
 import { useGames } from './composables/useGames';
 
 const { playingGames, backlogGames, completedGames, droppedGames, updateStatus, removeGame, games } = useGames();
 
 const showAddModal = ref(false);
 const showSettings = ref(false);
+const showStats = ref(false);
 const showDetailModal = ref(false);
 const selectedGameId = ref(null);
 const currentTab = ref('dashboard'); // 'dashboard', 'backlog', 'completed'
@@ -23,6 +25,15 @@ const openSettings = () => {
 };
 
 const closeSettings = () => {
+    history.back();
+};
+
+const openStats = () => {
+    showStats.value = true;
+    history.pushState({ modal: 'stats' }, '', '');
+};
+
+const closeStats = () => {
     history.back();
 };
 
@@ -42,6 +53,8 @@ onMounted(() => {
             showDetailModal.value = false;
         } else if (showSettings.value) {
             showSettings.value = false;
+        } else if (showStats.value) {
+            showStats.value = false;
         }
     });
 });
@@ -108,10 +121,13 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
     </header>
 
     <!-- User Profile -->
-    <UserProfile />
+    <UserProfile @open-stats="openStats" />
 
     <!-- Settings Section (Modal) -->
     <SettingsSection v-if="showSettings" @close="closeSettings" />
+
+    <!-- Stats Modal -->
+    <StatsModal v-if="showStats" :is-open="showStats" @close="closeStats" />
 
     <!-- Navigation Tabs (Desktop / Mobile Hybrid) -->
     <nav class="flex p-1 bg-gray-800 rounded-xl mb-6 sticky top-2 z-30 shadow-lg border border-gray-700">

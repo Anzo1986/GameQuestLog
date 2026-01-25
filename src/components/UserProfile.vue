@@ -1,7 +1,9 @@
 <script setup>
 import { ref, watch, nextTick } from 'vue';
-import { Edit2, Trophy, Crown } from 'lucide-vue-next';
+import { Edit2, Trophy, Crown, PieChart } from 'lucide-vue-next';
 import { useGames } from '../composables/useGames';
+
+const emit = defineEmits(['open-stats']);
 
 const { userName, userLevel, userTitle, xpProgress, setUserName, userAvatar } = useGames();
 
@@ -31,6 +33,15 @@ const saveName = () => {
   <div class="bg-gradient-to-r from-primary/30 to-gray-900 rounded-xl p-6 shadow-xl relative overflow-hidden mb-6 border border-primary/30">
     <!-- Decorative Circle -->
     <div class="absolute -top-10 -right-10 w-40 h-40 bg-primary/20 rounded-full blur-3xl"></div>
+
+    <!-- Stats Button -->
+    <button 
+        @click="$emit('open-stats')"
+        class="absolute top-4 right-4 bg-gray-900/50 hover:bg-gray-800 p-2 rounded-lg text-gray-400 hover:text-white transition-all z-20 border border-white/5 backdrop-blur-sm"
+        title="View Statistics"
+    >
+        <PieChart class="w-5 h-5" />
+    </button>
 
     <div class="relative z-10 flex items-center justify-between gap-4">
         
