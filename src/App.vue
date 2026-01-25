@@ -291,7 +291,7 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
 
     <!-- Modals -->
     <AddGameModal :is-open="showAddModal" @close="showAddModal = false" />
-    <QuestGiverModal :is-open="showQuestModal" @close="closeQuest" />
+    <QuestGiverModal v-if="showQuestModal" :is-open="showQuestModal" @close="closeQuest" />
     
     <GameDetailModal 
       :is-open="showDetailModal" 
