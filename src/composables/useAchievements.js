@@ -58,10 +58,10 @@ watch(unlockedAchievements, (newVal) => {
     localStorage.setItem(ACHIEVEMENTS_STORAGE_KEY, JSON.stringify(newVal));
 }, { deep: true });
 
-export function useAchievements() {
+// Queue for toasts to show (FIFO)
+const recentUnlocks = ref([]);
 
-    // Queue for toasts to show (FIFO)
-    const recentUnlocks = ref([]);
+export function useAchievements() {
 
     const unlock = (id) => {
         if (!unlockedAchievements.value[id]) {
