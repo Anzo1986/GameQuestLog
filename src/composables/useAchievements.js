@@ -53,19 +53,20 @@ if (savedAchievements) {
     }
 }
 
-// Watch to save
-watch(unlockedAchievements, (newVal) => {
-    localStorage.setItem(ACHIEVEMENTS_STORAGE_KEY, JSON.stringify(newVal));
-}, { deep: true });
-
 // Queue for toasts to show (FIFO)
 const recentUnlocks = ref([]);
 
 export function useAchievements() {
 
+    const saveAchievements = () => {
+        localStorage.setItem(ACHIEVEMENTS_STORAGE_KEY, JSON.stringify(unlockedAchievements.value));
+    };
+
     const unlock = (id) => {
         if (!unlockedAchievements.value[id]) {
             unlockedAchievements.value[id] = new Date().toISOString();
+            saveAchievements(); // Save immediately
+
             const achievement = achievementsList.find(a => a.id === id);
             if (achievement) {
                 recentUnlocks.value.push(achievement);
