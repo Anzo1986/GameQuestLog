@@ -12,7 +12,7 @@ import { useGames } from './composables/useGames';
 import { useAchievements } from './composables/useAchievements';
 import AchievementsModal from './components/AchievementsModal.vue';
 import AchievementToast from './components/AchievementToast.vue'; // New Toast Component
-import { Settings, Plus, Gamepad2, Layers, CheckCircle2, LayoutDashboard, Ban, Timer, Bell, Dices, Trophy, Menu } from 'lucide-vue-next';
+import { Settings, Plus, Gamepad2, Layers, CheckCircle2, LayoutDashboard, Ban, Timer, Bell, Dices, Trophy, Menu, X } from 'lucide-vue-next';
 
 const { playingGames, backlogGames, completedGames, droppedGames, updateStatus, removeGame, games, userXP } = useGames();
 const { checkAchievements } = useAchievements();
@@ -308,7 +308,7 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
              <!-- Add Game -->
             <button 
                 @click="showAddModal = true; isMenuOpen = false"
-                class="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white p-3 rounded-full shadow-lg border-2 border-gray-900 group transition-all"
+                class="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white p-3 rounded-full shadow-lg border-2 border-gray-900 group transition-all"
             >
                 <div class="bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 absolute right-16 transition-opacity whitespace-nowrap pointer-events-none">Add Game</div>
                 <Plus class="w-6 h-6" />
@@ -317,7 +317,7 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
             <!-- Quest Giver -->
             <button 
                @click="openQuest(); isMenuOpen = false"
-               class="flex items-center gap-2 bg-purple-600 hover:bg-purple-500 text-white p-3 rounded-full shadow-lg border-2 border-gray-900 group transition-all"
+               class="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white p-3 rounded-full shadow-lg border-2 border-gray-900 group transition-all"
             >
                 <div class="bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 absolute right-16 transition-opacity whitespace-nowrap pointer-events-none">Quest Giver</div>
                 <Dices class="w-6 h-6" />
@@ -326,7 +326,7 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
              <!-- Achievements -->
             <button 
                @click="openAchievements(); isMenuOpen = false"
-               class="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-400 text-white p-3 rounded-full shadow-lg border-2 border-gray-900 group transition-all"
+               class="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white p-3 rounded-full shadow-lg border-2 border-gray-900 group transition-all"
             >
                 <div class="bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 absolute right-16 transition-opacity whitespace-nowrap pointer-events-none">Achievements</div>
                 <Trophy class="w-6 h-6" />
@@ -337,10 +337,9 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
         <button 
             @click="isMenuOpen = !isMenuOpen"
             class="bg-primary hover:bg-primary/90 text-white p-4 rounded-full shadow-2xl transition-all active:scale-90 border-4 border-gray-900 z-50 group"
-            :class="isMenuOpen ? 'rotate-45' : 'rotate-0'"
         >
-            <Plus class="w-8 h-8 transition-transform duration-300" v-if="!isMenuOpen" />
-            <Plus class="w-8 h-8 transition-transform duration-300 rotate-45" v-else />
+            <Menu class="w-8 h-8 transition-transform duration-300 scale-100 rotate-0" v-if="!isMenuOpen" />
+            <X class="w-8 h-8 transition-transform duration-300 scale-100 rotate-90" v-else />
         </button>
 
     </div>
