@@ -316,7 +316,7 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
 
             <!-- Quest Giver -->
             <button 
-               @click="openQuest; isMenuOpen = false"
+               @click="openQuest(); isMenuOpen = false"
                class="flex items-center gap-2 bg-purple-600 hover:bg-purple-500 text-white p-3 rounded-full shadow-lg border-2 border-gray-900 group transition-all"
             >
                 <div class="bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 absolute right-16 transition-opacity whitespace-nowrap pointer-events-none">Quest Giver</div>
@@ -325,7 +325,7 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
 
              <!-- Achievements -->
             <button 
-               @click="openAchievements; isMenuOpen = false"
+               @click="openAchievements(); isMenuOpen = false"
                class="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-400 text-white p-3 rounded-full shadow-lg border-2 border-gray-900 group transition-all"
             >
                 <div class="bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 absolute right-16 transition-opacity whitespace-nowrap pointer-events-none">Achievements</div>
