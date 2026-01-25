@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 
 import GameCard from './components/GameCard.vue';
 import AddGameModal from './components/AddGameModal.vue';
