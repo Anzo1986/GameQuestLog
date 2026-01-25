@@ -198,6 +198,10 @@ const handleFileChange = async (event) => {
         </div>
 
       </div>
+
+      <div class="text-center pb-4">
+           <p class="text-xs text-gray-500 font-mono">v0.8.0</p>
+      </div>
     </div>
   </div>
 </template>
