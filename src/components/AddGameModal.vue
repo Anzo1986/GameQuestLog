@@ -1,6 +1,6 @@
 <script setup>
 import { ref, watch } from 'vue';
-import { Search, Loader2, Plus, X, PenTool, Calendar, Image as ImageIcon, CornerUpLeft } from 'lucide-vue-next';
+import { Search, Loader2, Plus, X, PenTool, Calendar, Image as ImageIcon, CornerUpLeft, Gamepad2 } from 'lucide-vue-next';
 import { useGames } from '../composables/useGames';
 
 const props = defineProps({
@@ -17,7 +17,8 @@ const showManualForm = ref(false);
 const manualForm = ref({
     name: '',
     image: '',
-    releaseDate: ''
+    releaseDate: '',
+    platform: 'PC'
 });
 
 watch(() => props.isOpen, (newVal) => {
@@ -64,7 +65,7 @@ const submitManualGame = () => {
         name: manualForm.value.name,
         background_image: manualForm.value.image || null, // Let placeholder handle null
         released: manualForm.value.releaseDate || null,
-        selectedPlatform: 'PC' // Default
+        selectedPlatform: manualForm.value.platform // Use selected platform
     };
 
     addGame(newGame, newGame.selectedPlatform);
@@ -154,6 +155,24 @@ const handleAdd = (game) => {
                 class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder-gray-600"
                 placeholder="e.g. 2024 or 2023-11-15"
               />
+          </div>
+
+          <div class="space-y-2">
+              <label class="text-sm font-medium text-gray-400 flex items-center gap-2">
+                  <Gamepad2 class="w-4 h-4" /> Platform
+              </label>
+              <select 
+                v-model="manualForm.platform" 
+                class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder-gray-600 appearance-none"
+              >
+                  <option value="PC">PC</option>
+                  <option value="PS5">PlayStation 5</option>
+                  <option value="PS4">PlayStation 4</option>
+                  <option value="Switch">Nintendo Switch</option>
+                  <option value="Xbox">Xbox Series X/S</option>
+                  <option value="Xbox One">Xbox One</option>
+                  <option value="Retro">Retro Console</option>
+              </select>
           </div>
 
           <div class="pt-4 flex justify-end gap-3">
