@@ -9,8 +9,13 @@ import UserProfile from './components/UserProfile.vue';
 import StatsModal from './components/StatsModal.vue';
 import QuestGiverModal from './components/QuestGiverModal.vue';
 import { useGames } from './composables/useGames';
+import { useAchievements } from './composables/useAchievements';
+import AchievementsModal from './components/AchievementsModal.vue';
+import AchievementToast from './components/AchievementToast.vue'; // New Toast Component
+import { Settings, Plus, Gamepad2, Layers, CheckCircle2, LayoutDashboard, Ban, Timer, Bell, Dices, Trophy, Menu } from 'lucide-vue-next';
 
-const { playingGames, backlogGames, completedGames, droppedGames, updateStatus, removeGame, games } = useGames();
+const { playingGames, backlogGames, completedGames, droppedGames, updateStatus, removeGame, games, userXP } = useGames();
+const { checkAchievements } = useAchievements();
 
 const showAddModal = ref(false);
 const showSettings = ref(false);
@@ -19,7 +24,10 @@ const showQuestModal = ref(false);
 const showDetailModal = ref(false);
 const selectedGameId = ref(null);
 const currentTab = ref('dashboard'); // 'dashboard', 'backlog', 'completed'
+const currentTab = ref('dashboard'); // 'dashboard', 'backlog', 'completed'
 const showCopyFeedback = ref(false);
+const showAchievements = ref(false);
+const isMenuOpen = ref(false); // FAB Menu State
 
 const openSettings = () => {
     showSettings.value = true;
@@ -48,6 +56,15 @@ const closeQuest = () => {
     history.back();
 };
 
+const openAchievements = () => {
+    showAchievements.value = true;
+    history.pushState({ modal: 'achievements' }, '', '');
+};
+
+const closeAchievements = () => {
+    history.back();
+};
+
 const openGameDetails = (gameId) => {
   selectedGameId.value = gameId;
   showDetailModal.value = true;
@@ -67,10 +84,21 @@ onMounted(() => {
         } else if (showStats.value) {
             showStats.value = false;
         } else if (showQuestModal.value) {
+        } else if (showQuestModal.value) {
             showQuestModal.value = false;
+        } else if (showAchievements.value) {
+            showAchievements.value = false;
         }
     });
+
+    // Check achievements on mount
+    checkAchievements({ games, playingGames, backlogGames, completedGames, droppedGames, userXP });
 });
+
+// Watch games and trigger achievement check
+watch([games, userXP], () => {
+    checkAchievements({ games, playingGames, backlogGames, completedGames, droppedGames, userXP });
+}, { deep: true });
 
 const handleWebCheck = async () => {
     // Generate prompt from games list
@@ -141,6 +169,10 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
 
     <!-- Stats Modal -->
     <StatsModal v-if="showStats" :is-open="showStats" @close="closeStats" />
+
+    <!-- Achievements -->
+    <AchievementsModal v-if="showAchievements" :is-open="showAchievements" @close="closeAchievements" />
+    <AchievementToast />
 
     <!-- Navigation Tabs (Desktop / Mobile Hybrid) -->
     <nav class="flex p-1 bg-gray-800 rounded-xl mb-6 sticky top-2 z-30 shadow-lg border border-gray-700">
@@ -268,25 +300,50 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
 
     </main>
 
-    <!-- FAB Group -->
-    <div class="fixed bottom-6 right-6 flex flex-col items-center gap-3 z-40">
-        
-        <!-- Quest Giver FAB -->
+    <!-- FAB Menu Group -->
+    <div class="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3">
+
+        <!-- Initial Actions (Hidden by default, slide up when menu open) -->
+        <div class="flex flex-col gap-3 transition-all duration-300 origin-bottom" :class="isMenuOpen ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-10 scale-0 pointer-events-none'">
+             
+             <!-- Add Game -->
+            <button 
+                @click="showAddModal = true; isMenuOpen = false"
+                class="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white p-3 rounded-full shadow-lg border-2 border-gray-900 group transition-all"
+            >
+                <div class="bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 absolute right-16 transition-opacity whitespace-nowrap pointer-events-none">Add Game</div>
+                <Plus class="w-6 h-6" />
+            </button>
+
+            <!-- Quest Giver -->
+            <button 
+               @click="openQuest; isMenuOpen = false"
+               class="flex items-center gap-2 bg-purple-600 hover:bg-purple-500 text-white p-3 rounded-full shadow-lg border-2 border-gray-900 group transition-all"
+            >
+                <div class="bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 absolute right-16 transition-opacity whitespace-nowrap pointer-events-none">Quest Giver</div>
+                <Dices class="w-6 h-6" />
+            </button>
+
+             <!-- Achievements -->
+            <button 
+               @click="openAchievements; isMenuOpen = false"
+               class="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-400 text-white p-3 rounded-full shadow-lg border-2 border-gray-900 group transition-all"
+            >
+                <div class="bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 absolute right-16 transition-opacity whitespace-nowrap pointer-events-none">Achievements</div>
+                <Trophy class="w-6 h-6" />
+            </button>
+        </div>
+
+        <!-- Main Menu Button -->
         <button 
-           @click="openQuest"
-           class="bg-primary hover:bg-primary/90 text-white p-3 rounded-full shadow-lg transition-transform active:scale-90 border-2 border-gray-900 group"
-           title="Give me a Quest!"
+            @click="isMenuOpen = !isMenuOpen"
+            class="bg-primary hover:bg-primary/90 text-white p-4 rounded-full shadow-2xl transition-all active:scale-90 border-4 border-gray-900 z-50 group"
+            :class="isMenuOpen ? 'rotate-45' : 'rotate-0'"
         >
-            <Dices class="w-6 h-6 group-hover:rotate-180 transition-transform duration-500" />
+            <Plus class="w-8 h-8 transition-transform duration-300" v-if="!isMenuOpen" />
+            <Plus class="w-8 h-8 transition-transform duration-300 rotate-45" v-else />
         </button>
 
-        <!-- Add Game FAB -->
-        <button 
-        @click="showAddModal = true"
-        class="bg-primary hover:bg-primary/90 text-white p-4 rounded-full shadow-2xl transition-transform active:scale-90 border-4 border-gray-900 group"
-        >
-        <Plus class="w-6 h-6 group-hover:rotate-90 transition-transform duration-300" />
-        </button>
     </div>
 
     <!-- Modals -->

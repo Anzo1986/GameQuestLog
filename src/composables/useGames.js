@@ -148,6 +148,14 @@ export function useGames() {
     const completedGames = computed(() => games.value.filter(g => g.status === 'completed').sort((a, b) => new Date(b.completedAt || 0) - new Date(a.completedAt || 0)));
     const droppedGames = computed(() => games.value.filter(g => g.status === 'dropped'));
 
+    // Track Quest Usage
+    const incrementQuestUsage = () => {
+        let count = parseInt(localStorage.getItem('game-tracker-quest-usage') || '0');
+        count++;
+        localStorage.setItem('game-tracker-quest-usage', count.toString());
+        return count;
+    };
+
     const gameStats = computed(() => {
         const totalGames = games.value.length;
         if (totalGames === 0) return null;
@@ -481,6 +489,7 @@ export function useGames() {
         userTitle,
         xpProgress,
         awardXP,
-        PLATFORMS
+        PLATFORMS,
+        incrementQuestUsage
     };
 }

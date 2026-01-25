@@ -10,7 +10,7 @@ const props = defineProps({
 
 const emit = defineEmits(['close']);
 
-const { games, updateStatus, awardXP } = useGames();
+const { games, updateStatus, awardXP, incrementQuestUsage } = useGames();
 
 // Filter only backlog games
 const backlogGames = computed(() => games.value.filter(g => g.status === 'backlog'));
@@ -71,6 +71,7 @@ const acceptQuest = () => {
     
     updateStatus(displayedGame.value.id, 'playing');
     awardXP(20); // Bonus for bravery
+    incrementQuestUsage(); // Track for achievements
     emit('close');
     // Ideally show a toast here, but for now the XP log and Status update is visible
 };
