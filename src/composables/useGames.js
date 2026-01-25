@@ -138,7 +138,7 @@ export function useGames() {
 
         const genreCounts = {};
         const platformCounts = {};
-        let totalPlaytime = 0;
+        let totalDurationDays = 0;
 
         games.value.forEach(game => {
             // Status
@@ -146,8 +146,33 @@ export function useGames() {
                 statusCounts[game.status]++;
             }
 
-            // Playtime
-            totalPlaytime += (game.playtime || 0);
+            // Duration (Time Invested in Days)
+            // Logic: startedAt -> completedAt (or Now)
+            if (game.startedAt) {
+                const start = new Date(game.startedAt);
+                let end = new Date();
+
+                if (game.status === 'completed' && game.completedAt) {
+                    end = new Date(game.completedAt);
+                } else if (game.status === 'dropped') {
+                    // If dropped, arguably we shouldn't count "until today". 
+                    // But without droppedAt, let's treat it as 0 additional days or just 'time active'.
+                    // User request: "until finished". Dropping is finishing.
+                    // Let's count it up to now for simplicity, or maybe skip?
+                    // Safe bet: If 'dropped', count only if we have a valid range? 
+                    // Let's treat 'dropped' same as 'playing' (until now) for 'Time Invested' duration, 
+                    // OR strict: only Completed games have fixed duration.
+                    // DECISION: calculate duration for Playing and Completed. Dropped is ambiguous without droppedAt.
+                    // Current implementation: use NOW for non-completed.
+                }
+
+                // Only count if end > start
+                if (end >= start) {
+                    const diffTime = Math.abs(end - start);
+                    const days = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    totalDurationDays += days;
+                }
+            }
 
             // Platform
             const platform = game.platform || 'Unknown';
@@ -168,7 +193,7 @@ export function useGames() {
             statusCounts,
             genreCounts,
             platformCounts,
-            totalPlaytime: Math.round(totalPlaytime),
+            totalDurationDays, // Changed from totalPlaytime
             completionRate
         };
     });

@@ -170,8 +170,8 @@ const platformChartOptions = {
             <div class="bg-gray-800/50 rounded-2xl p-4 border border-gray-700/50 flex flex-col items-center justify-center text-center relative overflow-hidden group">
                 <div class="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent group-hover:from-blue-500/20 transition-colors"></div>
                 <Clock class="w-8 h-8 text-blue-500 mb-2 drop-shadow-md" />
-                <h3 class="text-3xl font-black text-white">{{ gameStats.totalPlaytime }}h</h3>
-                <p class="text-xs text-blue-400 uppercase tracking-wider font-bold">Time Invested</p>
+                <h3 class="text-3xl font-black text-white">{{ gameStats.totalDurationDays }}d</h3>
+                <p class="text-xs text-blue-400 uppercase tracking-wider font-bold">Total Duration</p>
             </div>
 
              <!-- Pile of Shame -->
