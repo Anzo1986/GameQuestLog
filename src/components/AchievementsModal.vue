@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import { useAchievements } from '../composables/useAchievements';
-import { X, Trophy, Lock, Unlock, Gamepad2, Layers, Library, Crown, Ban, Shuffle, Focus, Server, Map, Star, ThumbsDown, Dices, Sparkles, Palette, Hourglass, Zap, Plus } from 'lucide-vue-next';
+import { X, Trophy, Lock, LockOpen, Gamepad2, Layers, Library, Crown, Ban, Shuffle, Target, Server, Map, Star, ThumbsDown, Dices, Sparkles, Palette, Hourglass, Zap, Plus } from 'lucide-vue-next';
 
 const props = defineProps({
   isOpen: Boolean
@@ -13,7 +13,7 @@ const { achievementsList, unlockedAchievements } = useAchievements();
 
 // Map icons
 const icons = {
-  Plus, Trophy, Crown, Ban, Layers, Library, Shuffle, Focus, Gamepad2, Server, Map, Star, ThumbsDown, Dices, Sparkles, Palette, Hourglass, Zap, Lock, Unlock
+  Plus, Trophy, Crown, Ban, Layers, Library, Shuffle, Focus: Target, Gamepad2, Server, Map, Star, ThumbsDown, Dices, Sparkles, Palette, Hourglass, Zap, Lock, Unlock: LockOpen
 };
 
 // Sort: Unlocked first, then Locked.
