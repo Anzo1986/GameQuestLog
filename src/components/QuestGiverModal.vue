@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { X, Dices, Swords, RotateCw, CheckCircle2 } from 'lucide-vue-next';
 import { useGames } from '../composables/useGames';
+import confetti from 'canvas-confetti';
 
 const props = defineProps({
   isOpen: Boolean
@@ -55,6 +56,14 @@ const finalizeRoll = () => {
          const randomIndex = Math.floor(Math.random() * backlogGames.value.length);
          displayedGame.value = backlogGames.value[randomIndex];
     }
+    
+    // Trigger Confetti!
+    confetti({
+        particleCount: 150,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#a855f7', '#ec4899', '#3b82f6', '#ffffff'] // Purple, Pink, Blue, White
+    });
 };
 
 const acceptQuest = () => {
