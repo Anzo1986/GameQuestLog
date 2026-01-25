@@ -1,12 +1,13 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { Settings, Plus, Gamepad2, Layers, CheckCircle2, LayoutDashboard, Ban, Timer, Bell } from 'lucide-vue-next';
+import { Settings, Plus, Gamepad2, Layers, CheckCircle2, LayoutDashboard, Ban, Timer, Bell, Dices } from 'lucide-vue-next';
 import GameCard from './components/GameCard.vue';
 import AddGameModal from './components/AddGameModal.vue';
 import GameDetailModal from './components/GameDetailModal.vue';
 import SettingsSection from './components/SettingsSection.vue';
 import UserProfile from './components/UserProfile.vue';
 import StatsModal from './components/StatsModal.vue';
+import QuestGiverModal from './components/QuestGiverModal.vue';
 import { useGames } from './composables/useGames';
 
 const { playingGames, backlogGames, completedGames, droppedGames, updateStatus, removeGame, games } = useGames();
@@ -14,6 +15,7 @@ const { playingGames, backlogGames, completedGames, droppedGames, updateStatus, 
 const showAddModal = ref(false);
 const showSettings = ref(false);
 const showStats = ref(false);
+const showQuestModal = ref(false);
 const showDetailModal = ref(false);
 const selectedGameId = ref(null);
 const currentTab = ref('dashboard'); // 'dashboard', 'backlog', 'completed'
@@ -37,6 +39,15 @@ const closeStats = () => {
     history.back();
 };
 
+const openQuest = () => {
+    showQuestModal.value = true;
+    history.pushState({ modal: 'quest' }, '', '');
+};
+
+const closeQuest = () => {
+    history.back();
+};
+
 const openGameDetails = (gameId) => {
   selectedGameId.value = gameId;
   showDetailModal.value = true;
@@ -55,6 +66,8 @@ onMounted(() => {
             showSettings.value = false;
         } else if (showStats.value) {
             showStats.value = false;
+        } else if (showQuestModal.value) {
+            showQuestModal.value = false;
         }
     });
 });
@@ -255,16 +268,30 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
 
     </main>
 
-    <!-- FAB -->
-    <button 
-      @click="showAddModal = true"
-      class="fixed bottom-6 right-6 bg-primary hover:bg-primary/90 text-white p-4 rounded-full shadow-2xl transition-transform active:scale-90 z-40 border-4 border-gray-900 group"
-    >
-      <Plus class="w-6 h-6 group-hover:rotate-90 transition-transform duration-300" />
-    </button>
+    <!-- FAB Group -->
+    <div class="fixed bottom-6 right-6 flex flex-col items-center gap-3 z-40">
+        
+        <!-- Quest Giver FAB -->
+        <button 
+           @click="openQuest"
+           class="bg-purple-600 hover:bg-purple-500 text-white p-3 rounded-full shadow-lg transition-transform active:scale-90 border-2 border-gray-900 group"
+           title="Give me a Quest!"
+        >
+            <Dices class="w-6 h-6 group-hover:rotate-180 transition-transform duration-500" />
+        </button>
+
+        <!-- Add Game FAB -->
+        <button 
+        @click="showAddModal = true"
+        class="bg-primary hover:bg-primary/90 text-white p-4 rounded-full shadow-2xl transition-transform active:scale-90 border-4 border-gray-900 group"
+        >
+        <Plus class="w-6 h-6 group-hover:rotate-90 transition-transform duration-300" />
+        </button>
+    </div>
 
     <!-- Modals -->
     <AddGameModal :is-open="showAddModal" @close="showAddModal = false" />
+    <QuestGiverModal :is-open="showQuestModal" @close="closeQuest" />
     
     <GameDetailModal 
       :is-open="showDetailModal" 
