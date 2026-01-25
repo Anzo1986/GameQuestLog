@@ -179,21 +179,42 @@ const handleAction = async (action, val) => {
            </div>
 
            <!-- Platforms & Genres & Web -->
-           <div class="flex flex-wrap gap-2 pt-4 border-t border-gray-800">
-              <span v-for="p in gameDetails.parent_platforms" :key="p.platform.id" 
-                  class="px-2 py-1 rounded text-xs border transition-colors duration-300"
-                  :class="isOwnedPlatform(p.platform.name) 
-                    ? 'bg-primary/20 text-primary border-primary/50 font-bold shadow-[0_0_10px_rgba(var(--primary-rgb),0.3)] scale-105' 
-                    : 'bg-gray-800 text-gray-300 border-gray-700 opacity-80 hover:opacity-100'"
-              >
-                  {{ p.platform.name }}
-              </span>
-              <span v-for="g in gameDetails.genres" :key="g.id" class="px-2 py-1 bg-gray-800 rounded text-xs text-gray-300 border border-gray-700">
-                  {{ g.name }}
-              </span>
-              <a v-if="gameDetails.website" :href="gameDetails.website" target="_blank" class="flex items-center gap-1 px-2 py-1 bg-primary/20 hover:bg-primary/40 rounded text-xs text-primary border border-primary/40 transition-colors ml-auto">
-                  <Globe class="w-3 h-3" /> Website
-              </a>
+           <!-- Platforms & Genres & Web Stacked -->
+           <div class="space-y-4 pt-4 border-t border-gray-800">
+              
+              <!-- Row 1: Platforms -->
+              <div v-if="gameDetails.parent_platforms && gameDetails.parent_platforms.length > 0">
+                  <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Platforms</h4>
+                  <div class="flex flex-wrap gap-2">
+                       <span v-for="p in gameDetails.parent_platforms" :key="p.platform.id" 
+                          class="px-2 py-1 rounded text-xs border transition-colors duration-300"
+                          :class="isOwnedPlatform(p.platform.name) 
+                            ? 'bg-primary/20 text-primary border-primary/50 font-bold shadow-[0_0_10px_rgba(var(--primary-rgb),0.3)] scale-105' 
+                            : 'bg-gray-800 text-gray-500 border-gray-700 opacity-60'"
+                      >
+                          {{ p.platform.name }}
+                      </span>
+                  </div>
+              </div>
+
+              <!-- Row 2: Genres -->
+              <div v-if="gameDetails.genres && gameDetails.genres.length > 0">
+                  <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Genres</h4>
+                  <div class="flex flex-wrap gap-2">
+                       <span v-for="g in gameDetails.genres" :key="g.id" class="px-2 py-1 bg-gray-800 rounded text-xs text-gray-300 border border-gray-700">
+                          {{ g.name }}
+                      </span>
+                  </div>
+              </div>
+
+              <!-- Row 3: Website -->
+              <div v-if="gameDetails.website">
+                   <a :href="gameDetails.website" target="_blank" class="inline-flex items-center gap-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm text-primary border border-gray-700 transition-colors">
+                      <Globe class="w-4 h-4" /> 
+                      <span class="font-medium">Official Website</span>
+                  </a>
+              </div>
+
            </div>
 
         </div>

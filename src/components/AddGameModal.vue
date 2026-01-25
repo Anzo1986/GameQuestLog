@@ -9,7 +9,7 @@ const props = defineProps({
 
 const emit = defineEmits(['close']);
 
-const { searchQuery, searchResults, isSearching, searchGames, addGame, apiKey } = useGames();
+const { searchQuery, searchResults, isSearching, searchGames, addGame, apiKey, PLATFORMS } = useGames();
 const inputRef = ref(null);
 const manualInputRef = ref(null);
 
@@ -165,13 +165,7 @@ const handleAdd = (game) => {
                 v-model="manualForm.platform" 
                 class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder-gray-600 appearance-none"
               >
-                  <option value="PC">PC</option>
-                  <option value="PS5">PlayStation 5</option>
-                  <option value="PS4">PlayStation 4</option>
-                  <option value="Switch">Nintendo Switch</option>
-                  <option value="Xbox">Xbox Series X/S</option>
-                  <option value="Xbox One">Xbox One</option>
-                  <option value="Retro">Retro Console</option>
+                  <option v-for="p in PLATFORMS" :key="p" :value="p">{{ p }}</option>
               </select>
           </div>
 
@@ -216,11 +210,7 @@ const handleAdd = (game) => {
                         v-model="game.selectedPlatform" 
                         class="bg-gray-900 text-xs text-gray-300 border border-gray-700 rounded px-1 py-0.5 outline-none focus:border-blue-500"
                      >
-                        <option value="PC">PC</option>
-                        <option value="PS5">PS5</option>
-                        <option value="PS4">PS4</option>
-                        <option value="Switch">Switch</option>
-                        <option value="Xbox">Xbox</option>
+                        <option v-for="p in PLATFORMS" :key="p" :value="p">{{ p }}</option>
                      </select>
                 </div>
               </div>

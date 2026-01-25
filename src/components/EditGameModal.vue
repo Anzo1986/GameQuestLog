@@ -1,6 +1,6 @@
 <script setup>
 import { ref, watch } from 'vue';
-import { X, Save, ImageIcon, Calendar } from 'lucide-vue-next';
+import { X, Save, ImageIcon, Calendar, Gamepad2 } from 'lucide-vue-next';
 import { useGames } from '../composables/useGames';
 
 const props = defineProps({
@@ -13,20 +13,22 @@ const props = defineProps({
 
 const emit = defineEmits(['close']);
 
-const { updateGame } = useGames();
+const { updateGame, PLATFORMS } = useGames();
 
 const form = ref({
     name: '',
     background_image: '',
-    released: ''
+    released: '',
+    platform: 'PC'
 });
 
 watch(() => props.isOpen, (newVal) => {
   if (newVal && props.game) {
     form.value = {
-        name: props.game.title || props.game.name, // Handle inconsistent naming in object if any
+        name: props.game.title || props.game.name, 
         background_image: props.game.background_image || '',
-        released: props.game.released || ''
+        released: props.game.released || '',
+        platform: props.game.platform || 'PC'
     };
   }
 });
@@ -36,9 +38,10 @@ const saveChanges = () => {
     
     updateGame(props.game.id, {
         name: form.value.name,
-        title: form.value.name, // Ensure consistency
+        title: form.value.name,
         background_image: form.value.background_image,
-        released: form.value.released
+        released: form.value.released,
+        platform: form.value.platform
     });
     
     emit('close');
@@ -92,6 +95,18 @@ const saveChanges = () => {
                 type="date"
                 class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-primary outline-none transition-all placeholder-gray-600"
               />
+          </div>
+
+          <div class="space-y-2">
+              <label class="text-sm font-medium text-gray-400 flex items-center gap-2">
+                  <Gamepad2 class="w-4 h-4" /> Platform
+              </label>
+              <select 
+                v-model="form.platform" 
+                class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-primary outline-none transition-all placeholder-gray-600 appearance-none"
+              >
+                  <option v-for="p in PLATFORMS" :key="p" :value="p">{{ p }}</option>
+              </select>
           </div>
       </div>
 

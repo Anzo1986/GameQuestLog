@@ -27,6 +27,29 @@ const THEMES = {
     red: { name: 'Red', rgb: '239 68 68' },    // red-500
 };
 
+// Simplified Platforms
+const PLATFORMS = ['PC', 'PlayStation', 'Xbox', 'Nintendo', 'Mobile'];
+
+const mapPlatform = (platforms) => {
+    if (!platforms || !Array.isArray(platforms)) return 'PC';
+
+    // Check parent_platforms or platforms array from API
+    // API usually returns parent_platforms: [{platform: {id: 1, name: "PC", slug: "pc"}}]
+
+    // Flatten names 
+    const names = platforms.map(p => p.platform?.name || p.name || '').join(' ').toLowerCase();
+
+    if (names.includes('playstation') || names.includes('ps')) return 'PlayStation';
+    if (names.includes('xbox')) return 'Xbox';
+    if (names.includes('nintendo') || names.includes('wii') || names.includes('switch') || names.includes('ds') || names.includes('game boy')) return 'Nintendo';
+    if (names.includes('android') || names.includes('ios') || names.includes('iphone') || names.includes('mobile')) return 'Mobile';
+
+    // Default PC if found, otherwise whatever (PC default safe)
+    if (names.includes('pc')) return 'PC';
+
+    return 'PC'; // Fallback
+};
+
 // Apply theme immediately
 const applyTheme = (color) => {
     const theme = THEMES[color] || THEMES.blue;
@@ -379,7 +402,10 @@ export function useGames() {
         try {
             const response = await fetch(`https://api.rawg.io/api/games?key=${apiKey.value}&search=${encodeURIComponent(query)}&page_size=10`);
             const data = await response.json();
-            searchResults.value = data.results || [];
+            searchResults.value = (data.results || []).map(game => ({
+                ...game,
+                selectedPlatform: mapPlatform(game.parent_platforms || game.platforms)
+            }));
         } catch (error) {
             console.error('Search failed', error);
             searchResults.value = [];
@@ -454,6 +480,7 @@ export function useGames() {
         userLevel,
         userTitle,
         xpProgress,
-        awardXP
+        awardXP,
+        PLATFORMS
     };
 }
