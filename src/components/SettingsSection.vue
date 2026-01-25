@@ -108,7 +108,7 @@ const handleFileChange = async (event) => {
         <div class="space-y-4">
           <div class="flex items-center justify-between">
               <h3 class="text-sm font-medium text-gray-300">API Configuration</h3>
-              <button @click="saveKey" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 text-sm shadow-lg">
+              <button @click="saveKey" class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 text-sm shadow-lg">
                   <Save class="w-4 h-4" /> Save Keys
               </button>
           </div>
@@ -200,7 +200,7 @@ const handleFileChange = async (event) => {
       </div>
 
       <div class="text-center pb-4">
-           <p class="text-xs text-gray-500 font-mono">v0.8.0</p>
+           <p class="text-xs text-gray-500 font-mono">v0.8.1</p>
       </div>
     </div>
   </div>

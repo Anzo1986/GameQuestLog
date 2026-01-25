@@ -123,7 +123,7 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
         >
             <Bell class="w-6 h-6" />
             <span v-if="showCopyFeedback" class="absolute -bottom-8 right-0 bg-green-500 text-black text-xs font-bold px-2 py-1 rounded shadow animate-bounce whitespace-nowrap z-50">
-                Copied!
+                Copied! Paste in Gemini
             </span>
         </button>
 
@@ -274,7 +274,7 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
         <!-- Quest Giver FAB -->
         <button 
            @click="openQuest"
-           class="bg-purple-600 hover:bg-purple-500 text-white p-3 rounded-full shadow-lg transition-transform active:scale-90 border-2 border-gray-900 group"
+           class="bg-primary hover:bg-primary/90 text-white p-3 rounded-full shadow-lg transition-transform active:scale-90 border-2 border-gray-900 group"
            title="Give me a Quest!"
         >
             <Dices class="w-6 h-6 group-hover:rotate-180 transition-transform duration-500" />
