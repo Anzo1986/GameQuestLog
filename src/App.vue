@@ -161,7 +161,7 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
       </button>
       <button 
         @click="currentTab = 'completed'"
-        :class="['flex-1 py-2 px-4 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-all', currentTab === 'completed' ? 'bg-blue-600 text-white shadow' : 'text-gray-400 hover:text-white']"
+        :class="['flex-1 py-2 px-4 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-all', currentTab === 'completed' ? 'bg-primary text-white shadow' : 'text-gray-400 hover:text-white']"
       >
         <CheckCircle2 class="w-4 h-4" />
         <span class="hidden sm:inline">Completed</span>
@@ -169,7 +169,7 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
       </button>
       <button 
         @click="currentTab = 'dropped'"
-        :class="['flex-1 py-2 px-4 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-all', currentTab === 'dropped' ? 'bg-blue-600 text-white shadow' : 'text-gray-400 hover:text-white']"
+        :class="['flex-1 py-2 px-4 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-all', currentTab === 'dropped' ? 'bg-primary text-white shadow' : 'text-gray-400 hover:text-white']"
       >
         <Ban class="w-4 h-4" />
         <span class="hidden sm:inline">Dropped</span>

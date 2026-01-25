@@ -45,7 +45,7 @@ const statusChartData = computed(() => {
     return {
         labels: ['Playing', 'Completed', 'Dropped', 'Backlog'],
         datasets: [{
-            backgroundColor: ['#3b82f6', '#22c55e', '#6b7280', '#fbbf24'], // blue, green, gray, yellow
+            backgroundColor: ['#3b82f6', '#22c55e', '#6b7280', '#ef4444'], // blue, green, gray, red
             data: [s.playing, s.completed, s.dropped, s.backlog]
         }]
     };
@@ -55,7 +55,7 @@ const statusChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-        legend: { position: 'bottom', labels: { color: '#9ca3af' } }
+        legend: { display: false }
     }
 };
 
@@ -191,6 +191,13 @@ const platformChartOptions = {
                 <h4 class="text-lg font-bold text-gray-200 mb-4 border-l-4 border-blue-500 pl-3">Library Status</h4>
                 <div class="flex-1 min-h-[250px] relative">
                     <Doughnut :data="statusChartData" :options="statusChartOptions" />
+                </div>
+                <!-- Custom Legend -->
+                <div class="mt-4 grid grid-cols-2 gap-2" v-if="statusChartData">
+                    <div v-for="(label, index) in statusChartData.labels" :key="label" class="flex items-center space-x-2">
+                        <span class="w-3 h-3 rounded-full" :style="{ backgroundColor: statusChartData.datasets[0].backgroundColor[index] }"></span>
+                        <span class="text-sm text-gray-300">{{ label }}: {{ statusChartData.datasets[0].data[index] }}</span>
+                    </div>
                 </div>
             </div>
 
