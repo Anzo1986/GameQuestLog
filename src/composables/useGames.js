@@ -243,6 +243,15 @@ export function useGames() {
     };
 
     const removeGame = (id) => {
+        const game = games.value.find(g => g.id === id);
+        if (game) {
+            // Calculate XP to remove
+            let deduction = 10; // Base XP for adding
+            if (game.startedAt) deduction += 50;
+            if (game.completedAt) deduction += 200;
+
+            awardXP(-deduction);
+        }
         games.value = games.value.filter(g => g.id !== id);
     };
 

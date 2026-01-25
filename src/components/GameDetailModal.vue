@@ -1,7 +1,8 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue';
-import { X, Calendar, Gamepad2, Globe, Star, Play, Check, Trash2, Timer, Ban, Layers } from 'lucide-vue-next';
+import { X, Calendar, Gamepad2, Globe, Star, Play, Check, Trash2, Timer, Ban, Layers, PenLine } from 'lucide-vue-next';
 import { useGames } from '../composables/useGames';
+import EditGameModal from './EditGameModal.vue';
 
 const props = defineProps({
   gameId: {
@@ -16,6 +17,7 @@ const emit = defineEmits(['close', 'update-status', 'delete']);
 const { games, rateGame, updateGame } = useGames();
 
 const gameDetails = ref(null);
+const showEditModal = ref(false);
 
 watch(() => props.isOpen, (newVal) => {
   if (newVal) {
@@ -29,6 +31,7 @@ watch(() => props.isOpen, (newVal) => {
     gameDetails.value = null;
   }
 });
+// ... (keep existing methods)
 
 const formatDate = (dateString) => {
   if (!dateString) return 'N/A';
@@ -59,15 +62,8 @@ const isEditingPlaytime = ref(false);
 const tempPlaytime = ref(0);
 const playtimeInput = ref(null);
 
-
-
 const startEditingPlaytime = () => {
-    if (gameDetails.value.startedAt) return; // Don't edit estimated playtime if already playing? Actually users might still want to see estimate. Let's allow it but UI shows Days Played.
-    // Wait, the UI only shows "click to edit" if NOT startedAt.
-    // If we want to allow editing estimate even while playing, we need to change template logic. 
-    // For now, let's strictly follow the template structure: editing is for Backlog estimation mainly.
-    // But wait, the user wants to fix Pile of Shame which is Backlog. So this is fine.
-    
+    if (gameDetails.value.startedAt) return; 
     tempPlaytime.value = gameDetails.value.playtime || 0;
     isEditingPlaytime.value = true;
     setTimeout(() => playtimeInput.value?.focus(), 50);
@@ -105,10 +101,15 @@ const handleAction = async (action, val) => {
       
       <!-- Content -->
       <template v-if="gameDetails">
-        <!-- Close Button -->
-        <button @click="$emit('close')" class="absolute top-4 right-4 z-10 bg-black/50 p-2 rounded-full hover:bg-black/70 text-white transition-colors">
-          <X class="w-5 h-5" />
-        </button>
+        <!-- Controls -->
+        <div class="absolute top-4 right-4 z-10 flex items-center gap-2">
+            <button @click="showEditModal = true" class="bg-black/50 p-2 rounded-full hover:bg-black/70 text-white transition-colors" title="Edit Game Details">
+                <PenLine class="w-5 h-5" />
+            </button>
+            <button @click="$emit('close')" class="bg-black/50 p-2 rounded-full hover:bg-black/70 text-white transition-colors">
+                <X class="w-5 h-5" />
+            </button>
+        </div>
 
         <!-- Header Image & Title & Rating -->
         <div class="relative h-64 flex-shrink-0">
@@ -219,5 +220,11 @@ const handleAction = async (action, val) => {
 
       </template>
     </div>
+    
+    <EditGameModal 
+        :is-open="showEditModal" 
+        :game="gameDetails" 
+        @close="showEditModal = false" 
+    />
   </div>
 </template>
