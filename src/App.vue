@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { Settings, Plus, Gamepad2, Layers, CheckCircle2, LayoutDashboard, Ban, Timer, Bell, Dices } from 'lucide-vue-next';
+
 import GameCard from './components/GameCard.vue';
 import AddGameModal from './components/AddGameModal.vue';
 import GameDetailModal from './components/GameDetailModal.vue';
@@ -24,7 +24,7 @@ const showQuestModal = ref(false);
 const showDetailModal = ref(false);
 const selectedGameId = ref(null);
 const currentTab = ref('dashboard'); // 'dashboard', 'backlog', 'completed'
-const currentTab = ref('dashboard'); // 'dashboard', 'backlog', 'completed'
+
 const showCopyFeedback = ref(false);
 const showAchievements = ref(false);
 const isMenuOpen = ref(false); // FAB Menu State
@@ -83,7 +83,6 @@ onMounted(() => {
             showSettings.value = false;
         } else if (showStats.value) {
             showStats.value = false;
-        } else if (showQuestModal.value) {
         } else if (showQuestModal.value) {
             showQuestModal.value = false;
         } else if (showAchievements.value) {
