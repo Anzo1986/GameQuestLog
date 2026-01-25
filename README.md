@@ -88,15 +88,14 @@ Experience the app like a native mobile application:
 
 ---
 
-## 🤝 Contributing
 
-Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+## 📱 Smartphone Previews
 
-1.  Fork the Project
-2.  Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3.  Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4.  Push to the Branch (`git push origin feature/AmazingFeature`)
-5.  Open a Pull Request
+<p align="center">
+  <img src="public/screenshots/dashboard.png" width="28%" alt="Dashboard View" />
+  <img src="public/screenshots/game-detail.png" width="28%" alt="Game Detail View" />
+  <img src="public/screenshots/quest-giver.png" width="28%" alt="Quest Giver Modal" />
+</p>
 
 ---
 
