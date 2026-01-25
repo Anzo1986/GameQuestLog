@@ -227,21 +227,65 @@ export function useGames() {
         const game = games.value.find(g => g.id === id);
         if (game) {
             const oldStatus = game.status;
-            game.status = newStatus;
+            if (oldStatus === newStatus) return;
 
-            if (newStatus === 'playing' && oldStatus !== 'playing') {
-                if (!game.startedAt) {
-                    game.startedAt = new Date().toISOString();
-                }
+            // Defines XP values for clarity
+            const XP_START = 50;
+            const XP_COMPLETE = 200;
+
+            // 1. Handle Removing XP from Old Status
+            if (oldStatus === 'completed') {
+                awardXP(-XP_COMPLETE); // Remove completion bonus
+                game.completedAt = null;
+            }
+
+            if (oldStatus === 'playing' && newStatus === 'backlog') {
+                // Moving back to backlog implies "un-starting"
+                awardXP(-XP_START);
+                game.startedAt = null;
+            }
+
+            // Special case: Completed -> Backlog (needs to remove Start XP too if we reset everything)
+            if (oldStatus === 'completed' && newStatus === 'backlog') {
+                awardXP(-XP_START);
+                game.startedAt = null;
+            }
+
+
+            // 2. Handle Adding XP for New Status
+            if (newStatus === 'playing') {
                 if (oldStatus === 'backlog') {
-                    awardXP(50); // +50 XP for starting
+                    awardXP(XP_START);
+                    if (!game.startedAt) game.startedAt = new Date().toISOString();
                 }
             }
+            else if (newStatus === 'completed') {
+                // From Playing -> Completed
+                if (oldStatus === 'playing') {
+                    awardXP(XP_COMPLETE);
+                }
+                // From Backlog -> Completed (Direct skip)
+                else if (oldStatus === 'backlog') {
+                    awardXP(XP_START + XP_COMPLETE);
+                    if (!game.startedAt) game.startedAt = new Date().toISOString();
+                }
+                // From Dropped -> Completed
+                else if (oldStatus === 'dropped') {
+                    // Dropped usually meant we started. If we didn't start (dropped from backlog), maybe add start?
+                    // Simplest: Just add completion. Assuming Dropped games were "started" mostly.
+                    // But if dropped from Backlog? Let's check startedAt.
+                    let bonus = XP_COMPLETE;
+                    if (!game.startedAt) {
+                        bonus += XP_START;
+                        game.startedAt = new Date().toISOString();
+                    }
+                    awardXP(bonus);
+                }
 
-            if (newStatus === 'completed' && oldStatus !== 'completed') {
                 game.completedAt = new Date().toISOString();
-                awardXP(200); // +200 XP for finishing
             }
+
+            game.status = newStatus;
         }
     };
 
