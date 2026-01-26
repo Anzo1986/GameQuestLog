@@ -5,11 +5,19 @@ import { useGames } from '../composables/useGames';
 
 const emit = defineEmits(['close']);
 
-const { apiKey, setApiKey, exportData, importData, userAvatar, setUserAvatar, themeColor, setTheme, THEMES } = useGames();
+const { 
+  apiKey, setApiKey, exportData, importData, 
+  userAvatar, setUserAvatar, 
+  themeColor, setTheme, THEMES,
+  userName, setUserName,
+  userTitle, availableTitles, setUserTitle
+} = useGames();
+
 const newKey = ref(apiKey.value);
 const fileInput = ref(null);
 const avatarInput = ref(null);
 const importStatus = ref('');
+const showTitles = ref(false);
 
 const saveKey = () => {
   setApiKey(newKey.value);
@@ -133,24 +141,63 @@ const handleFileChange = async (event) => {
 
         <hr class="border-gray-800" />
 
-        <!-- Avatar Upload -->
+        <!-- Profile Section -->
         <div>
-          <h3 class="text-sm font-medium text-gray-300 mb-3">Profile Avatar</h3>
-          <div class="flex items-center gap-4">
-              <div class="relative group cursor-pointer" @click="triggerAvatarUpload">
-                  <div class="w-16 h-16 rounded-full bg-gray-800 overflow-hidden border-2 border-gray-600 group-hover:border-blue-500 transition-colors flex items-center justify-center">
-                      <img v-if="userAvatar" :src="userAvatar" class="w-full h-full object-cover" />
-                      <User v-else class="w-8 h-8 text-gray-400" />
+          <h3 class="text-sm font-medium text-gray-300 mb-3">Profile</h3>
+          
+          <div class="space-y-4">
+              <!-- Avatar -->
+              <div class="flex items-center gap-4">
+                  <div class="relative group cursor-pointer" @click="triggerAvatarUpload">
+                      <div class="w-16 h-16 rounded-full bg-gray-800 overflow-hidden border-2 border-gray-600 group-hover:border-blue-500 transition-colors flex items-center justify-center">
+                          <img v-if="userAvatar" :src="userAvatar" class="w-full h-full object-cover" />
+                          <User v-else class="w-8 h-8 text-gray-400" />
+                      </div>
+                      <div class="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Upload class="w-4 h-4 text-white" />
+                      </div>
                   </div>
-                  <div class="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Upload class="w-4 h-4 text-white" />
+                  <div class="flex-1">
+                      <label class="block text-xs text-gray-400 mb-1">Username</label>
+                      <input 
+                        :value="userName" 
+                        @input="e => setUserName(e.target.value)"
+                        type="text" 
+                        class="bg-transparent border-b border-gray-600 focus:border-blue-500 text-white w-full py-1 outline-none transition-colors font-medium" 
+                        placeholder="Enter your name"
+                      />
+                  </div>
+                  <input ref="avatarInput" type="file" accept="image/*" class="hidden" @change="handleAvatarChange" />
+              </div>
+
+              <!-- Title Selection -->
+              <div class="bg-gray-800 rounded-lg p-3 border border-gray-700">
+                  <div class="flex items-center justify-between mb-2">
+                       <span class="text-xs text-gray-400 uppercase tracking-wider font-bold">Current Title</span>
+                       <span class="text-xs text-blue-400">{{ availableTitles.length }} Unlocked</span>
+                  </div>
+                  <div class="flex items-center justify-between">
+                       <h4 class="text-yellow-400 font-bold text-lg drop-shadow-sm">{{ userTitle }}</h4>
+                       <button @click="showTitles = !showTitles" class="text-xs bg-gray-700 hover:bg-gray-600 text-white px-3 py-1.5 rounded transition-colors">
+                           Change
+                       </button>
+                  </div>
+                  
+                  <!-- Dropdown for titles -->
+                  <div v-if="showTitles" class="mt-3 pt-3 border-t border-gray-700 max-h-40 overflow-y-auto space-y-1">
+                      <button 
+                        v-for="t in availableTitles" 
+                        :key="t.title"
+                        @click="setUserTitle(t.title); showTitles = false"
+                        class="w-full text-left px-3 py-2 rounded hover:bg-gray-600/50 text-sm transition-colors flex items-center justify-between"
+                        :class="userTitle === t.title ? 'text-yellow-400 bg-gray-700/50' : 'text-gray-300'"
+                      >
+                         <span>{{ t.title }}</span>
+                         <span v-if="userTitle === t.title" class="text-xs opacity-70">Active</span>
+                         <span v-else class="text-xs text-gray-500">Lvl {{ t.level }}</span>
+                      </button>
                   </div>
               </div>
-              <div class="flex-1">
-                  <p class="text-sm text-gray-400 mb-2">Upload a custom profile picture.</p>
-                  <button @click="triggerAvatarUpload" class="text-sm text-blue-400 hover:text-blue-300 font-medium">Click to upload</button>
-              </div>
-              <input ref="avatarInput" type="file" accept="image/*" class="hidden" @change="handleAvatarChange" />
           </div>
         </div>
 

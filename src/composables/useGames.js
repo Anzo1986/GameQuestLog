@@ -16,6 +16,7 @@ const THEME_STORAGE_KEY = 'game-tracker-theme';
 const userXP = ref(0);
 const userName = ref('Guest');
 const userAvatar = ref(null);
+const selectedTitle = ref(null);
 const themeColor = ref(localStorage.getItem(THEME_STORAGE_KEY) || 'blue');
 
 const THEMES = {
@@ -68,12 +69,14 @@ if (savedGames) {
 }
 
 const savedUser = localStorage.getItem(USER_STORAGE_KEY);
+
 if (savedUser) {
     try {
         const userData = JSON.parse(savedUser);
         userXP.value = userData.xp || 0;
         userName.value = userData.name || 'Guest';
         userAvatar.value = userData.avatar || null;
+        selectedTitle.value = userData.title || null;
     } catch (e) {
         console.error('Failed to parse user data', e);
     }
@@ -89,32 +92,88 @@ watch(themeColor, (newColor) => {
     applyTheme(newColor);
 });
 
-watch([userXP, userName, userAvatar], () => {
+watch([userXP, userName, userAvatar, selectedTitle], () => {
     localStorage.setItem(USER_STORAGE_KEY, JSON.stringify({
         xp: userXP.value,
         name: userName.value,
-        avatar: userAvatar.value
+        avatar: userAvatar.value,
+        title: selectedTitle.value
     }));
 });
 
 export function useGames() {
 
     // Gamification Computed
-    const userLevel = computed(() => Math.floor(userXP.value / 100) + 1);
-    const nextLevelXP = computed(() => userLevel.value * 100);
-    const currentLevelXP = computed(() => userXP.value % 100);
-    const xpProgress = computed(() => (currentLevelXP.value / 100) * 100);
+    // New Formula: Level = floor(pow(XP / 500, 1/1.2)) + 1
+    // Inverse: XP = 500 * (Level - 1)^1.2
+    const getLevelFromXP = (xp) => Math.floor(Math.pow(xp / 500, 1 / 1.2)) + 1;
+    const getXPForLevel = (level) => Math.ceil(500 * Math.pow(level - 1, 1.2));
+
+    const userLevel = computed(() => getLevelFromXP(userXP.value));
+
+    const levelStartXP = computed(() => getXPForLevel(userLevel.value));
+    const nextLevelXP = computed(() => getXPForLevel(userLevel.value + 1));
+
+    // Progress within current level
+    const xpProgress = computed(() => {
+        const start = levelStartXP.value;
+        const end = nextLevelXP.value;
+        const current = userXP.value;
+
+        if (end <= start) return 100; // Should not happen
+
+        const progress = ((current - start) / (end - start)) * 100;
+        return Math.min(100, Math.max(0, progress));
+    });
+
+    // Titles Configuration
+    const TITLES = [
+        { level: 100, title: 'Godlike Entity' },
+        { level: 95, title: 'Architect of Fun' },
+        { level: 90, title: 'Timeless One' },
+        { level: 85, title: 'Reality Bender' },
+        { level: 80, title: 'Ascended Being' },
+        { level: 75, title: 'Avatar of Gaming' },
+        { level: 70, title: 'High Score King' },
+        { level: 65, title: 'Pixel Perfect' },
+        { level: 60, title: '8-Bit Emperor' },
+        { level: 55, title: 'Console Conqueror' },
+        { level: 50, title: 'Grandmaster' },
+        { level: 45, title: 'Mythic Champion' },
+        { level: 40, title: 'Legendary Hero' },
+        { level: 36, title: 'Legend in the Making' },
+        { level: 32, title: 'Hardcore Veteran' },
+        { level: 28, title: 'Speedrunner' },
+        { level: 24, title: 'Completionist' },
+        { level: 20, title: 'Master of Worlds' },
+        { level: 16, title: 'Rare Collector' },
+        { level: 13, title: 'Boss Battler' },
+        { level: 10, title: 'Elite Gamer' },
+        { level: 8, title: 'Dungeon Crawler' },
+        { level: 5, title: 'Quest Seeker' },
+        { level: 3, title: 'Apprentice Hero' },
+        { level: 1, title: 'Novice Adventurer' },
+    ];
+
+    const availableTitles = computed(() => {
+        return TITLES.filter(t => userLevel.value >= t.level).sort((a, b) => b.level - a.level); // Highest first
+    });
 
     const userTitle = computed(() => {
+        if (selectedTitle.value) {
+            // Validate if user still owns it (e.g. if level dropped - unlikely but safe)
+            // Or just return it. Let's just return it to match user intent.
+            return selectedTitle.value;
+        }
+        // Default to highest owned
         const lvl = userLevel.value;
-        if (lvl >= 50) return 'Godlike Entity';
-        if (lvl >= 30) return 'Legendary Hero';
-        if (lvl >= 20) return 'Master of Worlds';
-        if (lvl >= 10) return 'Elite Gamer';
-        if (lvl >= 5) return 'Quest Seeker';
-        if (lvl >= 2) return 'Rising Star';
-        return 'Novice Adventurer';
+        const match = TITLES.find(t => lvl >= t.level);
+        return match ? match.title : 'Novice Adventurer';
     });
+
+    const setUserTitle = (title) => {
+        selectedTitle.value = title;
+    };
 
     const awardXP = (amount) => {
         userXP.value += amount;
@@ -502,6 +561,8 @@ export function useGames() {
         xpProgress,
         awardXP,
         PLATFORMS,
-        incrementQuestUsage
+        incrementQuestUsage,
+        availableTitles,
+        setUserTitle
     };
 }

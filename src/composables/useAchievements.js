@@ -182,8 +182,8 @@ export function useAchievements() {
         if (totalHours >= 1000) unlock('century_club');
 
         // 24. Epic Hero (Level 20)
-        // userXP is ref. Level = floor(XP/100) + 1
-        const level = Math.floor(userXP.value / 100) + 1;
+        // New calculation: Level = floor(pow(XP / 500, 1/1.2)) + 1
+        const level = Math.floor(Math.pow(userXP.value / 500, 1 / 1.2)) + 1;
         if (level >= 20) unlock('epic_hero');
 
         // 25. Empty Plate (Backlog Zero)
