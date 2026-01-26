@@ -34,10 +34,23 @@ const achievementsList = [
     { id: 'quest_1', title: 'Quest Accepted', description: 'Use the Quest Giver once.', icon: 'Dices' },
     { id: 'quest_10', title: 'Destiny Awaits', description: 'Use the Quest Giver 10 times.', icon: 'Sparkles' },
 
-    // 8. Special / Complex
+    // 8. Special / Complex (Existing)
     { id: 'jack_of_all_trades', title: 'Jack of All Trades', description: 'Have at least one game in Playing, Completed, Dropped, and Backlog.', icon: 'Palette' },
     { id: 'marathon', title: 'Marathon', description: 'Complete a game with over 100 hours of playtime.', icon: 'Hourglass' },
     { id: 'quick_fix', title: 'Quick Fix', description: 'Complete a game with under 2 hours of playtime.', icon: 'Zap' },
+
+    // 9. Hard / Long Term (New)
+    { id: 'completionist_50', title: 'The Completionist', description: 'Complete 50 games.', icon: 'Trophy' },
+    { id: 'library_100', title: 'Library of Alexandria', description: 'Own 100 games.', icon: 'Library' },
+    { id: 'century_club', title: 'Century Club', description: 'Reach 1000 hours of total playtime.', icon: 'Clock' },
+    { id: 'epic_hero', title: 'Epic Hero', description: 'Reach User Level 20.', icon: 'Crown' },
+    { id: 'empty_plate', title: 'Empty Plate', description: 'Have 0 games in your backlog (min. 5 total games).', icon: 'CheckCircle2' },
+
+    // 10. Specific / Fun (New)
+    { id: 'slow_burn', title: 'Slow Burn', description: 'Complete a game more than 1 year after starting it.', icon: 'Timer' },
+    { id: 'critics_darling', title: 'Critic\'s Darling', description: 'Rate 5 games as 5 stars.', icon: 'Star' },
+    { id: 'old_school', title: 'Old School', description: 'Add a game released before the year 2000.', icon: 'Gamepad2' },
+    { id: 'future_proof', title: 'Future Proof', description: 'Add a game with a future release date.', icon: 'Sparkles' },
 ];
 
 // Persistent State
@@ -152,10 +165,64 @@ export function useAchievements() {
         if (completedGames.value.some(g => g.playtime && g.playtime >= 100)) unlock('marathon');
 
         // 20. Quick Fix
-        // Check for completed games with actual recorded playtime > 0 but < 2
-        // We need to be careful not to count '0' playtime games unless we're sure.
-        // Let's assume if it is > 0 and < 2.
         if (completedGames.value.some(g => g.playtime > 0 && g.playtime < 2)) unlock('quick_fix');
+
+        // --- NEW ACHIEVEMENTS ---
+
+        // 21. The Completionist
+        if (completedGames.value.length >= 50) unlock('completionist_50');
+
+        // 22. Library of Alexandria
+        if (allGames.length >= 100) unlock('library_100');
+
+        // 23. Century Club (Total Hours)
+        // Access totalDurationDays from context IF available, or recalc
+        // context doesn't expose totalDuration directly nicely, but we can sum playtime
+        const totalHours = allGames.reduce((acc, g) => acc + (g.playtime || 0), 0);
+        if (totalHours >= 1000) unlock('century_club');
+
+        // 24. Epic Hero (Level 20)
+        // userXP is ref. Level = floor(XP/100) + 1
+        const level = Math.floor(userXP.value / 100) + 1;
+        if (level >= 20) unlock('epic_hero');
+
+        // 25. Empty Plate (Backlog Zero)
+        if (allGames.length >= 5 && backlogGames.value.length === 0) unlock('empty_plate');
+
+        // 26. Slow Burn (> 1 year)
+        // Check completed games
+        const oneYearMs = 365 * 24 * 60 * 60 * 1000;
+        const hasSlowBurn = completedGames.value.some(g => {
+            if (g.startedAt && g.completedAt) {
+                return (new Date(g.completedAt) - new Date(g.startedAt)) > oneYearMs;
+            }
+            return false;
+        });
+        if (hasSlowBurn) unlock('slow_burn');
+
+        // 27. Critic's Darling (5x 5-star)
+        const fiveStarCount = allGames.filter(g => g.rating === 5).length;
+        if (fiveStarCount >= 5) unlock('critics_darling');
+
+        // 28. Old School (< 2000)
+        const hasOldSchool = allGames.some(g => {
+            if (g.released) {
+                const year = parseInt(g.released.split('-')[0]);
+                return year < 2000;
+            }
+            return false;
+        });
+        if (hasOldSchool) unlock('old_school');
+
+        // 29. Future Proof (> Now)
+        const now = new Date();
+        const hasFuture = allGames.some(g => {
+            if (g.released) {
+                return new Date(g.released) > now;
+            }
+            return false;
+        });
+        if (hasFuture) unlock('future_proof');
     };
 
     return {
