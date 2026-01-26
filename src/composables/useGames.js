@@ -206,7 +206,19 @@ export function useGames() {
             }
 
             // Platform
-            const platform = game.platform || 'Unknown';
+            // Normalize platform to ensure groups are consistent (e.g. Switch -> Nintendo)
+            let platform = game.platform || 'Unknown';
+            const lower = platform.toLowerCase();
+
+            if (lower.includes('playstation') || lower.includes('ps')) platform = 'PlayStation';
+            else if (lower.includes('xbox')) platform = 'Xbox';
+            else if (lower.includes('nintendo') || lower.includes('switch') || lower.includes('wii') || lower.includes('ds') || lower.includes('game boy')) platform = 'Nintendo';
+            else if (lower.includes('android') || lower.includes('ios') || lower.includes('iphone') || lower.includes('mobile')) platform = 'Mobile';
+            else if (lower.includes('pc') || lower.includes('windows') || lower.includes('mac') || lower.includes('linux')) platform = 'PC';
+            // Else keep original (e.g. 'Sega') or map to 'PC' if we want strict 5 groups. 
+            // User requested "all platforms we have", implying specific list. But let's keep unknown ones as is to be safe, 
+            // but the issue was Switch vs Nintendo. This logic fixes that.
+
             platformCounts[platform] = (platformCounts[platform] || 0) + 1;
 
             // Genres (if available from API)
