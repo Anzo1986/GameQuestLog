@@ -1,32 +1,10 @@
 <script setup>
-import { ref, watch, nextTick } from 'vue';
-import { Edit2, Trophy, Crown, PieChart } from 'lucide-vue-next';
+import { Trophy, Crown, PieChart } from 'lucide-vue-next';
 import { useGames } from '../composables/useGames';
 
 const emit = defineEmits(['open-stats']);
 
-const { userName, userLevel, userTitle, xpProgress, setUserName, userAvatar } = useGames();
-
-const isEditing = ref(false);
-const editName = ref(userName.value);
-const nameInput = ref(null);
-
-const startEditing = () => {
-    isEditing.value = true;
-    editName.value = userName.value;
-    nextTick(() => {
-        nameInput.value?.focus();
-    });
-};
-
-const saveName = () => {
-    if (editName.value.trim()) {
-        setUserName(editName.value.trim());
-    }
-    isEditing.value = false;
-};
-
-// Handle generic click outside if needed, or just blur/enter
+const { userName, userLevel, userTitle, xpProgress, userAvatar } = useGames();
 </script>
 
 <template>
@@ -59,18 +37,7 @@ const saveName = () => {
 
             <div>
                  <div class="flex items-center gap-2">
-                    <h2 v-if="!isEditing" class="text-xl font-bold text-white tracking-tight" @click="startEditing">{{ userName }}</h2>
-                    <input 
-                        v-else
-                        ref="nameInput"
-                        v-model="editName"
-                        @blur="saveName"
-                        @keyup.enter="saveName"
-                        class="bg-gray-800/50 text-white rounded px-2 py-0.5 outline-none border border-primary w-32"
-                    />
-                    <button v-if="!isEditing" @click="startEditing" class="text-gray-400 hover:text-white transition-colors">
-                        <Edit2 class="w-3 h-3" />
-                    </button>
+                    <h2 class="text-xl font-bold text-white tracking-tight">{{ userName }}</h2>
                  </div>
                  <div class="flex items-center gap-1 text-sm text-yellow-400 font-medium mt-0.5">
                      <Crown class="w-3 h-3" />
