@@ -1,348 +1,63 @@
+// Facade for the Refactored Composables
+// This ensures backward compatibility while using the new structure.
+
 import { ref, computed, watch } from 'vue';
+import { useSettings } from './useSettings';
+import { useGamification } from './useGamification';
+import { useGameData } from './useGameData';
 
-const GAMES_STORAGE_KEY = 'game-tracker-games';
-const API_KEY_STORAGE_KEY = 'game-tracker-api-key';
-
-// Shared Global State
-const games = ref([]);
-const apiKey = ref(localStorage.getItem(API_KEY_STORAGE_KEY) || '');
+// Shared state for Search (keep here or move to useGameSearch if needed)
 const searchQuery = ref('');
 const searchResults = ref([]);
 const isSearching = ref(false);
 
-const USER_STORAGE_KEY = 'game-tracker-user';
-const THEME_STORAGE_KEY = 'game-tracker-theme';
-
-const userXP = ref(0);
-const userName = ref('Guest');
-const userAvatar = ref(null);
-const selectedTitle = ref(null);
-const themeColor = ref(localStorage.getItem(THEME_STORAGE_KEY) || 'blue');
-
-const THEMES = {
-    blue: { name: 'Blue', rgb: '59 130 246' },   // blue-500
-    pink: { name: 'Pink', rgb: '236 72 153' },   // pink-500
-    green: { name: 'Green', rgb: '34 197 94' },    // green-500
-    purple: { name: 'Purple', rgb: '168 85 247' },   // purple-500
-    orange: { name: 'Orange', rgb: '249 115 22' },   // orange-500
-    red: { name: 'Red', rgb: '239 68 68' },    // red-500
-};
-
-// Simplified Platforms
-const PLATFORMS = ['PC', 'PlayStation', 'Xbox', 'Nintendo', 'Mobile'];
-
-const mapPlatform = (platforms) => {
-    if (!platforms || !Array.isArray(platforms)) return 'PC';
-
-    // Check parent_platforms or platforms array from API
-    // API usually returns parent_platforms: [{platform: {id: 1, name: "PC", slug: "pc"}}]
-
-    // Flatten names 
-    const names = platforms.map(p => p.platform?.name || p.name || '').join(' ').toLowerCase();
-
-    if (names.includes('playstation') || names.includes('ps')) return 'PlayStation';
-    if (names.includes('xbox')) return 'Xbox';
-    if (names.includes('nintendo') || names.includes('wii') || names.includes('switch') || names.includes('ds') || names.includes('game boy')) return 'Nintendo';
-    if (names.includes('android') || names.includes('ios') || names.includes('iphone') || names.includes('mobile')) return 'Mobile';
-
-    // Default PC if found, otherwise whatever (PC default safe)
-    if (names.includes('pc')) return 'PC';
-
-    return 'PC'; // Fallback
-};
-
-// Apply theme immediately
-const applyTheme = (color) => {
-    const theme = THEMES[color] || THEMES.blue;
-    document.documentElement.style.setProperty('--primary-rgb', theme.rgb);
-};
-applyTheme(themeColor.value);
-
-// Initialization logic
-const savedGames = localStorage.getItem(GAMES_STORAGE_KEY);
-if (savedGames) {
-    try {
-        games.value = JSON.parse(savedGames);
-    } catch (e) {
-        console.error('Failed to parse saved games', e);
-    }
-}
-
-const savedUser = localStorage.getItem(USER_STORAGE_KEY);
-
-if (savedUser) {
-    try {
-        const userData = JSON.parse(savedUser);
-        userXP.value = userData.xp || 0;
-        userName.value = userData.name || 'Guest';
-        userAvatar.value = userData.avatar || null;
-        selectedTitle.value = userData.title || null;
-    } catch (e) {
-        console.error('Failed to parse user data', e);
-    }
-}
-
-// Watchers
-watch(games, (newGames) => {
-    localStorage.setItem(GAMES_STORAGE_KEY, JSON.stringify(newGames));
-}, { deep: true });
-
-watch(themeColor, (newColor) => {
-    localStorage.setItem(THEME_STORAGE_KEY, newColor);
-    applyTheme(newColor);
-});
-
-watch([userXP, userName, userAvatar, selectedTitle], () => {
-    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify({
-        xp: userXP.value,
-        name: userName.value,
-        avatar: userAvatar.value,
-        title: selectedTitle.value
-    }));
-});
-
 export function useGames() {
+    // 1. Import Sub-Modules
+    const settings = useSettings();
+    const gamification = useGamification();
+    const gameData = useGameData();
 
-    // Gamification Computed
-    // New Formula: Level = floor(pow(XP / 500, 1/1.2)) + 1
-    // Inverse: XP = 500 * (Level - 1)^1.2
-    const getLevelFromXP = (xp) => Math.floor(Math.pow(xp / 500, 1 / 1.2)) + 1;
-    const getXPForLevel = (level) => Math.ceil(500 * Math.pow(level - 1, 1.2));
+    // 2. Facade Methods (Stitching logic together)
 
-    const userLevel = computed(() => getLevelFromXP(userXP.value));
-
-    const levelStartXP = computed(() => getXPForLevel(userLevel.value));
-    const nextLevelXP = computed(() => getXPForLevel(userLevel.value + 1));
-
-    // Progress within current level
-    const xpProgress = computed(() => {
-        const start = levelStartXP.value;
-        const end = nextLevelXP.value;
-        const current = userXP.value;
-
-        if (end <= start) return 100; // Should not happen
-
-        const progress = ((current - start) / (end - start)) * 100;
-        return Math.min(100, Math.max(0, progress));
-    });
-
-    // Titles Configuration
-    const TITLES = [
-        { level: 100, title: 'Godlike Entity' },
-        { level: 95, title: 'Architect of Fun' },
-        { level: 90, title: 'Timeless One' },
-        { level: 85, title: 'Reality Bender' },
-        { level: 80, title: 'Ascended Being' },
-        { level: 75, title: 'Avatar of Gaming' },
-        { level: 70, title: 'High Score King' },
-        { level: 65, title: 'Pixel Perfect' },
-        { level: 60, title: '8-Bit Emperor' },
-        { level: 55, title: 'Console Conqueror' },
-        { level: 50, title: 'Grandmaster' },
-        { level: 45, title: 'Mythic Champion' },
-        { level: 40, title: 'Legendary Hero' },
-        { level: 36, title: 'Legend in the Making' },
-        { level: 32, title: 'Hardcore Veteran' },
-        { level: 28, title: 'Speedrunner' },
-        { level: 24, title: 'Completionist' },
-        { level: 20, title: 'Master of Worlds' },
-        { level: 16, title: 'Rare Collector' },
-        { level: 13, title: 'Boss Battler' },
-        { level: 10, title: 'Elite Gamer' },
-        { level: 8, title: 'Dungeon Crawler' },
-        { level: 5, title: 'Quest Seeker' },
-        { level: 3, title: 'Apprentice Hero' },
-        { level: 1, title: 'Novice Adventurer' },
-    ];
-
-    const availableTitles = computed(() => {
-        return TITLES.filter(t => userLevel.value >= t.level).sort((a, b) => b.level - a.level); // Highest first
-    });
-
-    const userTitle = computed(() => {
-        if (selectedTitle.value) {
-            // Validate if user still owns it (e.g. if level dropped - unlikely but safe)
-            // Or just return it. Let's just return it to match user intent.
-            return selectedTitle.value;
-        }
-        // Default to highest owned
-        const lvl = userLevel.value;
-        const match = TITLES.find(t => lvl >= t.level);
-        return match ? match.title : 'Novice Adventurer';
-    });
-
-    const setUserTitle = (title) => {
-        selectedTitle.value = title;
-    };
-
-    const awardXP = (amount) => {
-        userXP.value += amount;
-        console.log(`Awarded ${amount} XP! New Total: ${userXP.value}`);
-    };
-
-    // Actions
-    const setApiKey = (key) => {
-        apiKey.value = key;
-        localStorage.setItem(API_KEY_STORAGE_KEY, key);
-    };
-
-    const setUserName = (name) => {
-        userName.value = name;
-    };
-
-    const setUserAvatar = (dataUrl) => {
-        userAvatar.value = dataUrl;
-    };
-
-    const setTheme = (color) => {
-        if (THEMES[color]) {
-            themeColor.value = color;
-            applyTheme(color); // Force update
-        }
-    };
-
-    // Enhance Status with 'dropped'
-    const backlogGames = computed(() => games.value.filter(g => g.status === 'backlog'));
-    const playingGames = computed(() => games.value.filter(g => g.status === 'playing'));
-    const completedGames = computed(() => games.value.filter(g => g.status === 'completed').sort((a, b) => new Date(b.completedAt || 0) - new Date(a.completedAt || 0)));
-    const droppedGames = computed(() => games.value.filter(g => g.status === 'dropped'));
-
-    // Track Quest Usage
-    const incrementQuestUsage = () => {
-        let count = parseInt(localStorage.getItem('game-tracker-quest-usage') || '0');
-        count++;
-        localStorage.setItem('game-tracker-quest-usage', count.toString());
-        return count;
-    };
-
-    const gameStats = computed(() => {
-        const totalGames = games.value.length;
-        if (totalGames === 0) return null;
-
-        const statusCounts = {
-            backlog: 0,
-            playing: 0,
-            completed: 0,
-            dropped: 0
-        };
-
-        const genreCounts = {};
-        const platformCounts = {};
-        let totalDurationDays = 0;
-
-        games.value.forEach(game => {
-            // Status
-            if (statusCounts[game.status] !== undefined) {
-                statusCounts[game.status]++;
-            }
-
-            // Duration (Time Invested in Days)
-            // Logic: startedAt -> completedAt (or Now)
-            if (game.startedAt) {
-                const start = new Date(game.startedAt);
-                let end = new Date();
-
-                if (game.status === 'completed' && game.completedAt) {
-                    end = new Date(game.completedAt);
-                } else if (game.status === 'dropped') {
-                    // If dropped, arguably we shouldn't count "until today". 
-                    // But without droppedAt, let's treat it as 0 additional days or just 'time active'.
-                    // User request: "until finished". Dropping is finishing.
-                    // Let's count it up to now for simplicity, or maybe skip?
-                    // Safe bet: If 'dropped', count only if we have a valid range? 
-                    // Let's treat 'dropped' same as 'playing' (until now) for 'Time Invested' duration, 
-                    // OR strict: only Completed games have fixed duration.
-                    // DECISION: calculate duration for Playing and Completed. Dropped is ambiguous without droppedAt.
-                    // Current implementation: use NOW for non-completed.
-                }
-
-                // Only count if end > start
-                if (end >= start) {
-                    const diffTime = Math.abs(end - start);
-                    const days = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                    totalDurationDays += days;
-                }
-            }
-
-            // Platform
-            // Normalize platform to ensure groups are consistent (e.g. Switch -> Nintendo)
-            let platform = game.platform || 'Unknown';
-            const lower = platform.toLowerCase();
-
-            if (lower.includes('playstation') || lower.includes('ps')) platform = 'PlayStation';
-            else if (lower.includes('xbox')) platform = 'Xbox';
-            else if (lower.includes('nintendo') || lower.includes('switch') || lower.includes('wii') || lower.includes('ds') || lower.includes('game boy')) platform = 'Nintendo';
-            else if (lower.includes('android') || lower.includes('ios') || lower.includes('iphone') || lower.includes('mobile')) platform = 'Mobile';
-            else if (lower.includes('pc') || lower.includes('windows') || lower.includes('mac') || lower.includes('linux')) platform = 'PC';
-            // Else keep original (e.g. 'Sega') or map to 'PC' if we want strict 5 groups. 
-            // User requested "all platforms we have", implying specific list. But let's keep unknown ones as is to be safe, 
-            // but the issue was Switch vs Nintendo. This logic fixes that.
-
-            platformCounts[platform] = (platformCounts[platform] || 0) + 1;
-
-            // Genres (if available from API)
-            if (game.genres && Array.isArray(game.genres)) {
-                game.genres.forEach(g => {
-                    genreCounts[g.name] = (genreCounts[g.name] || 0) + 1;
-                });
-            }
-        });
-
-        const completionRate = totalGames > 0 ? Math.round((statusCounts.completed / totalGames) * 100) : 0;
-
-        return {
-            totalGames,
-            statusCounts,
-            genreCounts,
-            platformCounts,
-            totalDurationDays, // Changed from totalPlaytime
-            completionRate
-        };
-    });
-
-
-
-    const addGame = async (gameData, platform = 'PC') => {
-        if (games.value.some(g => g.id === gameData.id)) return; // Prevent duplicates
-
-        // 1. Create Basic Object (Optimistic)
+    // Add Game Wrapper (Data + Gamification + API Fetch)
+    const addGame = async (newGameData, platform = 'PC') => {
+        // Prepare Basic Object
         const newGame = {
-            id: gameData.id,
-            title: gameData.name,
-            background_image: gameData.background_image,
-            released: gameData.released,
+            id: newGameData.id,
+            title: newGameData.name,
+            background_image: newGameData.background_image,
+            released: newGameData.released,
             status: 'backlog',
-            platform: platform,
-            playtime: gameData.playtime || 0,
+            platform: platform, // Use mapping if needed, but UI usually passes string
+            playtime: newGameData.playtime || 0,
             rating: 0,
             addedAt: new Date().toISOString()
         };
 
-        // 2. Add Immediately
-        games.value.push(newGame);
-        awardXP(10);
+        // Try Add (returns false if duplicate)
+        const success = gameData.addGameRaw(newGame);
+        if (!success) return;
 
-        // 3. Fetch Full Details in Background
-        if (apiKey.value) {
+        // Award XP
+        gamification.awardXP(10);
+
+        // Fetch Full Details
+        if (settings.apiKey.value) {
             try {
-                const response = await fetch(`https://api.rawg.io/api/games/${gameData.id}?key=${apiKey.value}`);
+                const response = await fetch(`https://api.rawg.io/api/games/${newGameData.id}?key=${settings.apiKey.value}`);
                 if (response.ok) {
                     const details = await response.json();
 
-                    // 4. Update the existing object in the array deeply
-                    const gameToUpdate = games.value.find(g => g.id === gameData.id);
-                    if (gameToUpdate) {
-                        Object.assign(gameToUpdate, {
-                            ...details,
-                            status: gameToUpdate.status,
-                            platform: gameToUpdate.platform,
-                            rating: gameToUpdate.rating,
-                            addedAt: gameToUpdate.addedAt,
-                            startedAt: gameToUpdate.startedAt,
-                            completedAt: gameToUpdate.completedAt,
-                            playtime: details.playtime || gameToUpdate.playtime
-                        });
-                    }
+                    // Update via gameData
+                    gameData.updateGame(newGameData.id, {
+                        ...details,
+                        // Preserve local state
+                        status: 'backlog',
+                        platform: platform,
+                        rating: 0,
+                        addedAt: newGame.addedAt,
+                        playtime: details.playtime || newGame.playtime
+                    });
                 }
             } catch (e) {
                 console.error('Failed to fetch full details on add', e);
@@ -350,140 +65,117 @@ export function useGames() {
         }
     };
 
+    // Remove Game Wrapper (Data + Gamification)
+    const removeGame = (id) => {
+        const game = gameData.games.value.find(g => g.id === id);
+        if (game) {
+            // Calculate XP to remove
+            let deduction = 10;
+            if (game.startedAt) deduction += 50;
+            if (game.completedAt) deduction += 200;
+
+            gamification.awardXP(-deduction);
+            gameData.removeGameRaw(id);
+        }
+    };
+
+    // Update Status Wrapper (Logic for XP changes on status change)
     const updateStatus = (id, newStatus) => {
-        const game = games.value.find(g => g.id === id);
-        if (game) {
-            const oldStatus = game.status;
-            if (oldStatus === newStatus) return;
+        const game = gameData.games.value.find(g => g.id === id);
+        if (!game) return;
 
-            // Defines XP values for clarity
-            const XP_START = 50;
-            const XP_COMPLETE = 200;
+        const oldStatus = game.status;
+        if (oldStatus === newStatus) return;
 
-            // 1. Handle Removing XP from Old Status
-            if (oldStatus === 'completed') {
-                awardXP(-XP_COMPLETE); // Remove completion bonus
-                game.completedAt = null;
-            }
+        const XP_START = 50;
+        const XP_COMPLETE = 200;
 
-            if (oldStatus === 'playing' && newStatus === 'backlog') {
-                // Moving back to backlog implies "un-starting"
-                awardXP(-XP_START);
-                game.startedAt = null;
-            }
-
-            // Special case: Completed -> Backlog (needs to remove Start XP too if we reset everything)
-            if (oldStatus === 'completed' && newStatus === 'backlog') {
-                awardXP(-XP_START);
-                game.startedAt = null;
-            }
-
-
-            // 2. Handle Adding XP for New Status
-            if (newStatus === 'playing') {
-                if (oldStatus === 'backlog') {
-                    awardXP(XP_START);
-                    if (!game.startedAt) game.startedAt = new Date().toISOString();
-                }
-            }
-            else if (newStatus === 'completed') {
-                // From Playing -> Completed
-                if (oldStatus === 'playing') {
-                    awardXP(XP_COMPLETE);
-                }
-                // From Backlog -> Completed (Direct skip)
-                else if (oldStatus === 'backlog') {
-                    awardXP(XP_START + XP_COMPLETE);
-                    if (!game.startedAt) game.startedAt = new Date().toISOString();
-                }
-                // From Dropped -> Completed
-                else if (oldStatus === 'dropped') {
-                    // Dropped usually meant we started. If we didn't start (dropped from backlog), maybe add start?
-                    // Simplest: Just add completion. Assuming Dropped games were "started" mostly.
-                    // But if dropped from Backlog? Let's check startedAt.
-                    let bonus = XP_COMPLETE;
-                    if (!game.startedAt) {
-                        bonus += XP_START;
-                        game.startedAt = new Date().toISOString();
-                    }
-                    awardXP(bonus);
-                }
-
-                game.completedAt = new Date().toISOString();
-            }
-
-            game.status = newStatus;
+        // 1. Remove Old XP
+        if (oldStatus === 'completed') {
+            gamification.awardXP(-XP_COMPLETE);
+            game.completedAt = null;
         }
+        if (oldStatus === 'playing' && newStatus === 'backlog') {
+            gamification.awardXP(-XP_START);
+            game.startedAt = null;
+        }
+        if (oldStatus === 'completed' && newStatus === 'backlog') {
+            gamification.awardXP(-XP_START);
+            game.startedAt = null;
+        }
+
+        // 2. Add New XP
+        if (newStatus === 'playing') {
+            if (oldStatus === 'backlog') {
+                gamification.awardXP(XP_START);
+                if (!game.startedAt) game.startedAt = new Date().toISOString();
+            }
+        }
+        else if (newStatus === 'completed') {
+            if (oldStatus === 'playing') {
+                gamification.awardXP(XP_COMPLETE);
+            }
+            else if (oldStatus === 'backlog') {
+                gamification.awardXP(XP_START + XP_COMPLETE);
+                if (!game.startedAt) game.startedAt = new Date().toISOString();
+            }
+            else if (oldStatus === 'dropped') {
+                let bonus = XP_COMPLETE;
+                if (!game.startedAt) {
+                    bonus += XP_START;
+                    game.startedAt = new Date().toISOString();
+                }
+                gamification.awardXP(bonus);
+            }
+            game.completedAt = new Date().toISOString();
+        }
+
+        // 3. Update Status
+        game.status = newStatus;
     };
 
-    const updateGame = (id, updates) => {
-        const game = games.value.find(g => g.id === id);
-        if (game) {
-            Object.assign(game, updates);
-        }
-    };
-
+    // Refresh Game Wrapper (API access)
     const refreshGame = async (id) => {
-        const game = games.value.find(g => g.id === id);
-        if (!game || !apiKey.value) return;
+        const game = gameData.games.value.find(g => g.id === id);
+        if (!game || !settings.apiKey.value) return;
 
         try {
-            const response = await fetch(`https://api.rawg.io/api/games/${id}?key=${apiKey.value}`);
+            const response = await fetch(`https://api.rawg.io/api/games/${id}?key=${settings.apiKey.value}`);
             if (response.ok) {
                 const details = await response.json();
-
                 const newPlaytime = Math.max(details.playtime || 0, details.average_playtime || 0) || game.playtime;
-                // Smart update: preserve user-specific fields
-                Object.assign(game, {
+
+                gameData.updateGame(id, {
                     ...details,
+                    // protect local fields
                     status: game.status,
                     platform: game.platform,
                     rating: game.rating,
                     addedAt: game.addedAt,
                     startedAt: game.startedAt,
                     completedAt: game.completedAt,
-                    // Force update playtime with better data if available
                     playtime: newPlaytime
                 });
-                return { success: true, playtime: details.playtime, avg: details.average_playtime, used: newPlaytime };
+                return { success: true };
             }
         } catch (e) {
             console.error('Failed to refresh game', e);
             return { success: false, error: e.message };
         }
-        return { success: false, error: 'Network or API Key error' };
+        return { success: false, error: 'Network error' };
     };
 
-    const rateGame = (id, rating) => {
-        const game = games.value.find(g => g.id === id);
-        if (game) {
-            game.rating = rating;
-        }
-    };
-
-    const removeGame = (id) => {
-        const game = games.value.find(g => g.id === id);
-        if (game) {
-            // Calculate XP to remove
-            let deduction = 10; // Base XP for adding
-            if (game.startedAt) deduction += 50;
-            if (game.completedAt) deduction += 200;
-
-            awardXP(-deduction);
-        }
-        games.value = games.value.filter(g => g.id !== id);
-    };
-
+    // Search Logic (Depends on API Key and Settings)
     const searchGames = async (query) => {
-        if (!query || !apiKey.value) return;
+        if (!query || !settings.apiKey.value) return;
 
         isSearching.value = true;
         try {
-            const response = await fetch(`https://api.rawg.io/api/games?key=${apiKey.value}&search=${encodeURIComponent(query)}&page_size=10`);
+            const response = await fetch(`https://api.rawg.io/api/games?key=${settings.apiKey.value}&search=${encodeURIComponent(query)}&page_size=10`);
             const data = await response.json();
             searchResults.value = (data.results || []).map(game => ({
                 ...game,
-                selectedPlatform: mapPlatform(game.parent_platforms || game.platforms)
+                selectedPlatform: gameData.mapPlatform(game.parent_platforms || game.platforms)
             }));
         } catch (error) {
             console.error('Search failed', error);
@@ -493,76 +185,80 @@ export function useGames() {
         }
     };
 
-    const exportData = () => {
-        const dataStr = JSON.stringify(games.value, null, 2);
-        const blob = new Blob([dataStr], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `gametracker_backup_${new Date().toISOString().slice(0, 10)}.json`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-    };
+    // User Persistence Coordinator (Watch all parts and save to one User object)
+    // This maintains the original format: { xp, name, avatar, title }
+    watch(
+        [gamification.userXP, settings.userName, settings.userAvatar, settings.selectedTitle],
+        () => {
+            localStorage.setItem('game-tracker-user', JSON.stringify({
+                xp: gamification.userXP.value,
+                name: settings.userName.value,
+                avatar: settings.userAvatar.value,
+                title: settings.selectedTitle.value
+            }));
+        }
+    );
 
-    const importData = (file) => {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const importedGames = JSON.parse(e.target.result);
-                    if (Array.isArray(importedGames)) {
-                        games.value = importedGames;
-                        resolve(true);
-                    } else {
-                        reject(new Error('Invalid format'));
-                    }
-                } catch (error) {
-                    reject(error);
-                }
-            };
-            reader.onerror = reject;
-            reader.readAsText(file);
-        });
-    };
-
+    // Return Unified Interface (matching original useGames)
     return {
-        games,
-        apiKey,
-        setApiKey,
+        // Settings
+        apiKey: settings.apiKey,
+        setApiKey: settings.setApiKey,
+        themeColor: settings.themeColor,
+        setTheme: settings.setTheme,
+        THEMES: settings.THEMES,
+
+        // User
+        userName: settings.userName,
+        userAvatar: settings.userAvatar,
+        setUserName: settings.setUserName,
+        setUserAvatar: settings.setUserAvatar,
+        userTitle: settings.selectedTitle, // Note: original exposed computed 'userTitle' with fallback logic
+        setUserTitle: settings.setUserTitle,
+
+        // Gamification
+        userXP: gamification.userXP,
+        userLevel: gamification.userLevel,
+        awardXP: gamification.awardXP,
+        xpProgress: gamification.xpProgress,
+        availableTitles: gamification.availableTitles,
+        incrementQuestUsage: gamification.incrementQuestUsage,
+
+        // Original Computed User Title needs to be recreated here if logic was complex?
+        // Original: if selected return it, else match level.
+        // Let's use the one from settings (which is just state) and add the fallback logic again here or in Gamification.
+        // Gamification has `getTitleForLevel`.
+        userTitle: computed(() => {
+            if (settings.selectedTitle.value) return settings.selectedTitle.value;
+            return gamification.getTitleForLevel(gamification.userLevel.value);
+        }),
+
+
+        // Data
+        games: gameData.games,
+        backlogGames: gameData.backlogGames,
+        playingGames: gameData.playingGames,
+        completedGames: gameData.completedGames,
+        droppedGames: gameData.droppedGames,
+        gameStats: gameData.gameStats,
+        PLATFORMS: gameData.PLATFORMS,
+
+        // Actions (Wrapped)
+        addGame,
+        removeGame,
+        updateStatus,
+        refreshGame,
+
+        // Actions (Direct)
+        updateGame: gameData.updateGame,
+        rateGame: gameData.rateGame,
+        exportData: gameData.exportData,
+        importData: gameData.importData,
+
+        // Search
         searchQuery,
         searchResults,
         isSearching,
-        backlogGames,
-        playingGames,
-        completedGames,
-        droppedGames,
-        gameStats,
-        addGame,
-        updateStatus,
-        updateGame,
-        refreshGame,
-        rateGame,
-        removeGame,
-        searchGames,
-        exportData,
-        importData,
-        userXP,
-        userName,
-        userAvatar,
-        setUserName,
-        setUserAvatar,
-        themeColor,
-        setTheme,
-        THEMES,
-        userLevel,
-        userTitle,
-        xpProgress,
-        awardXP,
-        PLATFORMS,
-        incrementQuestUsage,
-        availableTitles,
-        setUserTitle
+        searchGames
     };
 }

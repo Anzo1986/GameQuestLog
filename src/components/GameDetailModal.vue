@@ -7,7 +7,7 @@ import EditGameModal from './EditGameModal.vue';
 const props = defineProps({
   gameId: {
     type: Number,
-    required: true
+    default: null
   },
   isOpen: Boolean
 });
