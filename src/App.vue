@@ -12,6 +12,8 @@ import { useGames } from './composables/useGames';
 import { useAchievements } from './composables/useAchievements';
 import AchievementsModal from './components/AchievementsModal.vue';
 import AchievementToast from './components/AchievementToast.vue'; // New Toast Component
+import SmartBar from './components/SmartBar.vue'; // Search & Sort
+import TimelineModal from './components/TimelineModal.vue'; // Journey Timeline
 import { Settings, Plus, Gamepad2, Layers, CheckCircle2, LayoutDashboard, Ban, Timer, Bell, Dices, Trophy, Menu, X } from 'lucide-vue-next';
 
 const { playingGames, backlogGames, completedGames, droppedGames, updateStatus, removeGame, games, userXP } = useGames();
@@ -22,12 +24,55 @@ const showSettings = ref(false);
 const showStats = ref(false);
 const showQuestModal = ref(false);
 const showDetailModal = ref(false);
+const showTimeline = ref(false); // Timeline State
 const selectedGameId = ref(null);
+
 const currentTab = ref('dashboard'); // 'dashboard', 'backlog', 'completed'
+
+// Search & Sort State
+const localSearchQuery = ref('');
+const currentSort = ref('added'); // 'added', 'name', 'released', 'rating'
 
 const showCopyFeedback = ref(false);
 const showAchievements = ref(false);
 const isMenuOpen = ref(false); // FAB Menu State
+
+// Helper: Filter and Sort
+const getProcessedGames = (gameList) => {
+  let result = [...gameList];
+
+  // 1. Filter
+  if (localSearchQuery.value.trim()) {
+      const q = localSearchQuery.value.toLowerCase();
+      result = result.filter(g => g.title.toLowerCase().includes(q));
+  }
+
+  // 2. Sort
+  result.sort((a, b) => {
+      switch (currentSort.value) {
+          case 'name': return a.title.localeCompare(b.title);
+          case 'released': 
+              return new Date(b.released || 0) - new Date(a.released || 0); // Newest first
+          case 'rating': 
+               return (b.rating || 0) - (a.rating || 0); // Highest rating first
+          case 'added':
+          default:
+               return (b.id || 0) - (a.id || 0); // Newest ID = Newest Added
+      }
+  });
+
+  return result;
+};
+
+const displayGames = computed(() => {
+    switch(currentTab.value) {
+        case 'dashboard': return getProcessedGames(playingGames.value);
+        case 'backlog': return getProcessedGames(backlogGames.value);
+        case 'completed': return getProcessedGames(completedGames.value);
+        case 'dropped': return getProcessedGames(droppedGames.value);
+        default: return [];
+    }
+});
 
 const openSettings = () => {
     showSettings.value = true;
@@ -44,6 +89,16 @@ const openStats = () => {
 };
 
 const closeStats = () => {
+    history.back();
+};
+
+const openTimeline = () => {
+    showStats.value = false; // Close stats to focus on timeline (optional, or keep generic)
+    showTimeline.value = true;
+    history.pushState({ modal: 'timeline' }, '', '');
+};
+
+const closeTimeline = () => {
     history.back();
 };
 
@@ -83,6 +138,8 @@ onMounted(() => {
             showSettings.value = false;
         } else if (showStats.value) {
             showStats.value = false;
+        } else if (showTimeline.value) {
+            showTimeline.value = false;
         } else if (showQuestModal.value) {
             showQuestModal.value = false;
         } else if (showAchievements.value) {
@@ -167,11 +224,22 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
     <SettingsSection v-if="showSettings" @close="closeSettings" />
 
     <!-- Stats Modal -->
-    <StatsModal v-if="showStats" :is-open="showStats" @close="closeStats" />
+    <StatsModal v-if="showStats" :is-open="showStats" @close="closeStats" @open-timeline="openTimeline" />
+
+    <!-- Timeline Modal -->
+    <TimelineModal v-if="showTimeline" :is-open="showTimeline" @close="closeTimeline" />
 
     <!-- Achievements -->
     <AchievementsModal v-if="showAchievements" :is-open="showAchievements" @close="closeAchievements" />
     <AchievementToast />
+
+    <AchievementToast />
+    
+    <!-- Smart Bar (Search & Sort) -->
+    <SmartBar 
+        v-model:searchQuery="localSearchQuery"
+        v-model:sortOption="currentSort"
+    />
 
     <!-- Navigation Tabs (Desktop / Mobile Hybrid) -->
     <nav class="flex p-1 bg-gray-800 rounded-xl mb-6 sticky top-2 z-30 shadow-lg border border-gray-700">
@@ -216,7 +284,7 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
         </h2>
         <div class="grid grid-cols-[1fr_1fr] sm:grid-cols-2 md:grid-cols-2 gap-1.5 sm:gap-2">
           <GameCard 
-            v-for="(game, index) in playingGames" 
+            v-for="(game, index) in displayGames" 
             :key="game.id" 
             :game="game" 
             @click="openGameDetails(game.id)"
@@ -225,8 +293,8 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
             class="cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all shadow-sm animate-stagger-enter"
             :style="{ animationDelay: `${index * 50}ms` }"
           />
-          <div v-if="playingGames.length === 0" class="p-8 border-2 border-dashed border-gray-700 rounded-xl text-center text-gray-500 col-span-2">
-            No games in progress. Start one from your backlog!
+          <div v-if="displayGames.length === 0" class="p-8 border-2 border-dashed border-gray-700 rounded-xl text-center text-gray-500 col-span-2">
+            {{ localSearchQuery ? "No matching games found." : "No games in progress. Start one from your backlog!" }}
           </div>
         </div>
       </section>
@@ -238,7 +306,7 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
 
         <div class="grid grid-cols-[1fr_1fr] sm:grid-cols-3 md:grid-cols-4 gap-1.5 sm:gap-2">
           <GameCard 
-            v-for="(game, index) in backlogGames" 
+            v-for="(game, index) in displayGames" 
             :key="game.id" 
             :game="game" 
             @click="openGameDetails(game.id)"
@@ -248,8 +316,8 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
             :style="{ animationDelay: `${index * 50}ms` }"
           />
         </div>
-        <div v-if="backlogGames.length === 0" class="text-center py-10 text-gray-500">
-          Your backlog is empty. Time to find new games!
+        <div v-if="displayGames.length === 0" class="text-center py-10 text-gray-500">
+           {{ localSearchQuery ? "No matching games found." : "Your backlog is empty. Time to find new games!" }}
         </div>
       </section>
 
@@ -258,7 +326,7 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
         <h2 class="text-lg font-bold text-gray-200 mb-3">Completed</h2>
         <div class="grid grid-cols-[1fr_1fr] sm:grid-cols-3 md:grid-cols-4 gap-1.5 sm:gap-2">
           <div 
-             v-for="(game, index) in completedGames" 
+             v-for="(game, index) in displayGames" 
              :key="game.id" 
              class="relative group cursor-pointer animate-stagger-enter" 
              @click="openGameDetails(game.id)"
@@ -279,8 +347,8 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
             </div>
           </div>
         </div>
-        <div v-if="completedGames.length === 0" class="text-center py-10 text-gray-500">
-          No completed games yet. Keep playing!
+        <div v-if="displayGames.length === 0" class="text-center py-10 text-gray-500">
+          {{ localSearchQuery ? "No matching games found." : "No completed games yet. Keep playing!" }}
         </div>
       </section>
 
@@ -289,7 +357,7 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
         <h2 class="text-lg font-bold text-gray-200 mb-3">Dropped Games</h2>
         <div class="grid grid-cols-[1fr_1fr] sm:grid-cols-3 md:grid-cols-4 gap-1.5 sm:gap-2">
           <div 
-            v-for="(game, index) in droppedGames" 
+            v-for="(game, index) in displayGames" 
             :key="game.id" 
             class="relative group cursor-pointer opacity-50 hover:opacity-100 transition-opacity animate-stagger-enter" 
             @click="openGameDetails(game.id)"
@@ -306,8 +374,8 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
             </div>
           </div>
         </div>
-        <div v-if="droppedGames.length === 0" class="text-center py-10 text-gray-500">
-          No dropped games. That's dedication!
+        <div v-if="displayGames.length === 0" class="text-center py-10 text-gray-500">
+           {{ localSearchQuery ? "No matching games found." : "No dropped games. That's dedication!" }}
         </div>
       </section>
 

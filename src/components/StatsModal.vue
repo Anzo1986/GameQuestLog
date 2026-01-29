@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { X, Trophy, Clock, AlertCircle, Crown } from 'lucide-vue-next';
 import { useGames } from '../composables/useGames';
+import { useSettings } from '../composables/useSettings';
 import {
   Chart as ChartJS,
   ArcElement,
@@ -34,9 +35,15 @@ defineProps({
   isOpen: Boolean
 });
 
-defineEmits(['close']);
+defineEmits(['close', 'open-timeline']);
 
 const { gameStats, userLevel, userTitle } = useGames();
+const { themeColor, THEMES } = useSettings();
+
+// Helper to get current theme RGB
+const primaryColorRgb = computed(() => {
+    return THEMES[themeColor.value]?.rgb || '59 130 246';
+});
 
 // 1. Status Doughnut Chart
 const statusChartData = computed(() => {
@@ -63,7 +70,6 @@ const statusChartOptions = {
 const genreChartData = computed(() => {
     if (!gameStats.value) return null;
     const g = gameStats.value.genreCounts;
-    // Get top 6 genres
     const sortedGenres = Object.entries(g).sort((a,b) => b[1] - a[1]).slice(0, 6);
     
     return {
@@ -98,12 +104,21 @@ const platformChartData = computed(() => {
     if (!gameStats.value) return null;
     const p = gameStats.value.platformCounts;
     const sortedPlatforms = Object.entries(p).sort((a,b) => b[1] - a[1]).slice(0, 5);
+    
+    // Use Theme Color for Platform Bars
+    // Ensure properly formatted RGB for Chart.js (needs commas for legacy rgba or slash for modern rgb)
+    // defined as 'RRR GGG BBB' in settings
+    let c = primaryColorRgb.value;
+    if (c.includes(' ')) {
+        c = c.split(' ').join(',');
+    }
 
     return {
         labels: sortedPlatforms.map(i => i[0]),
         datasets: [{
             label: 'Games Owned',
-            backgroundColor: '#8b5cf6',
+            backgroundColor: `rgba(${c}, 0.8)`,
+            hoverBackgroundColor: `rgba(${c}, 1.0)`,
             data: sortedPlatforms.map(i => i[1]),
             borderRadius: 4
         }]
@@ -134,14 +149,22 @@ const platformChartOptions = {
       <!-- Header -->
       <div class="p-6 border-b border-gray-800 flex justify-between items-center bg-gray-900/50 backdrop-blur z-20 sticky top-0">
           <div>
-            <h2 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 uppercase tracking-widest">
+            <h2 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[rgb(var(--primary-rgb))] to-purple-500 uppercase tracking-widest">
                 Career Stats
             </h2>
             <p class="text-gray-400 text-sm">Your gaming journey encoded in data.</p>
           </div>
-          <button @click="$emit('close')" class="p-2 bg-gray-800 rounded-full text-gray-400 hover:text-white hover:bg-gray-700 transition-colors">
-              <X class="w-6 h-6" />
-          </button>
+          <div class="flex items-center gap-2">
+            <button 
+                @click="$emit('open-timeline')" 
+                class="flex items-center gap-2 bg-gradient-to-r from-[rgb(var(--primary-rgb))] to-purple-600 hover:from-[rgb(var(--primary-rgb))]/80 hover:to-purple-500 text-white px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider shadow-lg transition-all active:scale-95"
+            >
+                <Clock class="w-4 h-4" /> Journey
+            </button>
+            <button @click="$emit('close')" class="p-2 bg-gray-800 rounded-full text-gray-400 hover:text-white hover:bg-gray-700 transition-colors">
+                <X class="w-6 h-6" />
+            </button>
+          </div>
       </div>
 
       <!-- Scrollable Content -->
@@ -211,7 +234,7 @@ const platformChartOptions = {
 
             <!-- Bar: Platforms -->
             <div class="bg-gray-800/40 rounded-3xl p-6 border border-gray-700/50 flex flex-col md:col-span-2 lg:col-span-1">
-                <h4 class="text-lg font-bold text-gray-200 mb-4 border-l-4 border-indigo-500 pl-3">Platform Wars</h4>
+                <h4 class="text-lg font-bold text-gray-200 mb-4 border-l-4 border-[rgb(var(--primary-rgb))] pl-3" style="border-color: rgb(var(--primary-rgb))">Platform Wars</h4>
                 <div class="flex-1 min-h-[250px] relative">
                     <Bar :data="platformChartData" :options="platformChartOptions" />
                 </div>
