@@ -216,13 +216,14 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
         </h2>
         <div class="grid grid-cols-[1fr_1fr] sm:grid-cols-2 md:grid-cols-2 gap-1.5 sm:gap-2">
           <GameCard 
-            v-for="game in playingGames" 
+            v-for="(game, index) in playingGames" 
             :key="game.id" 
             :game="game" 
             @click="openGameDetails(game.id)"
             @update-status="updateStatus"
             @delete="removeGame"
-            class="cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all shadow-sm"
+            class="cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all shadow-sm animate-stagger-enter"
+            :style="{ animationDelay: `${index * 50}ms` }"
           />
           <div v-if="playingGames.length === 0" class="p-8 border-2 border-dashed border-gray-700 rounded-xl text-center text-gray-500 col-span-2">
             No games in progress. Start one from your backlog!
@@ -237,13 +238,14 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
 
         <div class="grid grid-cols-[1fr_1fr] sm:grid-cols-3 md:grid-cols-4 gap-1.5 sm:gap-2">
           <GameCard 
-            v-for="game in backlogGames" 
+            v-for="(game, index) in backlogGames" 
             :key="game.id" 
             :game="game" 
             @click="openGameDetails(game.id)"
             @update-status="updateStatus"
             @delete="removeGame"
-            class="cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all shadow-sm"
+            class="cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all shadow-sm animate-stagger-enter"
+            :style="{ animationDelay: `${index * 50}ms` }"
           />
         </div>
         <div v-if="backlogGames.length === 0" class="text-center py-10 text-gray-500">
@@ -255,7 +257,13 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
       <section v-if="currentTab === 'completed'" class="animate-in fade-in duration-300 slide-in-from-bottom-2">
         <h2 class="text-lg font-bold text-gray-200 mb-3">Completed</h2>
         <div class="grid grid-cols-[1fr_1fr] sm:grid-cols-3 md:grid-cols-4 gap-1.5 sm:gap-2">
-          <div v-for="game in completedGames" :key="game.id" class="relative group cursor-pointer" @click="openGameDetails(game.id)">
+          <div 
+             v-for="(game, index) in completedGames" 
+             :key="game.id" 
+             class="relative group cursor-pointer animate-stagger-enter" 
+             @click="openGameDetails(game.id)"
+             :style="{ animationDelay: `${index * 50}ms` }"
+          >
             <GameCard 
               :game="game" 
               class="opacity-75 hover:opacity-100 transition-opacity hover:ring-2 hover:ring-green-500 shadow-sm"
@@ -280,7 +288,13 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
       <section v-if="currentTab === 'dropped'" class="animate-in fade-in duration-300 slide-in-from-bottom-2">
         <h2 class="text-lg font-bold text-gray-200 mb-3">Dropped Games</h2>
         <div class="grid grid-cols-[1fr_1fr] sm:grid-cols-3 md:grid-cols-4 gap-1.5 sm:gap-2">
-          <div v-for="game in droppedGames" :key="game.id" class="relative group cursor-pointer opacity-50 hover:opacity-100 transition-opacity" @click="openGameDetails(game.id)">
+          <div 
+            v-for="(game, index) in droppedGames" 
+            :key="game.id" 
+            class="relative group cursor-pointer opacity-50 hover:opacity-100 transition-opacity animate-stagger-enter" 
+            @click="openGameDetails(game.id)"
+            :style="{ animationDelay: `${index * 50}ms` }"
+          >
             <GameCard 
               :game="game" 
               class="grayscale hover:grayscale-0 transition-all shadow-sm"

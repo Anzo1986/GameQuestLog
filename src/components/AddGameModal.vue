@@ -186,8 +186,22 @@ const handleAdd = (game) => {
       <!-- SEARCH RESULTS (Existing) -->
       <template v-else>
           <!-- Loading State -->
-          <div v-if="isSearching" class="p-8 flex justify-center">
-            <Loader2 class="w-8 h-8 text-blue-500 animate-spin" />
+          <!-- Loading State (Skeleton) -->
+          <div v-if="isSearching" class="p-2 space-y-2">
+             <div v-for="n in 3" :key="n" class="flex gap-3 bg-gray-800/20 p-2 rounded-lg border border-gray-800 animate-pulse">
+                <!-- Image Skeleton -->
+               <div class="w-16 h-20 bg-gray-800 rounded-md flex-shrink-0"></div>
+               <!-- Text Skeleton -->
+               <div class="flex-1 flex flex-col justify-center space-y-2">
+                 <div class="h-4 bg-gray-800 rounded w-3/4"></div>
+                 <div class="flex gap-2">
+                    <div class="h-3 bg-gray-800 rounded w-1/4"></div>
+                    <div class="h-3 bg-gray-800 rounded w-1/3"></div>
+                 </div>
+               </div>
+               <!-- Button Skeleton -->
+               <div class="self-center w-9 h-9 bg-gray-800 rounded-full"></div>
+             </div>
           </div>
 
           <!-- No API Key Warning -->
