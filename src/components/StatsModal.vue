@@ -61,8 +61,15 @@ const statusChartData = computed(() => {
 const statusChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
+    animation: {
+        duration: 800,
+        easing: 'easeOutQuart'
+    },
     plugins: {
-        legend: { display: false }
+        legend: { display: false },
+        tooltip: {
+            animation: false // Disable tooltip animation for performance
+        }
     }
 };
 
@@ -88,6 +95,9 @@ const genreChartData = computed(() => {
 const genreChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
+    animation: {
+        duration: 800
+    },
     scales: {
         r: {
             angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
@@ -129,6 +139,9 @@ const platformChartOptions = {
     indexAxis: 'y',
     responsive: true,
     maintainAspectRatio: false,
+    animation: {
+        duration: 800
+    },
     scales: {
         x: { grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: '#9ca3af' } },
         y: { grid: { display: false }, ticks: { color: '#e5e7eb' } }

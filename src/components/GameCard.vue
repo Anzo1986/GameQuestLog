@@ -40,7 +40,7 @@ const backgroundImage = computed(() => {
 </script>
 
 <template>
-  <div class="relative group overflow-hidden rounded-xl bg-gray-800 shadow-lg transition-transform active:scale-95 touch-manipulation min-w-0" @click="showOverlay = false">
+  <div class="relative group overflow-hidden rounded-xl bg-gray-800 shadow-md transition-transform active:scale-95 touch-manipulation min-w-0 backface-hidden will-change-transform" @click="showOverlay = false">
     
     <!-- Image Background -->
     <div class="aspect-video w-full overflow-hidden">
@@ -49,18 +49,18 @@ const backgroundImage = computed(() => {
     </div>
 
     <!-- Quick Actions Button (Top Right) -->
-    <button @click.stop="toggleOverlay" class="absolute top-2 right-2 p-1.5 bg-black/50 text-white rounded-full backdrop-blur-md hover:bg-black/70 z-20">
+    <button @click.stop="toggleOverlay" class="absolute top-2 right-2 p-1.5 bg-gray-900/80 text-white rounded-full hover:bg-black z-20">
         <MoreVertical class="w-5 h-5" />
     </button>
 
     <!-- Details Content -->
     <div class="absolute bottom-0 left-0 right-0 p-2 sm:p-3" v-if="!showOverlay">
-      <h3 class="text-xs sm:text-sm font-bold text-white leading-tight mb-0.5 drop-shadow-md truncate w-full">{{ game.title }}</h3>
+      <h3 class="text-xs sm:text-sm font-bold text-white leading-tight mb-0.5 drop-shadow-sm truncate w-full">{{ game.title }}</h3>
       
       <!-- Status Badge (Mini) -->
       <div class="flex items-center gap-1 mt-0.5">
           <span v-if="game.status === 'playing'" class="text-[9px] uppercase font-bold text-primary bg-primary/30 px-1 py-0.5 rounded">Play</span>
-          <span v-else-if="game.status === 'completed'" class="text-[9px] uppercase font-bold text-green-400 bg-green-900/30 px-1 py-0.5 rounded">Done</span>
+          <span v-else-if="game.status === 'completed'" class="text-[9px] uppercase font-bold text-green-400 bg-green-900/50 px-1 py-0.5 rounded">Done</span>
           <span v-else-if="game.status === 'dropped'" class="text-[9px] uppercase font-bold text-gray-400 bg-gray-700/50 px-1 py-0.5 rounded">Drop</span>
           <div v-if="game.rating > 0" class="flex text-yellow-400 text-[9px] items-center gap-0.5"><Star class="w-2.5 h-2.5 fill-yellow-400" /> {{ game.rating }}</div>
       </div>
@@ -104,3 +104,12 @@ const backgroundImage = computed(() => {
 
   </div>
 </template>
+
+<style scoped>
+.backface-hidden {
+  backface-visibility: hidden;
+}
+.will-change-transform {
+  will-change: transform;
+}
+</style>
