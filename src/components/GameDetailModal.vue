@@ -1,7 +1,8 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
 import { X, Calendar, Gamepad2, Globe, Star, Play, Check, Trash2, Timer, Ban, Layers, PenLine } from 'lucide-vue-next';
 import { useGames } from '../composables/useGames';
+import { useShop } from '../composables/useShop';
 import EditGameModal from './EditGameModal.vue';
 
 const props = defineProps({
@@ -15,7 +16,19 @@ const props = defineProps({
 const emit = defineEmits(['close', 'update-status', 'delete']);
 
 const { games, rateGame, updateGame } = useGames();
+const { getEquippedItem } = useShop();
 
+const equippedStyle = computed(() => getEquippedItem('card_style'));
+
+const modalStyles = computed(() => {
+    const s = equippedStyle.value?.value;
+    if (s === 'gold') return 'border-2 border-yellow-500 shadow-[0_0_80px_rgba(234,179,8,0.2)] bg-gradient-to-br from-gray-900 via-gray-900 to-yellow-900/20';
+    if (s === 'holo') return 'border-2 border-cyan-500/30 shadow-[0_0_80px_rgba(6,182,212,0.2)] bg-gray-900 relative overflow-hidden';
+    if (s === 'cyber') return 'border-2 border-pink-500 shadow-[0_0_80px_rgba(236,72,153,0.3)] bg-gray-900 relative overflow-hidden';
+    if (s === 'retro') return 'border-2 border-green-500 shadow-[0_0_80px_rgba(34,197,94,0.2)] bg-gray-900 relative overflow-hidden font-mono';
+    if (s === 'fire') return 'border-2 border-orange-600 shadow-[0_0_80px_rgba(234,88,12,0.4)] bg-gray-900 relative overflow-hidden';
+    return 'bg-gray-900 border border-gray-700';
+});
 const gameDetails = ref(null);
 const showEditModal = ref(false);
 
@@ -97,7 +110,24 @@ const handleAction = async (action, val) => {
     <div class="absolute inset-0 bg-black/90 backdrop-blur-sm" @click="$emit('close')"></div>
 
     <!-- Modal Content -->
-    <div class="relative bg-gray-900 w-full max-w-2xl rounded-2xl shadow-2xl border border-gray-700 flex flex-col max-h-[90vh] overflow-hidden animate-in fade-in zoom-in duration-200">
+    <div 
+        class="relative w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in duration-200"
+        :class="modalStyles"
+    >
+      <!-- Holo Background Effect -->
+      <div v-if="equippedStyle?.value === 'holo'" class="absolute inset-0 pointer-events-none opacity-20 bg-gradient-to-tr from-purple-500/20 via-transparent to-cyan-500/20 animate-pulse z-0"></div>
+      <div v-if="equippedStyle?.value === 'holo'" class="absolute -inset-[100%] top-0 block h-[200%] w-[200%] -rotate-45 bg-gradient-to-r from-transparent via-white/5 to-transparent bg-[length:50%_50%] animate-shine pointer-events-none z-0"></div>
+      
+      <!-- Cyber Effect -->
+      <div v-if="equippedStyle?.value === 'cyber'" class="absolute inset-0 pointer-events-none opacity-20 bg-[linear-gradient(rgba(236,72,153,0.2)_1px,transparent_1px),linear-gradient(90deg,rgba(236,72,153,0.2)_1px,transparent_1px)] bg-[size:20px_20px] z-0"></div>
+      <div v-if="equippedStyle?.value === 'cyber'" class="absolute inset-x-0 top-0 h-px bg-pink-500 shadow-[0_0_10px_#ec4899] z-10"></div>
+      
+      <!-- Retro Effect -->
+      <div v-if="equippedStyle?.value === 'retro'" class="absolute inset-0 pointer-events-none opacity-10 bg-[linear-gradient(rgba(34,197,94,0.3)_1px,transparent_1px)] bg-[size:100%_4px] z-0"></div>
+      
+      <!-- Fire Effect -->
+      <div v-if="equippedStyle?.value === 'fire'" class="absolute inset-0 pointer-events-none opacity-20 bg-gradient-to-t from-orange-600/30 to-transparent z-0"></div>
+      <div v-if="equippedStyle?.value === 'fire'" class="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-orange-500/20 to-transparent animate-pulse z-0"></div>
       
       <!-- Content -->
       <template v-if="gameDetails">
@@ -232,8 +262,6 @@ const handleAction = async (action, val) => {
                 <Ban class="w-5 h-5 text-gray-400" />
             </button>
 
-
-
              <button @click="handleAction('delete')" class="p-3 bg-red-900/20 text-red-400 hover:bg-red-900/40 rounded-xl transition-transform active:scale-95" title="Delete Game">
                 <Trash2 class="w-5 h-5" />
             </button>
@@ -249,3 +277,20 @@ const handleAction = async (action, val) => {
     />
   </div>
 </template>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.1);
+  border-radius: 3px;
+}
+@keyframes shine {
+    from { transform: translateX(-100%) rotate(-45deg); }
+    to { transform: translateX(100%) rotate(-45deg); }
+}
+.animate-shine {
+    animation: shine 8s ease-in-out infinite;
+}
+</style>

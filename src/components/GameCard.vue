@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue';
 import { Play, Check, Trash2, Calendar, MoreVertical, X, Star, Ban, Layers } from 'lucide-vue-next';
 import { useGames } from '../composables/useGames';
+import { useShop } from '../composables/useShop';
 
 const props = defineProps({
   game: {
@@ -12,6 +13,9 @@ const props = defineProps({
 
 const emit = defineEmits(['update-status', 'delete']);
 const { rateGame } = useGames();
+const { getEquippedItem } = useShop();
+
+const equippedStyle = computed(() => getEquippedItem('card_style'));
 
 const showOverlay = ref(false);
 
@@ -48,8 +52,18 @@ const isNew = computed(() => {
 </script>
 
 <template>
-  <div class="relative group overflow-hidden rounded-xl bg-gray-800 shadow-md transition-transform active:scale-95 touch-manipulation min-w-0 backface-hidden will-change-transform" @click="showOverlay = false">
+  <div 
+    class="group relative bg-gray-800 rounded-xl overflow-hidden shadow-md transition-transform active:scale-95 touch-manipulation min-w-0 backface-hidden will-change-transform flex flex-col h-full"
+    :class="{
+        'border-2 border-yellow-500/50 shadow-[0_0_15px_rgba(234,179,8,0.2)]': equippedStyle?.value === 'gold',
+        'border-2 border-transparent relative after:absolute after:inset-0 after:rounded-xl after:border-2 after:border-white/20 after:pointer-events-none': equippedStyle?.value === 'holo'
+    }"
+    @click="showOverlay = false"
+  >
     
+    <!-- Holo Static Sheen (Subtle) -->
+    <div v-if="equippedStyle?.value === 'holo'" class="absolute inset-0 z-20 pointer-events-none bg-gradient-to-tr from-transparent via-white/5 to-transparent mix-blend-overlay"></div>
+
     <!-- Image Background -->
     <div class="aspect-video w-full overflow-hidden">
       <img :src="backgroundImage" :alt="game.title" class="w-full h-full object-cover transition-opacity duration-300" loading="lazy">
@@ -124,5 +138,13 @@ const isNew = computed(() => {
 }
 .will-change-transform {
   will-change: transform;
+}
+@keyframes holo {
+    0% { background-position: 0% 0%; }
+    50% { background-position: 100% 100%; }
+    100% { background-position: 0% 0%; }
+}
+.animate-holo {
+    animation: holo 3s ease infinite;
 }
 </style>

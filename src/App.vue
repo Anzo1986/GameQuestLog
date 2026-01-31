@@ -17,10 +17,30 @@ import TimelineModal from './components/TimelineModal.vue'; // Journey Timeline
 import GamerCardModal from './components/GamerCardModal.vue'; // New Gamer Card
 import LevelUpOverlay from './components/LevelUpOverlay.vue'; // New Level Up Screen
 import VictoryOverlay from './components/VictoryOverlay.vue'; // New Victory Screen
-import { Settings, Plus, Gamepad2, Layers, CheckCircle2, LayoutDashboard, Ban, Timer, Bell, Dices, Trophy, Menu, X } from 'lucide-vue-next';
+import ShopModal from './components/ShopModal.vue'; // New Shop Modal
+import { useSettings } from './composables/useSettings';
+import { useShop } from './composables/useShop';
+import { Settings, Plus, Gamepad2, Layers, CheckCircle2, LayoutDashboard, Ban, Timer, Bell, Dices, Trophy, Menu, X, ShoppingBag } from 'lucide-vue-next';
 
 const { playingGames, backlogGames, completedGames, droppedGames, updateStatus, removeGame, games, userXP, userLevel, userTitle } = useGames();
 const { checkAchievements } = useAchievements();
+const { getEquippedItem } = useShop();
+const { getEquippedTheme } = useSettings();
+
+const equippedBackground = computed(() => getEquippedItem('background'));
+
+const backgroundClass = computed(() => {
+    const val = equippedBackground.value?.value;
+    if (val === 'stars') return 'bg-gray-900 bg-[radial-gradient(white,transparent_2px)] bg-[size:30px_30px]';
+    if (val === 'grid') return 'bg-gray-900 bg-[linear-gradient(rgba(0,255,255,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(0,255,255,0.1)_1px,transparent_1px)] bg-[size:40px_40px]';
+    if (val === 'matrix') return 'bg-black matrix-bg';
+    if (val === 'hex') return 'bg-gray-900 hex-bg';
+    if (val === 'aurora') return 'bg-gray-950 overflow-hidden'; /* Base dark bg for aurora */
+    if (val === 'pulse') return 'bg-gray-900 pulse-bg';
+    if (val === 'dots') return 'bg-gray-900 bg-[radial-gradient(rgba(255,255,255,0.1)_2px,transparent_2px)] bg-[size:20px_20px]';
+    if (val === 'circuit') return 'bg-gray-900 bg-[radial-gradient(rgba(0,255,0,0.1)_1px,transparent_1px)] bg-[size:10px_10px]'; 
+    return 'bg-gray-900';
+});
 
 const showAddModal = ref(false);
 const showSettings = ref(false);
@@ -29,6 +49,7 @@ const showQuestModal = ref(false);
 const showDetailModal = ref(false);
 const showTimeline = ref(false); // Timeline State
 const showGamerCard = ref(false); // Gamer Card State
+const showShopModal = ref(false); // Shop State
 const showLevelUp = ref(false); // Level Up State
 const showVictory = ref(false); // Victory State
 const victoryGame = ref(null); // Game that triggered victory
@@ -197,6 +218,15 @@ const closeGameDetails = () => {
     history.back();
 };
 
+const openShop = () => {
+    showShopModal.value = true;
+    history.pushState({ modal: 'shop' }, '', '');
+};
+
+const closeShop = () => {
+    history.back();
+};
+
 onMounted(() => {
     window.addEventListener('popstate', (event) => {
         if (showDetailModal.value) {
@@ -213,6 +243,8 @@ onMounted(() => {
             showAchievements.value = false;
         } else if (showGamerCard.value) {
             showGamerCard.value = false;
+        } else if (showShopModal.value) {
+            showShopModal.value = false;
         }
     });
 
@@ -281,8 +313,34 @@ useSwipe(mainContainer, {
 </script>
 
 <template>
-  <div class="min-h-screen pb-24 px-4 pt-4 max-w-4xl mx-auto flex flex-col" ref="mainContainer">
+  <div 
+    class="min-h-screen pb-24 px-4 pt-4 max-w-4xl mx-auto flex flex-col transition-colors duration-500 relative" 
+    :class="backgroundClass"
+    ref="mainContainer"
+  >
     
+    <!-- Aurora Layer (Complex DOM) -->
+    <div v-if="equippedBackground?.value === 'aurora'" class="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <!-- Deep Space Base -->
+        <div class="absolute inset-0 bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-900"></div>
+        
+        <!-- Stars -->
+        <div class="absolute inset-0 bg-[radial-gradient(white,transparent_1px)] bg-[size:50px_50px] opacity-50"></div>
+
+        <!-- Color Blobs (The Swril) -->
+        <div class="absolute top-[-10%] left-[-10%] w-[50vw] h-[80vh] bg-teal-400 rounded-full mix-blend-screen blur-[100px] opacity-40 animate-blob"></div>
+        <div class="absolute top-[-20%] right-[10%] w-[50vw] h-[80vh] bg-fuchsia-500 rounded-full mix-blend-screen blur-[100px] opacity-40 animate-blob animation-delay-2000"></div>
+        <div class="absolute top-[20%] left-[30%] w-[60vw] h-[60vw] bg-violet-600 rounded-full mix-blend-screen blur-[100px] opacity-50 animate-blob animation-delay-4000"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[60vw] h-[50vh] bg-emerald-500 rounded-full mix-blend-screen blur-[100px] opacity-30 animate-blob"></div>
+
+        <!-- Mountains Silhouette -->
+        <div class="absolute bottom-0 left-0 right-0 h-[20vh] z-10 flex items-end">
+            <svg viewBox="0 0 1440 320" class="w-full h-full text-gray-950 fill-current opacity-90" preserveAspectRatio="none">
+                <path d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,224C672,245,768,267,864,261.3C960,256,1056,224,1152,197.3C1248,171,1344,149,1392,138.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+            </svg>
+        </div>
+    </div>
+
     <!-- Header -->
     <header class="flex justify-between items-center mb-6">
       <div class="flex items-center gap-3">
@@ -500,6 +558,15 @@ useSwipe(mainContainer, {
                 <Dices class="w-6 h-6" />
             </button>
 
+            <!-- Shop -->
+            <button 
+               @click="openShop(); isMenuOpen = false"
+               class="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white p-3 rounded-full shadow-lg border-2 border-gray-900 group transition-all"
+            >
+                <div class="bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 absolute right-16 transition-opacity whitespace-nowrap pointer-events-none">Loot Shop</div>
+                <ShoppingBag class="w-6 h-6" />
+            </button>
+
              <!-- Achievements -->
             <button 
                @click="openAchievements(); isMenuOpen = false"
@@ -533,6 +600,8 @@ useSwipe(mainContainer, {
       @delete="removeGame"
     />
 
+    <ShopModal v-if="showShopModal" :is-open="showShopModal" @close="closeShop" />
+
 
 
 
@@ -547,5 +616,63 @@ useSwipe(mainContainer, {
 .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
+}
+
+/* Matrix Effect */
+.matrix-bg {
+    background-color: #000;
+    background-image: 
+        linear-gradient(rgba(0, 20, 0, 0.9), rgba(0, 0, 0, 0.4)), 
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Ctext x='10' y='30' fill='%230f0' font-family='monospace' font-size='20' opacity='0.5'%3E1%3C/text%3E%3Ctext x='50' y='70' fill='%230f0' font-family='monospace' font-size='20' opacity='0.3'%3E0%3C/text%3E%3Ctext x='80' y='40' fill='%230f0' font-family='monospace' font-size='20' opacity='0.4'%3E1%3C/text%3E%3Ctext x='30' y='90' fill='%230f0' font-family='monospace' font-size='20' opacity='0.6'%3E0%3C/text%3E%3C/svg%3E");
+    background-size: cover, 200px 200px;
+    animation: matrix-scroll 20s linear infinite;
+}
+
+@keyframes matrix-scroll {
+    from { background-position: 0 0, 0 0; }
+    to { background-position: 0 0, 0 200px; }
+}
+
+/* Blob Animation for Aurora */
+@keyframes blob {
+  0% { transform: translate(0px, 0px) scale(1) rotate(0deg); }
+  33% { transform: translate(30px, -20px) scale(1.1) rotate(5deg); }
+  66% { transform: translate(-20px, 20px) scale(0.9) rotate(-5deg); }
+  100% { transform: translate(0px, 0px) scale(1) rotate(0deg); }
+}
+.animate-blob {
+  animation: blob 20s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+}
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+.animation-delay-4000 {
+    animation-delay: 4s;
+}
+
+/* Hex Core Effect */
+.hex-bg {
+    background-color: #0f172a;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='49' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg id='hexagons' fill='%2364748b' fill-opacity='0.15' fill-rule='nonzero'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L10.98 40v6.35L0 42.7v-2.3zm25.5-18.5l2.5-2.3-10.99-6.35V0h-2v7.5L25.5 15zm0 18.5l2.5 2.3-10.99 6.35V49h-2v-7.5L25.5 33.5z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    background-attachment: fixed;
+    animation: hex-pulse 4s ease-in-out infinite alternate;
+}
+@keyframes hex-pulse {
+    from { opacity: 0.8; }
+    to { opacity: 1; }
+}
+
+/* Pulse Circuit Effect */
+.pulse-bg {
+    background-color: #111827;
+    background-image: radial-gradient(circle at center, rgba(56, 189, 248, 0.1) 0%, transparent 70%),
+                      linear-gradient(rgba(56, 189, 248, 0.05) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(56, 189, 248, 0.05) 1px, transparent 1px);
+    background-size: 100% 100%, 50px 50px, 50px 50px;
+    animation: pulse-glow 4s ease-in-out infinite alternate;
+}
+@keyframes pulse-glow {
+    from { background-image: radial-gradient(circle at center, rgba(56, 189, 248, 0.05) 0%, transparent 50%), linear-gradient(rgba(56, 189, 248, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(56, 189, 248, 0.05) 1px, transparent 1px); }
+    to { background-image: radial-gradient(circle at center, rgba(56, 189, 248, 0.15) 0%, transparent 80%), linear-gradient(rgba(56, 189, 248, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(56, 189, 248, 0.05) 1px, transparent 1px); }
 }
 </style>

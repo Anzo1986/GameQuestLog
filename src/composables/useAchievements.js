@@ -268,12 +268,32 @@ export function useAchievements() {
         if (achievementStats.value.gamerCardDownloaded) unlock('show_off');
     };
 
+    const totalQuestScore = computed(() => {
+        let score = 0;
+        const tierValues = {
+            bronze: 10,
+            silver: 25,
+            gold: 50,
+            platinum: 100
+        };
+
+        for (const id in unlockedAchievements.value) {
+            const achievement = achievementsList.find(a => a.id === id);
+            if (achievement) {
+                score += (tierValues[achievement.tier] || 0);
+            }
+        }
+        return score;
+    });
+
     return {
         achievementsList,
         unlockedAchievements,
         recentUnlocks,
         checkAchievements,
         nukeAchievements,
-        trackAction
+        trackAction,
+        totalQuestScore
     };
 }
+

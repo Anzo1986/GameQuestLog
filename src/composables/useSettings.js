@@ -18,6 +18,10 @@ const THEMES = {
     purple: { name: 'Purple', rgb: '168 85 247' },   // purple-500
     orange: { name: 'Orange', rgb: '249 115 22' },   // orange-500
     red: { name: 'Red', rgb: '239 68 68' },    // red-500
+    // Shop Themes
+    cyberpunk: { name: 'Cyberpunk', rgb: '6 182 212' }, // cyan-500
+    emerald: { name: 'Emerald', rgb: '16 185 129' }, // emerald-500
+    gold: { name: 'Gold', rgb: '234 179 8' }, // yellow-500
 };
 
 // Apply theme immediately
