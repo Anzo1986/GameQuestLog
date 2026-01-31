@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue';
 import { X, Download, Share2, Crown, Trophy, Clock, Target, Loader2 } from 'lucide-vue-next';
 import { useGames } from '../composables/useGames';
+import { useAchievements } from '../composables/useAchievements';
 import { useSettings } from '../composables/useSettings';
 import { toPng } from 'html-to-image';
 const props = defineProps({
@@ -12,6 +13,7 @@ const emit = defineEmits(['close']);
 
 const { userName, userLevel, userTitle, userAvatar, gameStats } = useGames();
 const { themeColor, THEMES } = useSettings();
+const { trackAction } = useAchievements();
 
 const primaryColorRgbSafe = computed(() => {
     const raw = THEMES[themeColor.value]?.rgb || '59 130 246';
@@ -50,6 +52,9 @@ const downloadCard = async () => {
         link.download = `GamerCard-${userName.value}.png`;
         link.href = dataUrl;
         link.click();
+
+        // Track Achievement
+        trackAction('download_card');
 
     } catch (err) {
         console.error('Failed to generate card', err);

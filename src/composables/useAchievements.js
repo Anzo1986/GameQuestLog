@@ -4,57 +4,70 @@ const ACHIEVEMENTS_STORAGE_KEY = 'game-tracker-achievements';
 
 const achievementsList = [
     // 1. Adding Games
-    { id: 'add_1', title: 'Quest Beginner', description: 'Add your first game to the library.', icon: 'Plus' },
-    { id: 'add_10_backlog', title: 'Backlog Warrior', description: 'Have 10 games in your backlog.', icon: 'Layers' },
-    { id: 'add_50_total', title: 'The Collector', description: 'Amass a collection of 50 games.', icon: 'Library' },
+    { id: 'add_1', title: 'Quest Beginner', description: 'Add your first game to the library.', icon: 'Plus', tier: 'bronze' },
+    { id: 'add_10_backlog', title: 'Backlog Warrior', description: 'Have 10 games in your backlog.', icon: 'Layers', tier: 'bronze' },
+    { id: 'add_50_total', title: 'The Collector', description: 'Amass a collection of 50 games.', icon: 'Library', tier: 'silver' },
 
     // 2. Completing Games
-    { id: 'complete_1', title: 'First Blood', description: 'Complete 1 game.', icon: 'Trophy' },
-    { id: 'complete_5', title: 'High Five', description: 'Complete 5 games.', icon: 'Trophy' },
-    { id: 'complete_20', title: 'Veteran Gamer', description: 'Complete 20 games.', icon: 'Crown' },
+    { id: 'complete_1', title: 'First Blood', description: 'Complete 1 game.', icon: 'Trophy', tier: 'bronze' },
+    { id: 'complete_5', title: 'High Five', description: 'Complete 5 games.', icon: 'Trophy', tier: 'bronze' },
+    { id: 'complete_20', title: 'Veteran Gamer', description: 'Complete 20 games.', icon: 'Crown', tier: 'silver' },
 
     // 3. Dropping Games
-    { id: 'drop_1', title: 'Quitter', description: 'Drop a game. Sometimes it is for the best.', icon: 'Ban' },
-    { id: 'drop_5', title: 'Decisive', description: 'Drop 5 games. You know what you like.', icon: 'Ban' },
+    { id: 'drop_1', title: 'Quitter', description: 'Drop a game. Sometimes it is for the best.', icon: 'Ban', tier: 'bronze' },
+    { id: 'drop_5', title: 'Decisive', description: 'Drop 5 games. You know what you like.', icon: 'Ban', tier: 'silver' },
 
     // 4. Playing Habits
-    { id: 'playing_5_concurrent', title: 'Indecisive', description: 'Have 5 games in "Playing" status at once.', icon: 'Shuffle' },
-    { id: 'playing_1_only', title: 'Laser Focus', description: 'Have exactly 1 playing game while backlog is not empty.', icon: 'Focus' },
+    { id: 'playing_5_concurrent', title: 'Indecisive', description: 'Have 5 games in "Playing" status at once.', icon: 'Shuffle', tier: 'bronze' },
+    { id: 'playing_1_only', title: 'Laser Focus', description: 'Have exactly 1 playing game while backlog is not empty.', icon: 'Focus', tier: 'silver' },
 
     // 5. Diversity
-    { id: 'platforms_3', title: 'Platform Hopper', description: 'Own games on 3 different platforms.', icon: 'Gamepad2' },
-    { id: 'platforms_5', title: 'Console Museum', description: 'Own games on 5 different platforms.', icon: 'Server' },
-    { id: 'genres_5', title: 'Genre Explorer', description: 'Have games from 5 different genres.', icon: 'Map' },
+    { id: 'platforms_3', title: 'Platform Hopper', description: 'Own games on 3 different platforms.', icon: 'Gamepad2', tier: 'bronze' },
+    { id: 'platforms_5', title: 'Console Museum', description: 'Own games on 5 different platforms.', icon: 'Server', tier: 'silver' },
+    { id: 'genres_5', title: 'Genre Explorer', description: 'Have games from 5 different genres.', icon: 'Map', tier: 'silver' },
 
     // 6. Ratings
-    { id: 'rate_5_stars', title: 'Critic\'s Choice', description: 'Rate a game 5 stars.', icon: 'Star' },
-    { id: 'rate_1_star', title: 'Harsh Critic', description: 'Rate a game 1 star.', icon: 'ThumbsDown' },
+    { id: 'rate_5_stars', title: 'Critic\'s Choice', description: 'Rate a game 5 stars.', icon: 'Star', tier: 'bronze' },
+    { id: 'rate_1_star', title: 'Harsh Critic', description: 'Rate a game 1 star.', icon: 'ThumbsDown', tier: 'bronze' },
 
     // 7. Features
-    { id: 'quest_1', title: 'Quest Accepted', description: 'Use the Quest Giver once.', icon: 'Dices' },
-    { id: 'quest_10', title: 'Destiny Awaits', description: 'Use the Quest Giver 10 times.', icon: 'Sparkles' },
+    { id: 'quest_1', title: 'Quest Accepted', description: 'Use the Quest Giver once.', icon: 'Dices', tier: 'bronze' },
+    { id: 'quest_10', title: 'Destiny Awaits', description: 'Use the Quest Giver 10 times.', icon: 'Sparkles', tier: 'silver' },
 
     // 8. Special / Complex (Existing)
-    { id: 'jack_of_all_trades', title: 'Jack of All Trades', description: 'Have at least one game in Playing, Completed, Dropped, and Backlog.', icon: 'Palette' },
-    { id: 'marathon', title: 'Marathon', description: 'Complete a game with over 100 hours of playtime.', icon: 'Hourglass' },
-    { id: 'quick_fix', title: 'Quick Fix', description: 'Complete a game with under 2 hours of playtime.', icon: 'Zap' },
+    { id: 'jack_of_all_trades', title: 'Jack of All Trades', description: 'Have at least one game in Playing, Completed, Dropped, and Backlog.', icon: 'Palette', tier: 'silver' },
+    { id: 'marathon', title: 'Marathon', description: 'Complete a game with over 100 hours of playtime.', icon: 'Hourglass', tier: 'gold' },
+    { id: 'quick_fix', title: 'Quick Fix', description: 'Complete a game with under 2 hours of playtime.', icon: 'Zap', tier: 'bronze' },
 
     // 9. Hard / Long Term (New)
-    { id: 'completionist_50', title: 'The Completionist', description: 'Complete 50 games.', icon: 'Trophy' },
-    { id: 'library_100', title: 'Library of Alexandria', description: 'Own 100 games.', icon: 'Library' },
-    { id: 'century_club', title: 'Century Club', description: 'Reach 1000 hours of total playtime.', icon: 'Clock' },
-    { id: 'epic_hero', title: 'Epic Hero', description: 'Reach User Level 20.', icon: 'Crown' },
-    { id: 'empty_plate', title: 'Empty Plate', description: 'Have 0 games in your backlog (min. 5 total games).', icon: 'CheckCircle2' },
+    { id: 'completionist_50', title: 'The Completionist', description: 'Complete 50 games.', icon: 'Trophy', tier: 'gold' },
+    { id: 'library_100', title: 'Library of Alexandria', description: 'Own 100 games.', icon: 'Library', tier: 'gold' },
+    { id: 'century_club', title: 'Century Club', description: 'Reach 1000 hours of total playtime.', icon: 'Clock', tier: 'platinum', secret: true },
+    { id: 'epic_hero', title: 'Epic Hero', description: 'Reach User Level 20.', icon: 'Crown', tier: 'platinum' },
+    { id: 'empty_plate', title: 'Empty Plate', description: 'Have 0 games in your backlog (min. 5 total games).', icon: 'CheckCircle2', tier: 'platinum', secret: true },
 
     // 10. Specific / Fun (New)
-    { id: 'slow_burn', title: 'Slow Burn', description: 'Complete a game more than 1 year after starting it.', icon: 'Timer' },
-    { id: 'critics_darling', title: 'Critic\'s Darling', description: 'Rate 5 games as 5 stars.', icon: 'Star' },
-    { id: 'old_school', title: 'Old School', description: 'Add a game released before the year 2000.', icon: 'Gamepad2' },
-    { id: 'future_proof', title: 'Future Proof', description: 'Add a game with a future release date.', icon: 'Sparkles' },
+    { id: 'slow_burn', title: 'Slow Burn', description: 'Complete a game more than 1 year after starting it.', icon: 'Timer', tier: 'gold' },
+    // 11. Genre Specialist (New)
+    { id: 'genre_indie_5', title: 'Indie Darling', description: 'Own 5 Indie games.', icon: 'Palette', tier: 'silver' },
+    { id: 'genre_rpg_3', title: 'RPG Legend', description: 'Complete 3 RPGs.', icon: 'Map', tier: 'gold' },
+    { id: 'genre_action_5', title: 'Adrenalin Junkie', description: 'Own 5 Action or Shooter games.', icon: 'Zap', tier: 'silver' },
+
+    // 12. App Features (New)
+    { id: 'safety_first', title: 'Safety First', description: 'Export your data backup.', icon: 'Server', tier: 'bronze' },
+    { id: 'show_off', title: 'Show Off', description: 'Download your Gamer Card.', icon: 'Crown', tier: 'bronze' },
+
+    // 13. Habits / Meta (New)
+    { id: 'weekend_warrior', title: 'Weekend Warrior', description: 'Complete a game on a Saturday or Sunday.', icon: 'Calendar', tier: 'silver' },
+    { id: 'pile_of_shame', title: 'Pile of Shame', description: 'Have more games in Backlog than Completed.', icon: 'Layers', tier: 'bronze' },
 ];
 
 // Persistent State
 const unlockedAchievements = ref({});
+const achievementStats = ref({
+    exported: false,
+    gamerCardDownloaded: false
+});
 
 // Load from storage
 const savedAchievements = localStorage.getItem(ACHIEVEMENTS_STORAGE_KEY);
@@ -66,6 +79,14 @@ if (savedAchievements) {
     }
 }
 
+// Load stats
+const savedStats = localStorage.getItem(ACHIEVEMENTS_STORAGE_KEY + '_stats');
+if (savedStats) {
+    try {
+        achievementStats.value = JSON.parse(savedStats);
+    } catch (e) { console.error('Failed stats', e); }
+}
+
 // Queue for toasts to show (FIFO)
 const recentUnlocks = ref([]);
 
@@ -73,6 +94,10 @@ export function useAchievements() {
 
     const saveAchievements = () => {
         localStorage.setItem(ACHIEVEMENTS_STORAGE_KEY, JSON.stringify(unlockedAchievements.value));
+    };
+
+    const saveStats = () => {
+        localStorage.setItem(ACHIEVEMENTS_STORAGE_KEY + '_stats', JSON.stringify(achievementStats.value));
     };
 
     const unlock = (id) => {
@@ -83,7 +108,7 @@ export function useAchievements() {
             const achievement = achievementsList.find(a => a.id === id);
             if (achievement) {
                 recentUnlocks.value.push(achievement);
-                // Remove from queue after 4 seconds automatically if UI doesn't handle it
+                // Remove from queue after 5 seconds automatically if UI doesn't handle it
                 setTimeout(() => {
                     recentUnlocks.value = recentUnlocks.value.filter(a => a.id !== id);
                 }, 5000);
@@ -91,9 +116,25 @@ export function useAchievements() {
         }
     };
 
+    const trackAction = (action) => {
+        if (action === 'export') {
+            achievementStats.value.exported = true;
+            saveStats();
+            unlock('safety_first');
+        }
+        if (action === 'download_card') {
+            achievementStats.value.gamerCardDownloaded = true;
+            saveStats();
+            unlock('show_off');
+        }
+    };
+
     const nukeAchievements = () => {
         unlockedAchievements.value = {};
         localStorage.removeItem(ACHIEVEMENTS_STORAGE_KEY);
+        // Reset stats too logic? Maybe keep specific stats? For now reset all.
+        achievementStats.value = { exported: false, gamerCardDownloaded: false };
+        localStorage.removeItem(ACHIEVEMENTS_STORAGE_KEY + '_stats');
     };
 
     /**
@@ -104,6 +145,7 @@ export function useAchievements() {
         const { games, playingGames, backlogGames, completedGames, droppedGames, userXP } = context;
         const allGames = games.value;
 
+        // ... existing checks ...
         // 1. Quest Beginner
         if (allGames.length >= 1) unlock('add_1');
 
@@ -151,7 +193,6 @@ export function useAchievements() {
         if (allGames.some(g => g.rating === 1)) unlock('rate_1_star');
 
         // 16/17. Quest Usage (Requires tracking in useGames or User object)
-        // We will assume 'questGiverUsage' is passed in context or stored in localStorage
         const questUsage = parseInt(localStorage.getItem('game-tracker-quest-usage') || '0');
         if (questUsage >= 1) unlock('quest_1');
         if (questUsage >= 10) unlock('quest_10');
@@ -167,62 +208,64 @@ export function useAchievements() {
         // 20. Quick Fix
         if (completedGames.value.some(g => g.playtime > 0 && g.playtime < 2)) unlock('quick_fix');
 
-        // --- NEW ACHIEVEMENTS ---
-
-        // 21. The Completionist
+        // 21. Completionist
         if (completedGames.value.length >= 50) unlock('completionist_50');
 
-        // 22. Library of Alexandria
+        // 22. Library
         if (allGames.length >= 100) unlock('library_100');
 
-        // 23. Century Club (Total Hours)
-        // Access totalDurationDays from context IF available, or recalc
-        // context doesn't expose totalDuration directly nicely, but we can sum playtime
+        // 23. Century
         const totalHours = allGames.reduce((acc, g) => acc + (g.playtime || 0), 0);
         if (totalHours >= 1000) unlock('century_club');
 
-        // 24. Epic Hero (Level 20)
-        // New calculation: Level = floor(pow(XP / 500, 1/1.2)) + 1
+        // 24. Epic Hero
         const level = Math.floor(Math.pow(userXP.value / 500, 1 / 1.2)) + 1;
         if (level >= 20) unlock('epic_hero');
 
-        // 25. Empty Plate (Backlog Zero)
+        // 25. Empty Plate
         if (allGames.length >= 5 && backlogGames.value.length === 0) unlock('empty_plate');
 
-        // 26. Slow Burn (> 1 year)
-        // Check completed games
+        // 26. Slow Burn
         const oneYearMs = 365 * 24 * 60 * 60 * 1000;
-        const hasSlowBurn = completedGames.value.some(g => {
-            if (g.startedAt && g.completedAt) {
-                return (new Date(g.completedAt) - new Date(g.startedAt)) > oneYearMs;
-            }
-            return false;
-        });
-        if (hasSlowBurn) unlock('slow_burn');
+        if (completedGames.value.some(g => g.startedAt && g.completedAt && (new Date(g.completedAt) - new Date(g.startedAt)) > oneYearMs)) unlock('slow_burn');
 
-        // 27. Critic's Darling (5x 5-star)
-        const fiveStarCount = allGames.filter(g => g.rating === 5).length;
-        if (fiveStarCount >= 5) unlock('critics_darling');
+        // 27. Critic
+        if (allGames.filter(g => g.rating === 5).length >= 5) unlock('critics_darling');
 
-        // 28. Old School (< 2000)
-        const hasOldSchool = allGames.some(g => {
-            if (g.released) {
-                const year = parseInt(g.released.split('-')[0]);
-                return year < 2000;
-            }
-            return false;
-        });
-        if (hasOldSchool) unlock('old_school');
+        // 28. Old School
+        if (allGames.some(g => g.released && parseInt(g.released.split('-')[0]) < 2000)) unlock('old_school');
 
-        // 29. Future Proof (> Now)
-        const now = new Date();
-        const hasFuture = allGames.some(g => {
-            if (g.released) {
-                return new Date(g.released) > now;
-            }
-            return false;
+        // 29. Future Proof
+        if (allGames.some(g => g.released && new Date(g.released) > new Date())) unlock('future_proof');
+
+        // --- NEW ---
+
+        // 30. Indie Darling
+        const indieCount = allGames.filter(g => g.genres && g.genres.some(gen => gen.name === 'Indie')).length;
+        if (indieCount >= 5) unlock('genre_indie_5');
+
+        // 31. RPG Legend
+        const rpgCount = completedGames.value.filter(g => g.genres && g.genres.some(gen => gen.name === 'Role-playing Games' || gen.name === 'RPG')).length;
+        if (rpgCount >= 3) unlock('genre_rpg_3');
+
+        // 32. Adrenalin Junkie
+        const actionCount = allGames.filter(g => g.genres && g.genres.some(gen => gen.name === 'Action' || gen.name === 'Shooter')).length;
+        if (actionCount >= 5) unlock('genre_action_5');
+
+        // 33. Weekend Warrior
+        const weekendWarrior = completedGames.value.some(g => {
+            if (!g.completedAt) return false;
+            const day = new Date(g.completedAt).getDay();
+            return day === 0 || day === 6; // Sun or Sat
         });
-        if (hasFuture) unlock('future_proof');
+        if (weekendWarrior) unlock('weekend_warrior');
+
+        // 34. Pile of Shame
+        if (backlogGames.value.length > completedGames.value.length && completedGames.value.length > 0) unlock('pile_of_shame');
+
+        // 35. Feature Stats (Export/Download) - Checked via stats
+        if (achievementStats.value.exported) unlock('safety_first');
+        if (achievementStats.value.gamerCardDownloaded) unlock('show_off');
     };
 
     return {
@@ -230,6 +273,7 @@ export function useAchievements() {
         unlockedAchievements,
         recentUnlocks,
         checkAchievements,
-        nukeAchievements
+        nukeAchievements,
+        trackAction
     };
 }

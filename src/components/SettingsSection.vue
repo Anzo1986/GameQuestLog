@@ -2,16 +2,24 @@
 import { ref } from 'vue';
 import { Download, Upload, Key, Save, User, Check, X } from 'lucide-vue-next';
 import { useGames } from '../composables/useGames';
+import { useAchievements } from '../composables/useAchievements';
 
 const emit = defineEmits(['close']);
 
 const { 
-  apiKey, setApiKey, exportData, importData, 
+  apiKey, setApiKey, exportData: exportDataRaw, importData, 
   userAvatar, setUserAvatar, 
   themeColor, setTheme, THEMES,
   userName, setUserName,
   userTitle, availableTitles, setUserTitle
 } = useGames();
+
+const { trackAction } = useAchievements();
+
+const exportData = () => {
+    exportDataRaw();
+    trackAction('export');
+};
 
 const newKey = ref(apiKey.value);
 const fileInput = ref(null);
