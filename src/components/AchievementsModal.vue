@@ -117,21 +117,21 @@ const handleMouseLeave = (e) => {
           </div>
 
           <!-- Controls Block (Filters + Counter) -->
-          <div class="flex flex-col-reverse sm:flex-row items-start sm:items-center gap-3 w-full md:w-auto">
+          <div class="flex flex-wrap items-center gap-3 w-full md:w-auto mt-2 md:mt-0">
              
-              <!-- Counter -->
-             <p class="text-gray-400 text-xs font-bold whitespace-nowrap">
-                <span class="text-white">{{ unlockCount }}</span> / {{ totalCount }} <span class="hidden sm:inline">Unlocked</span> ({{ completionPercentage }}%)
-             </p>
-
               <!-- Filters -->
-              <div class="relative z-10 flex bg-gray-800/80 rounded-lg p-1 gap-1 self-start md:self-auto">
+              <div class="relative z-10 flex bg-gray-800/80 rounded-lg p-1 gap-1">
                   <button @click="setFilter('all')" :class="['px-3 py-1.5 rounded text-xs font-bold transition-all', currentFilter === 'all' ? 'bg-primary text-white shadow' : 'text-gray-400 hover:text-white']">All</button>
                   <button @click="setFilter('unlocked')" :class="['px-3 py-1.5 rounded text-xs font-bold transition-all', currentFilter === 'unlocked' ? 'bg-green-600 text-white shadow' : 'text-gray-400 hover:text-white']">
                       <span class="md:hidden">Unlock</span><span class="hidden md:inline">Unlocked</span>
                   </button>
                   <button @click="setFilter('locked')" :class="['px-3 py-1.5 rounded text-xs font-bold transition-all', currentFilter === 'locked' ? 'bg-gray-600 text-white shadow' : 'text-gray-400 hover:text-white']">Locked</button>
               </div>
+
+              <!-- Counter -->
+             <p class="text-gray-400 text-xs font-bold whitespace-nowrap">
+                <span class="text-white">{{ unlockCount }}</span> / {{ totalCount }} <span class="hidden sm:inline">Unlocked</span> ({{ completionPercentage }}%)
+             </p>
           </div>
 
           <button @click="$emit('close')" class="absolute top-4 right-4 md:static p-2 bg-gray-800 rounded-full text-gray-400 hover:text-white hover:bg-gray-700 transition-colors z-10">
