@@ -73,12 +73,14 @@ export function useShop() {
 
     // Calculated fields
     const totalSpent = computed(() => {
-        const spent = shopState.value.ownedItems.reduce((total, itemId) => {
+        return shopState.value.ownedItems.reduce((total, itemId) => {
             const item = SHOP_ITEMS.find(i => i.id === itemId);
             return total + (item ? item.price : 0);
         }, 0);
+    });
 
-        return totalQuestScore.value - spent;
+    const balance = computed(() => {
+        return totalQuestScore.value - totalSpent.value;
     });
 
     const isOwned = (id) => shopState.value.ownedItems.includes(id);
