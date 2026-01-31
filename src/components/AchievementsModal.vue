@@ -108,28 +108,30 @@ const handleMouseLeave = (e) => {
     <div class="relative w-full max-w-4xl h-[85vh] bg-gray-900 border border-gray-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in duration-300">
       
       <!-- Header -->
-      <div class="p-6 border-b border-gray-800 flex flex-col md:flex-row justify-between items-center bg-gray-900/50 backdrop-blur z-20 sticky top-0 relative overflow-hidden gap-4">
-           <!-- Progress Background -->
-          <div class="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent transition-all duration-1000" :style="{ width: completionPercentage + '%' }"></div>
-          
-          <div class="relative z-10 flex items-center gap-4">
-            <h2 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-500 uppercase tracking-widest flex items-center gap-2">
-                <Trophy class="w-8 h-8 text-primary" />
+      <div class="p-6 pb-2 border-b border-gray-700/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative">
+          <!-- Header Block -->
+          <div class="flex items-center gap-4">
+            <h2 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-yellow-600 uppercase tracking-widest drop-shadow-sm">
                 Achievements
             </h2>
-            <div class="h-8 w-px bg-gray-700 hidden md:block"></div>
-            <p class="text-gray-400 text-sm flex items-center gap-2 mt-2 md:mt-0">
-                <span class="font-bold text-white">{{ unlockCount }}</span> / {{ totalCount }} <span class="hidden sm:inline">Unlocked</span> ({{ completionPercentage }}%)
-            </p>
           </div>
 
-          <!-- Filters -->
-          <div class="relative z-10 flex bg-gray-800/80 rounded-lg p-1 gap-1 self-start md:self-auto">
-              <button @click="setFilter('all')" :class="['px-3 py-1.5 rounded text-xs font-bold transition-all', currentFilter === 'all' ? 'bg-primary text-white shadow' : 'text-gray-400 hover:text-white']">All</button>
-              <button @click="setFilter('unlocked')" :class="['px-3 py-1.5 rounded text-xs font-bold transition-all', currentFilter === 'unlocked' ? 'bg-green-600 text-white shadow' : 'text-gray-400 hover:text-white']">
-                  <span class="md:hidden">Unlock</span><span class="hidden md:inline">Unlocked</span>
-              </button>
-              <button @click="setFilter('locked')" :class="['px-3 py-1.5 rounded text-xs font-bold transition-all', currentFilter === 'locked' ? 'bg-gray-600 text-white shadow' : 'text-gray-400 hover:text-white']">Locked</button>
+          <!-- Controls Block (Filters + Counter) -->
+          <div class="flex flex-col-reverse sm:flex-row items-start sm:items-center gap-3 w-full md:w-auto">
+             
+              <!-- Counter -->
+             <p class="text-gray-400 text-xs font-bold whitespace-nowrap">
+                <span class="text-white">{{ unlockCount }}</span> / {{ totalCount }} <span class="hidden sm:inline">Unlocked</span> ({{ completionPercentage }}%)
+             </p>
+
+              <!-- Filters -->
+              <div class="relative z-10 flex bg-gray-800/80 rounded-lg p-1 gap-1 self-start md:self-auto">
+                  <button @click="setFilter('all')" :class="['px-3 py-1.5 rounded text-xs font-bold transition-all', currentFilter === 'all' ? 'bg-primary text-white shadow' : 'text-gray-400 hover:text-white']">All</button>
+                  <button @click="setFilter('unlocked')" :class="['px-3 py-1.5 rounded text-xs font-bold transition-all', currentFilter === 'unlocked' ? 'bg-green-600 text-white shadow' : 'text-gray-400 hover:text-white']">
+                      <span class="md:hidden">Unlock</span><span class="hidden md:inline">Unlocked</span>
+                  </button>
+                  <button @click="setFilter('locked')" :class="['px-3 py-1.5 rounded text-xs font-bold transition-all', currentFilter === 'locked' ? 'bg-gray-600 text-white shadow' : 'text-gray-400 hover:text-white']">Locked</button>
+              </div>
           </div>
 
           <button @click="$emit('close')" class="absolute top-4 right-4 md:static p-2 bg-gray-800 rounded-full text-gray-400 hover:text-white hover:bg-gray-700 transition-colors z-10">
