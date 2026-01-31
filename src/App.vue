@@ -14,9 +14,11 @@ import AchievementsModal from './components/AchievementsModal.vue';
 import AchievementToast from './components/AchievementToast.vue'; // New Toast Component
 import SmartBar from './components/SmartBar.vue'; // Search & Sort
 import TimelineModal from './components/TimelineModal.vue'; // Journey Timeline
+import LevelUpOverlay from './components/LevelUpOverlay.vue'; // New Level Up Screen
+import VictoryOverlay from './components/VictoryOverlay.vue'; // New Victory Screen
 import { Settings, Plus, Gamepad2, Layers, CheckCircle2, LayoutDashboard, Ban, Timer, Bell, Dices, Trophy, Menu, X } from 'lucide-vue-next';
 
-const { playingGames, backlogGames, completedGames, droppedGames, updateStatus, removeGame, games, userXP } = useGames();
+const { playingGames, backlogGames, completedGames, droppedGames, updateStatus, removeGame, games, userXP, userLevel, userTitle } = useGames();
 const { checkAchievements } = useAchievements();
 
 const showAddModal = ref(false);
@@ -25,9 +27,63 @@ const showStats = ref(false);
 const showQuestModal = ref(false);
 const showDetailModal = ref(false);
 const showTimeline = ref(false); // Timeline State
+const showLevelUp = ref(false); // Level Up State
+const showVictory = ref(false); // Victory State
+const victoryGame = ref(null); // Game that triggered victory
+const pendingLevelUp = ref(false); // Queue for level up
+
 const selectedGameId = ref(null);
 
 const currentTab = ref('dashboard'); // 'dashboard', 'backlog', 'completed'
+
+// Level Up Logic (Sequenced)
+watch(userLevel, (newVal, oldVal) => {
+    if (newVal > oldVal) {
+        if (showVictory.value) {
+            // If Victory is showing, queue level up
+            pendingLevelUp.value = true;
+        } else {
+            showLevelUp.value = true;
+        }
+    }
+});
+
+// Handle Victory Close (Check Queue)
+const closeVictory = () => {
+    showVictory.value = false;
+    victoryGame.value = null;
+    if (pendingLevelUp.value) {
+        setTimeout(() => {
+            showLevelUp.value = true;
+            pendingLevelUp.value = false;
+        }, 500); // Small delay for breathing room
+    }
+};
+
+const xpGained = ref(0);
+
+// Intercept Status Updates for Victory
+const handleUpdateStatus = (id, status) => {
+    // Check if becoming completed
+    if (status === 'completed') {
+        const game = games.value.find(g => g.id === id);
+        if (game && game.status !== 'completed') {
+            victoryGame.value = game;
+            
+            // Calculate XP (Mirroring logic in useGames.js)
+            // playing -> completed = 200
+            // backlog/dropped -> completed = 250 (Start 50 + Complete 200)
+            if (game.status === 'playing') {
+                xpGained.value = 200;
+            } else {
+                xpGained.value = 250;
+            }
+
+            showVictory.value = true;
+        }
+    }
+    updateStatus(id, status);
+};
 
 // Search & Sort State
 const localSearchQuery = ref('');
@@ -232,8 +288,8 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
     <!-- Achievements -->
     <AchievementsModal v-if="showAchievements" :is-open="showAchievements" @close="closeAchievements" />
     <AchievementToast />
-
-    <AchievementToast />
+    <VictoryOverlay v-if="showVictory" :game="victoryGame" :xp-gained="xpGained" @close="closeVictory" />
+    <LevelUpOverlay v-if="showLevelUp" :level="userLevel" :title="userTitle" @close="showLevelUp = false" />
     
     <!-- Smart Bar (Search & Sort) -->
     <SmartBar 
@@ -288,7 +344,7 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
             :key="game.id" 
             :game="game" 
             @click="openGameDetails(game.id)"
-            @update-status="updateStatus"
+            @update-status="handleUpdateStatus"
             @delete="removeGame"
             class="cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all shadow-sm animate-stagger-enter"
             :style="{ animationDelay: `${index * 50}ms` }"
@@ -434,7 +490,7 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
       :is-open="showDetailModal" 
       :game-id="selectedGameId" 
       @close="closeGameDetails"
-      @update-status="updateStatus"
+      @update-status="handleUpdateStatus"
       @delete="removeGame"
     />
 

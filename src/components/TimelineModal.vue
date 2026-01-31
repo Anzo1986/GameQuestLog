@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { X, Calendar, CheckCircle2, Gamepad2, Layers } from 'lucide-vue-next';
 import { useGames } from '../composables/useGames';
 
@@ -65,6 +65,11 @@ const particles = new Array(40).fill(null).map(() => ({
   duration: Math.random() * 5 + 5 + 's',
   opacity: Math.random() * 0.7 + 0.3
 }));
+const expandedGames = ref(new Set());
+const toggleExpand = (id) => {
+    if (expandedGames.value.has(id)) expandedGames.value.delete(id);
+    else expandedGames.value.add(id);
+};
 </script>
 
 <template>
@@ -157,29 +162,59 @@ const particles = new Array(40).fill(null).map(() => ({
                             <div class="absolute -left-10 top-1/2 -translate-y-1/2 w-10 h-[1px] bg-[rgb(var(--primary-rgb))] opacity-30 group-hover:opacity-100 transition-opacity"></div>
 
                             <!-- Card -->
-                            <div class="flex gap-4 bg-gray-800/40 p-3 rounded-xl border border-gray-700/50 hover:bg-gray-800 hover:border-[rgb(var(--primary-rgb))] transition-all shadow-lg items-center group-hover:shadow-[0_0_15px_rgba(var(--primary-rgb),0.15)]">
-                                
-                                <!-- Image -->
-                                <img :src="game.background_image" class="w-16 h-16 object-cover rounded-lg shadow-md" />
-                                
-                                <!-- Info -->
-                                <div class="flex-1 min-w-0">
-                                    <h3 class="font-bold text-white truncate group-hover:text-[rgb(var(--primary-rgb))] transition-colors">{{ game.title }}</h3>
-                                    <div class="flex items-center gap-2 mt-1">
-                                        <span :class="['text-xs px-2 py-0.5 rounded border inline-flex items-center gap-1', getStatusColor(game.status)]">
-                                            <component :is="getStatusIcon(game.status)" class="w-3 h-3" />
-                                            <span class="uppercase tracking-wider font-bold text-[10px]">{{ game.status }}</span>
-                                        </span>
-                                        <span v-if="game.rating" class="text-xs text-yellow-500 font-bold">★ {{ game.rating }}</span>
+                            <div 
+                                @click.stop="toggleExpand(game.id)"
+                                class="relative flex flex-col bg-gradient-to-br from-gray-800 to-gray-900/80 p-4 rounded-xl border border-gray-700/50 border-t-white/10 border-l-white/10 hover:border-[rgb(var(--primary-rgb))] transition-all shadow-lg hover:shadow-[0_10px_20px_rgba(0,0,0,0.5)] hover:-translate-y-1 cursor-pointer group-hover:z-10 backdrop-blur-sm"
+                            >
+                                <!-- Main Row -->
+                                <div class="flex gap-4 items-center">
+                                    <!-- Image -->
+                                    <img :src="game.background_image" class="w-16 h-16 object-cover rounded-lg shadow-md border border-gray-700" />
+                                    
+                                    <!-- Info -->
+                                    <div class="flex-1 min-w-0">
+                                        <h3 class="font-bold text-white truncate group-hover:text-[rgb(var(--primary-rgb))] transition-colors text-lg">{{ game.title }}</h3>
+                                        <div class="flex items-center gap-2 mt-1">
+                                            <span :class="['text-xs px-2 py-0.5 rounded border inline-flex items-center gap-1 shadow-sm', getStatusColor(game.status)]">
+                                                <component :is="getStatusIcon(game.status)" class="w-3 h-3" />
+                                                <span class="uppercase tracking-wider font-bold text-[10px]">{{ game.status }}</span>
+                                            </span>
+                                            <span v-if="game.rating" class="text-xs text-yellow-500 font-bold drop-shadow-sm">★ {{ game.rating }}</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Date/Action (Summary) -->
+                                    <div class="text-right text-xs text-gray-500 font-mono hidden sm:block">
+                                        <div v-if="game.completedAt">Completed</div>
+                                        <div v-else-if="game.startedAt">Started</div>
+                                        <div v-else>Released</div>
+                                        <div class="text-gray-400">{{ new Date(game.completedAt || game.startedAt || game.released).toLocaleDateString() }}</div>
                                     </div>
                                 </div>
 
-                                <!-- Date/Action -->
-                                <div class="text-right text-xs text-gray-500 font-mono hidden sm:block">
-                                    <div v-if="game.completedAt">Completed</div>
-                                    <div v-else-if="game.startedAt">Started</div>
-                                    <div v-else>Released</div>
-                                    <div class="text-gray-400">{{ new Date(game.completedAt || game.startedAt || game.released).toLocaleDateString() }}</div>
+                                <!-- Expanded Details (History) -->
+                                <div v-if="expandedGames.has(game.id)" class="mt-4 pt-4 border-t border-gray-700/50 space-y-2 animate-in slide-in-from-top-2 fade-in duration-200">
+                                    <h4 class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-2">History Log</h4>
+                                    
+                                    <div v-if="game.released" class="flex justify-between text-xs">
+                                        <span class="text-gray-400 flex items-center gap-2"><Calendar class="w-3 h-3" /> Released</span>
+                                        <span class="font-mono text-gray-300">{{ new Date(game.released).toLocaleDateString() }}</span>
+                                    </div>
+                                    
+                                    <div v-if="game.addedAt" class="flex justify-between text-xs">
+                                        <span class="text-gray-400 flex items-center gap-2"><Layers class="w-3 h-3" /> Backlog</span>
+                                        <span class="font-mono text-gray-300">{{ new Date(game.addedAt).toLocaleDateString() }}</span>
+                                    </div>
+
+                                    <div v-if="game.startedAt" class="flex justify-between text-xs">
+                                        <span class="text-blue-400 flex items-center gap-2"><Gamepad2 class="w-3 h-3" /> Started</span>
+                                        <span class="font-mono text-gray-300">{{ new Date(game.startedAt).toLocaleDateString() }}</span>
+                                    </div>
+
+                                    <div v-if="game.completedAt" class="flex justify-between text-xs">
+                                        <span class="text-green-400 flex items-center gap-2"><CheckCircle2 class="w-3 h-3" /> Completed</span>
+                                        <span class="font-mono text-white font-bold">{{ new Date(game.completedAt).toLocaleDateString() }}</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>

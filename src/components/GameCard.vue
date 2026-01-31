@@ -37,6 +37,14 @@ const formatDate = (dateString) => {
 const backgroundImage = computed(() => {
   return props.game.background_image || 'https://via.placeholder.com/600x400?text=No+Image';
 });
+
+const isNew = computed(() => {
+    if (!props.game.addedAt) return false;
+    const added = new Date(props.game.addedAt);
+    const now = new Date();
+    const diffHours = (now - added) / (1000 * 60 * 60);
+    return diffHours < 48; // New if added within 48 hours
+});
 </script>
 
 <template>
@@ -52,6 +60,11 @@ const backgroundImage = computed(() => {
     <button @click.stop="toggleOverlay" class="absolute top-2 right-2 p-1.5 bg-gray-900/80 text-white rounded-full hover:bg-black z-20">
         <MoreVertical class="w-5 h-5" />
     </button>
+
+    <!-- NEW Badge (Top Left) -->
+    <div v-if="isNew" class="absolute top-2 left-2 bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-lg z-20 animate-pulse border border-blue-400">
+        NEW
+    </div>
 
     <!-- Details Content -->
     <div class="absolute bottom-0 left-0 right-0 p-2 sm:p-3" v-if="!showOverlay">
