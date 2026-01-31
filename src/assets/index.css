@@ -10,6 +10,25 @@
   --color-gray-300: #d1d5db;
   --color-gray-200: #e5e7eb;
   --color-gray-100: #f3f4f6;
+  
+  /* Override standard colors to use HEX instead of OKLCH for html2canvas compatibility */
+  --color-red-500: #ef4444;
+  --color-red-400: #f87171;
+  
+  --color-blue-600: #2563eb;
+  --color-blue-500: #3b82f6;
+  --color-blue-400: #60a5fa;
+  
+  --color-green-500: #22c55e;
+  --color-green-400: #4ade80;
+
+  --color-yellow-500: #eab308;
+  --color-yellow-400: #facc15;
+  
+  --color-purple-600: #9333ea;
+  --color-purple-900: #581c87;
+  
+  --color-indigo-900: #312e81;
 }
 
 :root {

@@ -14,6 +14,7 @@ import AchievementsModal from './components/AchievementsModal.vue';
 import AchievementToast from './components/AchievementToast.vue'; // New Toast Component
 import SmartBar from './components/SmartBar.vue'; // Search & Sort
 import TimelineModal from './components/TimelineModal.vue'; // Journey Timeline
+import GamerCardModal from './components/GamerCardModal.vue'; // New Gamer Card
 import LevelUpOverlay from './components/LevelUpOverlay.vue'; // New Level Up Screen
 import VictoryOverlay from './components/VictoryOverlay.vue'; // New Victory Screen
 import { Settings, Plus, Gamepad2, Layers, CheckCircle2, LayoutDashboard, Ban, Timer, Bell, Dices, Trophy, Menu, X } from 'lucide-vue-next';
@@ -27,6 +28,7 @@ const showStats = ref(false);
 const showQuestModal = ref(false);
 const showDetailModal = ref(false);
 const showTimeline = ref(false); // Timeline State
+const showGamerCard = ref(false); // Gamer Card State
 const showLevelUp = ref(false); // Level Up State
 const showVictory = ref(false); // Victory State
 const victoryGame = ref(null); // Game that triggered victory
@@ -158,6 +160,15 @@ const closeTimeline = () => {
     history.back();
 };
 
+const openGamerCard = () => {
+    showGamerCard.value = true;
+    history.pushState({ modal: 'gamerCard' }, '', '');
+};
+
+const closeGamerCard = () => {
+    history.back();
+};
+
 const openQuest = () => {
     showQuestModal.value = true;
     history.pushState({ modal: 'quest' }, '', '');
@@ -200,6 +211,8 @@ onMounted(() => {
             showQuestModal.value = false;
         } else if (showAchievements.value) {
             showAchievements.value = false;
+        } else if (showGamerCard.value) {
+            showGamerCard.value = false;
         }
     });
 
@@ -274,7 +287,7 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
     </header>
 
     <!-- User Profile -->
-    <UserProfile @open-stats="openStats" />
+    <UserProfile @open-stats="openStats" @open-gamer-card="openGamerCard" />
 
     <!-- Settings Section (Modal) -->
     <SettingsSection v-if="showSettings" @close="closeSettings" />
@@ -290,6 +303,7 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
     <AchievementToast />
     <VictoryOverlay v-if="showVictory" :game="victoryGame" :xp-gained="xpGained" @close="closeVictory" />
     <LevelUpOverlay v-if="showLevelUp" :level="userLevel" :title="userTitle" @close="showLevelUp = false" />
+    <GamerCardModal v-if="showGamerCard" :is-open="showGamerCard" @close="closeGamerCard" />
     
     <!-- Smart Bar (Search & Sort) -->
     <SmartBar 

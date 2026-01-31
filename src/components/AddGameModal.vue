@@ -1,7 +1,8 @@
 <script setup>
 import { ref, watch } from 'vue';
-import { Search, Loader2, Plus, X, PenTool, Calendar, Image as ImageIcon, CornerUpLeft, Gamepad2 } from 'lucide-vue-next';
+import { Search, Loader2, Plus, X, PenTool, Calendar, Image as ImageIcon, CornerUpLeft, Gamepad2, Tag, Check } from 'lucide-vue-next';
 import { useGames } from '../composables/useGames';
+import { GENRES } from '../constants/genres';
 
 const props = defineProps({
   isOpen: Boolean
@@ -14,17 +15,20 @@ const inputRef = ref(null);
 const manualInputRef = ref(null);
 
 const showManualForm = ref(false);
+const showGenreDropdown = ref(false);
+
 const manualForm = ref({
     name: '',
     image: '',
     releaseDate: '',
-    platform: 'PC'
+    platform: 'PC',
+    genres: []
 });
 
 watch(() => props.isOpen, (newVal) => {
   if (newVal) {
     showManualForm.value = false;
-    manualForm.value = { name: '', image: '', releaseDate: '' };
+    manualForm.value = { name: '', image: '', releaseDate: '', platform: 'PC', genres: [] };
     setTimeout(() => inputRef.value?.focus(), 100);
   } else {
     searchQuery.value = '';
@@ -57,6 +61,14 @@ const toggleManualMode = () => {
     }
 };
 
+const toggleGenre = (genre) => {
+    if (manualForm.value.genres.includes(genre)) {
+        manualForm.value.genres = manualForm.value.genres.filter(g => g !== genre);
+    } else {
+        manualForm.value.genres.push(genre);
+    }
+};
+
 const submitManualGame = () => {
     if (!manualForm.value.name) return;
 
@@ -65,7 +77,12 @@ const submitManualGame = () => {
         name: manualForm.value.name,
         background_image: manualForm.value.image || null, // Let placeholder handle null
         released: manualForm.value.releaseDate || null,
-        selectedPlatform: manualForm.value.platform // Use selected platform
+        selectedPlatform: manualForm.value.platform, // Use selected platform
+        genres: manualForm.value.genres.map(name => ({
+            id: Date.now() + Math.random(),
+            name: name,
+            slug: name.toLowerCase().replace(/\s+/g, '-')
+        }))
     };
 
     addGame(newGame, newGame.selectedPlatform);
@@ -167,6 +184,37 @@ const handleAdd = (game) => {
               >
                   <option v-for="p in PLATFORMS" :key="p" :value="p">{{ p }}</option>
               </select>
+          </div>
+
+          <!-- Genres Multi-Select -->
+          <div class="space-y-2 relative">
+               <label class="text-sm font-medium text-gray-400 flex items-center gap-2">
+                  <Tag class="w-4 h-4" /> Genres
+              </label>
+              
+              <div class="bg-gray-800 border border-gray-700 rounded-lg p-3 min-h-[46px] cursor-pointer hover:border-gray-600" @click="showGenreDropdown = !showGenreDropdown">
+                  <div class="flex flex-wrap gap-2" v-if="manualForm.genres.length > 0">
+                      <span v-for="g in manualForm.genres" :key="g" class="bg-primary/20 text-primary text-xs px-2 py-1 rounded border border-primary/30 flex items-center gap-1">
+                          {{ g }}
+                          <button @click.stop="toggleGenre(g)" class="hover:text-white"><X class="w-3 h-3" /></button>
+                      </span>
+                  </div>
+                  <span v-else class="text-gray-500 text-sm">Select Genres...</span>
+              </div>
+
+              <!-- Dropdown -->
+              <div v-if="showGenreDropdown" class="absolute left-0 right-0 top-full mt-2 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50 max-h-60 overflow-y-auto">
+                   <div v-for="genre in GENRES" :key="genre" 
+                        @click="toggleGenre(genre)"
+                        class="px-4 py-2 hover:bg-gray-700 cursor-pointer text-sm flex items-center justify-between"
+                        :class="manualForm.genres.includes(genre) ? 'text-white bg-gray-700/50' : 'text-gray-300'"
+                   >
+                       {{ genre }}
+                       <Check v-if="manualForm.genres.includes(genre)" class="w-4 h-4 text-primary" />
+                   </div>
+              </div>
+              <!-- Backdrop for dropdown -->
+              <div v-if="showGenreDropdown" class="fixed inset-0 z-40" @click="showGenreDropdown = false"></div>
           </div>
 
           <div class="pt-4 flex justify-end gap-3">

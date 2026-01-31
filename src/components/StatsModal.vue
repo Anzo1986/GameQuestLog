@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { X, Trophy, Clock, AlertCircle, Crown } from 'lucide-vue-next';
 import { useGames } from '../composables/useGames';
 import { useSettings } from '../composables/useSettings';
+import { GENRES } from '../constants/genres';
 import {
   Chart as ChartJS,
   ArcElement,
@@ -73,41 +74,98 @@ const statusChartOptions = {
     }
 };
 
+
 // 2. Genre Radar Data
 const genreChartData = computed(() => {
     if (!gameStats.value) return null;
     const g = gameStats.value.genreCounts;
-    const sortedGenres = Object.entries(g).sort((a,b) => b[1] - a[1]).slice(0, 6);
     
+    // 1. Map & Abbreviate
+    const ABBREVIATIONS = {
+        'Massively Multiplayer': 'MMO',
+        'Role-playing Games': 'RPG',
+        'Board Games': 'Board',
+        'Casual': 'Casual',
+        'Indie': 'Indie',
+    };
+
+    // Convert to array of { name, count }
+    // We iterate over the actual counts present in the data, not just the static list, 
+    // to ensure we capture everything, but GENRES constant is safer if we want fixed order.
+    // However, for Radar chart with grouping, dynamic is better.
+    let allGenres = Object.entries(g).map(([name, count]) => ({
+        name: ABBREVIATIONS[name] || name,
+        count
+    }));
+
+    // 2. Sort Descending
+    allGenres.sort((a, b) => b.count - a.count);
+
+    // 3. Group (Top 6 + Other)
+    const topN = 6;
+    if (allGenres.length > topN) {
+         const top = allGenres.slice(0, topN);
+         const others = allGenres.slice(topN);
+         const otherCount = others.reduce((sum, item) => sum + item.count, 0);
+         
+         // Only add 'Others' if there is actually meaningful data there
+         if (otherCount > 0) {
+             top.push({ name: 'Others', count: otherCount });
+         }
+         
+         allGenres = top;
+    }
+
     return {
-        labels: sortedGenres.map(i => i[0]),
+        labels: allGenres.map(obj => obj.name),
         datasets: [{
             label: 'Genre Distribution',
             backgroundColor: 'rgba(59, 130, 246, 0.2)',
             borderColor: '#3b82f6',
             pointBackgroundColor: '#3b82f6',
             pointBorderColor: '#fff',
-            data: sortedGenres.map(i => i[1])
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: '#3b82f6',
+            data: allGenres.map(obj => obj.count)
         }]
     };
 });
 
-const genreChartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    animation: {
-        duration: 800
-    },
-    scales: {
-        r: {
-            angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
-            grid: { color: 'rgba(255, 255, 255, 0.1)' },
-            pointLabels: { color: '#e5e7eb', font: { size: 12 } },
-            ticks: { backdropColor: 'transparent', color: 'transparent' } // Hide numbers
+const genreChartOptions = computed(() => {
+    return {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: {
+            duration: 800
+        },
+        scales: {
+            r: {
+                angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
+                grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                pointLabels: { 
+                    color: '#9ca3af', 
+                    font: { 
+                        size: 11
+                    }
+                },
+                ticks: { 
+                    backdropColor: 'transparent', 
+                    display: false 
+                },
+                suggestedMin: 0,
+                suggestedMax: 4
+            }
+        },
+        plugins: { 
+            legend: { display: false },
+            tooltip: {
+                callbacks: {
+                    label: (context) => ` ${context.label}: ${context.raw}`
+                }
+            }
         }
-    },
-    plugins: { legend: { display: false } }
-};
+    };
+});
 
 // 3. Platform Bar Data
 const platformChartData = computed(() => {
@@ -240,7 +298,7 @@ const platformChartOptions = {
             <!-- Radar: Genres -->
             <div class="bg-gray-800/40 rounded-3xl p-6 border border-gray-700/50 flex flex-col">
                 <h4 class="text-lg font-bold text-gray-200 mb-4 border-l-4 border-purple-500 pl-3">Genre DNA</h4>
-                <div class="flex-1 min-h-[250px] relative">
+                <div class="flex-1 min-h-[400px] relative">
                     <Radar :data="genreChartData" :options="genreChartOptions" />
                 </div>
             </div>

@@ -2,7 +2,7 @@
 import { Trophy, Crown, PieChart } from 'lucide-vue-next';
 import { useGames } from '../composables/useGames';
 
-const emit = defineEmits(['open-stats']);
+const emit = defineEmits(['open-stats', 'open-gamer-card']);
 
 const { userName, userLevel, userTitle, xpProgress, userAvatar } = useGames();
 </script>
@@ -25,7 +25,7 @@ const { userName, userLevel, userTitle, xpProgress, userAvatar } = useGames();
         
         <!-- Left: Avatar & Level -->
         <div class="flex items-center gap-4">
-            <div class="relative group cursor-pointer">
+            <div class="relative group cursor-pointer" @click="$emit('open-gamer-card')">
                 <div class="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center border-2 border-yellow-500 shadow-lg overflow-hidden transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 group-hover:border-yellow-400">
                     <img v-if="userAvatar" :src="userAvatar" class="w-full h-full object-cover" />
                     <Trophy v-else class="w-8 h-8 text-yellow-500" />
