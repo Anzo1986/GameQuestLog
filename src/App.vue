@@ -251,10 +251,37 @@ const handleWebCheck = async () => {
 };
 
 const logoPath = `${import.meta.env.BASE_URL}logo.png`;
+
+// Swipe Navigation
+import { useSwipe } from './composables/useSwipe';
+
+const mainContainer = ref(null);
+const tabs = ['dashboard', 'backlog', 'completed', 'dropped'];
+
+const nextTab = () => {
+    const currentIndex = tabs.indexOf(currentTab.value);
+    if (currentIndex < tabs.length - 1) {
+        currentTab.value = tabs[currentIndex + 1];
+    }
+};
+
+const prevTab = () => {
+    const currentIndex = tabs.indexOf(currentTab.value);
+    if (currentIndex > 0) {
+        currentTab.value = tabs[currentIndex - 1];
+    }
+};
+
+useSwipe(mainContainer, {
+    onSwipeLeft: nextTab,
+    onSwipeRight: prevTab,
+    minSwipeDistance: 50,
+    maxVerticalDistance: 50 // Slightly higher tolerance
+});
 </script>
 
 <template>
-  <div class="min-h-screen pb-24 px-4 pt-4 max-w-4xl mx-auto flex flex-col">
+  <div class="min-h-screen pb-24 px-4 pt-4 max-w-4xl mx-auto flex flex-col" ref="mainContainer">
     
     <!-- Header -->
     <header class="flex justify-between items-center mb-6">
@@ -408,9 +435,7 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
               @update-status="updateStatus"
               @delete="removeGame"
             />
-            <div class="absolute top-2 right-2 bg-green-500 text-black text-xs font-bold px-2 py-1 rounded shadow pointer-events-none">
-              DONE
-            </div>
+
              <!-- Rating Badge -->
             <div v-if="game.rating" class="absolute bottom-16 right-2 flex bg-yellow-500 text-black text-xs font-bold px-2 py-0.5 rounded shadow pointer-events-none items-center gap-1">
               <span class="text-[10px]">★</span> {{ game.rating }}
