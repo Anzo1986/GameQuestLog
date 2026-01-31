@@ -5,8 +5,9 @@ const ACHIEVEMENTS_STORAGE_KEY = 'game-tracker-achievements';
 const achievementsList = [
     // 1. Adding Games
     { id: 'add_1', title: 'Quest Beginner', description: 'Add your first game to the library.', icon: 'Plus', tier: 'bronze' },
-    { id: 'add_10_backlog', title: 'Backlog Warrior', description: 'Have 10 games in your backlog.', icon: 'Layers', tier: 'bronze' },
-    { id: 'add_50_total', title: 'The Collector', description: 'Amass a collection of 50 games.', icon: 'Library', tier: 'silver' },
+    { id: 'add_3', title: 'Library Builder', description: 'Add 3 games to your collection.', icon: 'Library', tier: 'bronze' }, // NEW
+    { id: 'add_10_backlog', title: 'Backlog Warrior', description: 'Have 10 games in your backlog.', icon: 'Layers', tier: 'silver' }, // Upgraded to Silver
+    { id: 'add_50_total', title: 'The Collector', description: 'Amass a collection of 50 games.', icon: 'Library', tier: 'gold' }, // Upgraded to Gold
 
     // 2. Completing Games
     { id: 'complete_1', title: 'First Blood', description: 'Complete 1 game.', icon: 'Trophy', tier: 'bronze' },
@@ -29,6 +30,10 @@ const achievementsList = [
     // 6. Ratings
     { id: 'rate_5_stars', title: 'Critic\'s Choice', description: 'Rate a game 5 stars.', icon: 'Star', tier: 'bronze' },
     { id: 'rate_1_star', title: 'Harsh Critic', description: 'Rate a game 1 star.', icon: 'ThumbsDown', tier: 'bronze' },
+
+    // New: Accessible Achievements
+    { id: 'start_playing', title: 'Press Start', description: 'Set a game to "Playing" status.', icon: 'Gamepad2', tier: 'bronze' },
+    { id: 'first_review', title: 'The Reviewer', description: 'Rate a game for the first time.', icon: 'Star', tier: 'bronze' },
 
     // 7. Features
     { id: 'quest_1', title: 'Quest Accepted', description: 'Use the Quest Giver once.', icon: 'Dices', tier: 'bronze' },
@@ -146,14 +151,21 @@ export function useAchievements() {
         const allGames = games.value;
 
         // ... existing checks ...
-        // 1. Quest Beginner
+        // 1. Quest Beginner & Builder
         if (allGames.length >= 1) unlock('add_1');
+        if (allGames.length >= 3) unlock('add_3');
 
         // 2. Backlog Warrior
         if (backlogGames.value.length >= 10) unlock('add_10_backlog');
 
         // 3. The Collector
         if (allGames.length >= 50) unlock('add_50_total');
+
+        // New: Press Start
+        if (playingGames.value.length >= 1) unlock('start_playing');
+
+        // New: First Review
+        if (allGames.some(g => g.rating > 0)) unlock('first_review');
 
         // 4. First Blood
         if (completedGames.value.length >= 1) unlock('complete_1');
@@ -271,10 +283,10 @@ export function useAchievements() {
     const totalQuestScore = computed(() => {
         let score = 0;
         const tierValues = {
-            bronze: 10,
-            silver: 25,
-            gold: 50,
-            platinum: 100
+            bronze: 20,   // Buffed from 10
+            silver: 50,   // Buffed from 25
+            gold: 100,    // Buffed from 50
+            platinum: 250 // Buffed from 100
         };
 
         for (const id in unlockedAchievements.value) {
@@ -296,4 +308,3 @@ export function useAchievements() {
         totalQuestScore
     };
 }
-
