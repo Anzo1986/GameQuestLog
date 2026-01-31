@@ -17,14 +17,14 @@ Earn XP for every game you add, start, or finish. Level up your profile from a "
 
 ### Key Features
 
-*   **🏆 Gamified Progression**: Earn XP and level up by managing your library. Watch your rank grow!
+*   **🏆 Advanced Achievements**: Unlock over 50 unique achievements with **Bronze, Silver, Gold, and Platinum** tiers. Discover secret challenges and track your milestones.
+*   **🃏 Gamer Card**: Generate a high-quality, shareable image of your profile stats to show off your completion rate and level.
+*   **📱 Gesture Navigation**: Swipe left/right to seamlessly switch between your Dashboard, Backlog, and Completed lists—just like a native app.
 *   **📊 Comprehensive Dashboard**: Visualize your habits with beautiful charts (Playing vs. Completed, Genre DNA, Platform Wars).
 *   **🧙‍♂️ Quest Giver**: Can't decide what to play? Let the "Quest Giver" roll the dice and pick a game from your backlog.
-*   **📱 Mobile-First PWA**: Installable on iOS and Android. Features native-like smooth gestures (swipe-to-close) and touch-optimized UI.
-*   **🎨 Dynamic Themes**: Customize the look with multiple color schemes (Blue, Pink, Green, Purple, Red, Orange).
+*   **🎨 Premium Visuals**: Enjoy 3D tilt effects on cards, staggered entrance animations, and a polished glassmorphic UI.
 *   **🪄 AI-Powered Updates**: Integrated with **Google Gemini** to fetch the latest patch notes and content updates for your active games.
 *   **💾 Local & Private**: 100% Client-side. Your data lives in your browser's LocalStorage. Support for JSON Import/Export backups.
-*   **🔍 RAWG API Integration**: Instant access to a massive database of games for cover art, metadata, and ratings.
 
 ---
 
@@ -34,6 +34,7 @@ Earn XP for every game you add, start, or finish. Level up your profile from a "
 *   **[Vite](https://vitejs.dev/)** - Next Generation Frontend Tooling
 *   **[Tailwind CSS](https://tailwindcss.com/)** - Utility-first CSS framework
 *   **[Chart.js](https://www.chartjs.org/)** - For beautiful data visualization
+*   **[html-to-image](https://github.com/bubkoo/html-to-image)** - For generating Gamer Cards
 *   **[Lucide Icons](https://lucide.dev/)** - Beautiful & consistent icons
 *   **[Google Generative AI](https://ai.google.dev/)** - For smart game updates
 
