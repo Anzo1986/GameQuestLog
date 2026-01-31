@@ -16,6 +16,13 @@ const icons = {
   Plus, Trophy, Crown, Ban, Layers, Library, Shuffle, Focus: Target, Gamepad2, Server, Map, Star, ThumbsDown, Dices, Sparkles, Palette, Hourglass, Zap, Lock, Unlock: LockOpen, Clock, CheckCircle2, Timer, Calendar
 };
 
+const tierRewards = {
+    bronze: 20,
+    silver: 50,
+    gold: 100,
+    platinum: 250
+};
+
 // Filter State
 const currentFilter = ref('all'); // 'all', 'unlocked', 'locked'
 
@@ -111,15 +118,17 @@ const handleMouseLeave = (e) => {
                 Achievements
             </h2>
             <div class="h-8 w-px bg-gray-700 hidden md:block"></div>
-            <p class="text-gray-400 text-sm hidden md:flex items-center gap-2">
-                <span class="font-bold text-white">{{ unlockCount }}</span> / {{ totalCount }} Unlocked ({{ completionPercentage }}%)
+            <p class="text-gray-400 text-sm flex items-center gap-2 mt-2 md:mt-0">
+                <span class="font-bold text-white">{{ unlockCount }}</span> / {{ totalCount }} <span class="hidden sm:inline">Unlocked</span> ({{ completionPercentage }}%)
             </p>
           </div>
 
           <!-- Filters -->
-          <div class="relative z-10 flex bg-gray-800/80 rounded-lg p-1 gap-1">
+          <div class="relative z-10 flex bg-gray-800/80 rounded-lg p-1 gap-1 self-start md:self-auto">
               <button @click="setFilter('all')" :class="['px-3 py-1.5 rounded text-xs font-bold transition-all', currentFilter === 'all' ? 'bg-primary text-white shadow' : 'text-gray-400 hover:text-white']">All</button>
-              <button @click="setFilter('unlocked')" :class="['px-3 py-1.5 rounded text-xs font-bold transition-all', currentFilter === 'unlocked' ? 'bg-green-600 text-white shadow' : 'text-gray-400 hover:text-white']">Unlocked</button>
+              <button @click="setFilter('unlocked')" :class="['px-3 py-1.5 rounded text-xs font-bold transition-all', currentFilter === 'unlocked' ? 'bg-green-600 text-white shadow' : 'text-gray-400 hover:text-white']">
+                  <span class="md:hidden">Unlock</span><span class="hidden md:inline">Unlocked</span>
+              </button>
               <button @click="setFilter('locked')" :class="['px-3 py-1.5 rounded text-xs font-bold transition-all', currentFilter === 'locked' ? 'bg-gray-600 text-white shadow' : 'text-gray-400 hover:text-white']">Locked</button>
           </div>
 
@@ -141,7 +150,7 @@ const handleMouseLeave = (e) => {
                 :class="[
                    unlockedAchievements[achievement.id] 
                     ? 'bg-gray-800/80' // Unlocked Base
-                    : 'bg-gray-900/50 border-gray-800 opacity-70 grayscale', // Locked Base
+                    : 'bg-gray-900/50 border-gray-800 opacity-70', // Locked Base (Removed grayscale to see colors better)
                    
                    // Tier Borders (Unlocked)
                    unlockedAchievements[achievement.id] && achievement.tier === 'bronze' ? 'border-orange-700/50 shadow-[0_0_10px_rgba(194,65,12,0.1)]' : '',
@@ -185,7 +194,7 @@ const handleMouseLeave = (e) => {
                                 {{ (achievement.secret && !unlockedAchievements[achievement.id]) ? 'Secret Achievement' : achievement.title }}
                             </h3>
                             
-                            <!-- Date or Lock -->
+                            <!-- Date (Unlocked Only) -->
                             <span v-if="unlockedAchievements[achievement.id]" class="text-[9px] font-mono border border-white/10 px-1.5 py-0.5 rounded text-white/50 bg-black/20">
                                 {{ getUnlockDate(achievement.id) }}
                             </span>
@@ -195,18 +204,30 @@ const handleMouseLeave = (e) => {
                              {{ (achievement.secret && !unlockedAchievements[achievement.id]) ? 'This achievement is hidden until unlocked.' : achievement.description }}
                         </p>
 
-                        <!-- Tier Badge (Mini) -->
-                         <div v-if="unlockedAchievements[achievement.id]" class="mt-2 flex">
+                        <!-- Tier Badge & Reward (Always Visible) -->
+                         <div class="mt-2 flex items-center gap-2">
                             <span class="text-[9px] uppercase font-bold tracking-widest px-1.5 py-0.5 rounded border border-white/5 bg-black/20"
                                 :class="[
                                     achievement.tier === 'bronze' ? 'text-orange-500' : '',
                                     achievement.tier === 'silver' ? 'text-gray-400' : '',
                                     achievement.tier === 'gold' ? 'text-yellow-500' : '',
-                                    achievement.tier === 'platinum' ? 'text-purple-400' : ''
+                                    achievement.tier === 'platinum' ? 'text-purple-400' : '',
+                                    !unlockedAchievements[achievement.id] ? 'opacity-50 grayscale' : ''
                                 ]"
                             >
                                 {{ achievement.tier }}
                             </span>
+                            
+                            <!-- Coin Reward -->
+                            <div class="flex items-center gap-1 text-[10px] font-bold"
+                                :class="unlockedAchievements[achievement.id] ? 'text-yellow-500' : 'text-yellow-500/50'"
+                            >
+                                <span class="px-1.5 py-0.5 rounded border flex items-center gap-1"
+                                    :class="unlockedAchievements[achievement.id] ? 'bg-yellow-500/10 border-yellow-500/20' : 'bg-gray-800 border-gray-700 grayscale'"
+                                >
+                                    +{{ tierRewards[achievement.tier] }} 🪙
+                                </span>
+                            </div>
                          </div>
                     </div>
                 </div>
