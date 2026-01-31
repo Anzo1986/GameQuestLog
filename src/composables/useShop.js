@@ -73,18 +73,14 @@ export function useShop() {
 
     // Calculated fields
     const totalSpent = computed(() => {
-        let spent = 0;
-        shopState.value.ownedItems.forEach(id => {
-            const item = SHOP_ITEMS.find(i => i.id === id);
-            if (item && item.price > 0) {
-                spent += item.price;
-            }
-        });
+        const spent = shopState.value.ownedItems.reduce((total, itemId) => {
+            const item = SHOP_ITEMS.find(i => i.id === itemId);
+            return total + (item ? item.price : 0);
+        }, 0);
         return spent;
     });
 
     const balance = computed(() => {
-        // GOD MODE: Add 99999 coins for testing
         return (totalQuestScore.value - totalSpent.value);
     });
 
