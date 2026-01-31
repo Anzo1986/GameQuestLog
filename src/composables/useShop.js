@@ -77,11 +77,8 @@ export function useShop() {
             const item = SHOP_ITEMS.find(i => i.id === itemId);
             return total + (item ? item.price : 0);
         }, 0);
-        return spent;
-    });
 
-    const balance = computed(() => {
-        return (totalQuestScore.value - totalSpent.value);
+        return totalQuestScore.value - spent;
     });
 
     const isOwned = (id) => shopState.value.ownedItems.includes(id);
