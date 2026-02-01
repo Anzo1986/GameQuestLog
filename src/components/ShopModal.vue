@@ -50,24 +50,18 @@ const handleTouchEnd = (e) => {
     const diffX = touchStartX.value - touchEndX;
     const diffY = touchStartY.value - touchEndY;
 
-    // Ignore if vertical scroll was dominant (to prevent triggering while scrolling down)
+    // Ignore if vertical scroll was dominant
     if (Math.abs(diffY) > Math.abs(diffX)) return;
 
-    // Threshold for swipe (e.g., 50px)
+    // Threshold
     if (Math.abs(diffX) < 50) return;
 
     const currentIndex = tabs.indexOf(activeTab.value);
     
-    if (diffX > 0) {
-        // Swipe Left -> Next Tab
-        if (currentIndex < tabs.length - 1) {
-            activeTab.value = tabs[currentIndex + 1];
-        }
-    } else {
-        // Swipe Right -> Prev Tab
-        if (currentIndex > 0) {
-            activeTab.value = tabs[currentIndex - 1];
-        }
+    if (diffX > 0) { // Swipe Left -> Next Tab
+        if (currentIndex < tabs.length - 1) activeTab.value = tabs[currentIndex + 1];
+    } else { // Swipe Right -> Prev Tab
+        if (currentIndex > 0) activeTab.value = tabs[currentIndex - 1];
     }
 };
 </script>
@@ -173,7 +167,12 @@ const handleTouchEnd = (e) => {
                                 lime: '132 204 22', 
                                 teal: '20 184 166',
                                 indigo: '99 102 241',
-                                fuchsia: '217 70 239'
+                                fuchsia: '217 70 239',
+                                
+                                // Neutral
+                                brown: '120 53 15',
+                                white: '229 231 235',
+                                black: '75 85 99'
                             }[item.value] || '59 130 246'
                          })` }"></div>
                          <div class="w-10 h-3 rounded bg-gray-700"></div>
@@ -200,6 +199,10 @@ const handleTouchEnd = (e) => {
                          <!-- New Style Previews -->
                          <div v-if="item.value === 'glitter'" class="absolute inset-0 bg-[radial-gradient(white,transparent_1px)] bg-[size:10px_10px] opacity-40 animate-pulse"></div>
                          <div v-if="item.value === 'spotlight'" class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent w-[200%] animate-shine"></div>
+                         
+                         <div v-if="item.value === 'prism'" class="absolute inset-0 border-2 border-transparent bg-gradient-to-tr from-red-500 via-green-500 to-blue-500 opacity-80 animate-spin-slow" style="mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; padding: 2px;"></div>
+                         <div v-if="item.value === 'glitch'" class="absolute inset-0 border-2 border-cyan-500 border-dashed opacity-70"></div>
+
                      </div>
 
                      <!-- Background Preview -->
