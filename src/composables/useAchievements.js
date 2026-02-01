@@ -5,66 +5,117 @@ const ACHIEVEMENTS_STORAGE_KEY = 'game-tracker-achievements';
 const achievementsList = [
     // 1. Adding Games
     { id: 'add_1', title: 'Quest Beginner', description: 'Add your first game to the library.', icon: 'Plus', tier: 'bronze' },
-    { id: 'add_3', title: 'Library Builder', description: 'Add 3 games to your collection.', icon: 'Library', tier: 'bronze' }, // NEW
-    { id: 'add_10_backlog', title: 'Backlog Warrior', description: 'Have 10 games in your backlog.', icon: 'Layers', tier: 'silver' }, // Upgraded to Silver
-    { id: 'add_50_total', title: 'The Collector', description: 'Amass a collection of 50 games.', icon: 'Library', tier: 'gold' }, // Upgraded to Gold
+    { id: 'add_3', title: 'Library Builder', description: 'Add 3 games to your collection.', icon: 'Library', tier: 'bronze' },
+    { id: 'add_10_total', title: 'Growing Collection', description: 'Amass a collection of 10 games.', icon: 'Library', tier: 'silver' }, // NEW
+    { id: 'add_25_total', title: 'Dedicated Collector', description: 'Amass a collection of 25 games.', icon: 'Library', tier: 'silver' }, // NEW
+    { id: 'add_50_total', title: 'The Collector', description: 'Amass a collection of 50 games.', icon: 'Library', tier: 'gold' },
+    { id: 'add_10_backlog', title: 'Backlog Warrior', description: 'Have 10 games in your backlog.', icon: 'Layers', tier: 'silver' },
 
     // 2. Completing Games
     { id: 'complete_1', title: 'First Blood', description: 'Complete 1 game.', icon: 'Trophy', tier: 'bronze' },
     { id: 'complete_5', title: 'High Five', description: 'Complete 5 games.', icon: 'Trophy', tier: 'bronze' },
+    { id: 'complete_10', title: 'On a Roll', description: 'Complete 10 games.', icon: 'Trophy', tier: 'silver' }, // NEW
     { id: 'complete_20', title: 'Veteran Gamer', description: 'Complete 20 games.', icon: 'Crown', tier: 'silver' },
 
-    // 3. Dropping Games
-    { id: 'drop_1', title: 'Quitter', description: 'Drop a game. Sometimes it is for the best.', icon: 'Ban', tier: 'bronze' },
-    { id: 'drop_5', title: 'Decisive', description: 'Drop 5 games. You know what you like.', icon: 'Ban', tier: 'silver' },
+    // ... (Dropping, Playing Habits, Diversity, Ratings, etc remain)
 
-    // 4. Playing Habits
-    { id: 'playing_5_concurrent', title: 'Indecisive', description: 'Have 5 games in "Playing" status at once.', icon: 'Shuffle', tier: 'bronze' },
-    { id: 'playing_1_only', title: 'Laser Focus', description: 'Have exactly 1 playing game while backlog is not empty.', icon: 'Focus', tier: 'silver' },
-
-    // 5. Diversity
-    { id: 'platforms_3', title: 'Platform Hopper', description: 'Own games on 3 different platforms.', icon: 'Gamepad2', tier: 'bronze' },
-    { id: 'platforms_5', title: 'Console Museum', description: 'Own games on 5 different platforms.', icon: 'Server', tier: 'silver' },
-    { id: 'genres_5', title: 'Genre Explorer', description: 'Have games from 5 different genres.', icon: 'Map', tier: 'silver' },
-
-    // 6. Ratings
-    { id: 'rate_5_stars', title: 'Critic\'s Choice', description: 'Rate a game 5 stars.', icon: 'Star', tier: 'bronze' },
-    { id: 'rate_1_star', title: 'Harsh Critic', description: 'Rate a game 1 star.', icon: 'ThumbsDown', tier: 'bronze' },
-
-    // New: Accessible Achievements
-    { id: 'start_playing', title: 'Press Start', description: 'Set a game to "Playing" status.', icon: 'Gamepad2', tier: 'bronze' },
-    { id: 'first_review', title: 'The Reviewer', description: 'Rate a game for the first time.', icon: 'Star', tier: 'bronze' },
-
-    // 7. Features
-    { id: 'quest_1', title: 'Quest Accepted', description: 'Use the Quest Giver once.', icon: 'Dices', tier: 'bronze' },
-    { id: 'quest_10', title: 'Destiny Awaits', description: 'Use the Quest Giver 10 times.', icon: 'Sparkles', tier: 'silver' },
-
-    // 8. Special / Complex (Existing)
-    { id: 'jack_of_all_trades', title: 'Jack of All Trades', description: 'Have at least one game in Playing, Completed, Dropped, and Backlog.', icon: 'Palette', tier: 'silver' },
-    { id: 'marathon', title: 'Marathon', description: 'Complete a game with over 100 hours of playtime.', icon: 'Hourglass', tier: 'gold' },
-    { id: 'quick_fix', title: 'Quick Fix', description: 'Complete a game with under 2 hours of playtime.', icon: 'Zap', tier: 'bronze' },
-
-    // 9. Hard / Long Term (New)
-    { id: 'completionist_50', title: 'The Completionist', description: 'Complete 50 games.', icon: 'Trophy', tier: 'gold' },
-    { id: 'library_100', title: 'Library of Alexandria', description: 'Own 100 games.', icon: 'Library', tier: 'gold' },
-    { id: 'century_club', title: 'Century Club', description: 'Reach 1000 hours of total playtime.', icon: 'Clock', tier: 'platinum', secret: true },
+    // 24. Epic Hero & Leveling
+    { id: 'level_5', title: 'Rising Star', description: 'Reach User Level 5.', icon: 'Sparkles', tier: 'bronze' }, // NEW
+    { id: 'level_10', title: 'Seasoned Pro', description: 'Reach User Level 10.', icon: 'Star', tier: 'silver' }, // NEW
     { id: 'epic_hero', title: 'Epic Hero', description: 'Reach User Level 20.', icon: 'Crown', tier: 'platinum' },
-    { id: 'empty_plate', title: 'Empty Plate', description: 'Have 0 games in your backlog (min. 5 total games).', icon: 'CheckCircle2', tier: 'platinum', secret: true },
+    { id: 'level_50', title: 'Living Legend', description: 'Reach User Level 50.', icon: 'Zap', tier: 'platinum' }, // NEW
+    { id: 'level_100', title: 'Ascended', description: 'Reach User Level 100.', icon: 'Sun', tier: 'platinum', secret: true }, // NEW
 
-    // 10. Specific / Fun (New)
-    { id: 'slow_burn', title: 'Slow Burn', description: 'Complete a game more than 1 year after starting it.', icon: 'Timer', tier: 'gold' },
-    // 11. Genre Specialist (New)
-    { id: 'genre_indie_5', title: 'Indie Darling', description: 'Own 5 Indie games.', icon: 'Palette', tier: 'silver' },
-    { id: 'genre_rpg_3', title: 'RPG Legend', description: 'Complete 3 RPGs.', icon: 'Map', tier: 'gold' },
-    { id: 'genre_action_5', title: 'Adrenalin Junkie', description: 'Own 5 Action or Shooter games.', icon: 'Zap', tier: 'silver' },
+// ... (In checkAchievements)
 
-    // 12. App Features (New)
-    { id: 'safety_first', title: 'Safety First', description: 'Export your data backup.', icon: 'Server', tier: 'bronze' },
-    { id: 'show_off', title: 'Show Off', description: 'Download your Gamer Card.', icon: 'Crown', tier: 'bronze' },
+        // 1. Quest Beginner & Builder
+        if (allGames.length >= 1) unlock('add_1');
+if (allGames.length >= 3) unlock('add_3');
+if (allGames.length >= 10) unlock('add_10_total'); // NEW
+if (allGames.length >= 25) unlock('add_25_total'); // NEW
 
-    // 13. Habits / Meta (New)
-    { id: 'weekend_warrior', title: 'Weekend Warrior', description: 'Complete a game on a Saturday or Sunday.', icon: 'Calendar', tier: 'silver' },
-    { id: 'pile_of_shame', title: 'Pile of Shame', description: 'Have more games in Backlog than Completed.', icon: 'Layers', tier: 'bronze' },
+// ...
+
+// 3. The Collector
+if (allGames.length >= 50) unlock('add_50_total');
+
+// ...
+
+// 5. High Five
+if (completedGames.value.length >= 5) unlock('complete_5');
+if (completedGames.value.length >= 10) unlock('complete_10'); // NEW
+
+// ...
+
+// 24. Epic Hero & Levels
+const level = Math.floor(Math.pow(userXP.value / 500, 1 / 1.2)) + 1;
+if (level >= 5) unlock('level_5');
+if (level >= 10) unlock('level_10');
+if (level >= 20) unlock('epic_hero');
+if (level >= 50) unlock('level_50');
+if (level >= 100) unlock('level_100');
+
+// FIX: Consistency check for level resets
+['level_5', 'level_10', 'epic_hero', 'level_50', 'level_100'].forEach(id => {
+    const requiredLevel = id === 'epic_hero' ? 20 : parseInt(id.split('_')[1]);
+    if (unlockedAchievements.value[id] && level < requiredLevel) {
+        delete unlockedAchievements.value[id];
+        saveAchievements();
+        recentUnlocks.value = recentUnlocks.value.filter(a => a.id !== id);
+    }
+});
+
+// 3. Dropping Games
+{ id: 'drop_1', title: 'Quitter', description: 'Drop a game. Sometimes it is for the best.', icon: 'Ban', tier: 'bronze' },
+{ id: 'drop_5', title: 'Decisive', description: 'Drop 5 games. You know what you like.', icon: 'Ban', tier: 'silver' },
+
+// 4. Playing Habits
+{ id: 'playing_5_concurrent', title: 'Indecisive', description: 'Have 5 games in "Playing" status at once.', icon: 'Shuffle', tier: 'bronze' },
+{ id: 'playing_1_only', title: 'Laser Focus', description: 'Have exactly 1 playing game while backlog is not empty.', icon: 'Focus', tier: 'silver' },
+
+// 5. Diversity
+{ id: 'platforms_3', title: 'Platform Hopper', description: 'Own games on 3 different platforms.', icon: 'Gamepad2', tier: 'bronze' },
+{ id: 'platforms_5', title: 'Console Museum', description: 'Own games on 5 different platforms.', icon: 'Server', tier: 'silver' },
+{ id: 'genres_5', title: 'Genre Explorer', description: 'Have games from 5 different genres.', icon: 'Map', tier: 'silver' },
+
+// 6. Ratings
+{ id: 'rate_5_stars', title: 'Critic\'s Choice', description: 'Rate a game 5 stars.', icon: 'Star', tier: 'bronze' },
+{ id: 'rate_1_star', title: 'Harsh Critic', description: 'Rate a game 1 star.', icon: 'ThumbsDown', tier: 'bronze' },
+
+// New: Accessible Achievements
+{ id: 'start_playing', title: 'Press Start', description: 'Set a game to "Playing" status.', icon: 'Gamepad2', tier: 'bronze' },
+{ id: 'first_review', title: 'The Reviewer', description: 'Rate a game for the first time.', icon: 'Star', tier: 'bronze' },
+
+// 7. Features
+{ id: 'quest_1', title: 'Quest Accepted', description: 'Use the Quest Giver once.', icon: 'Dices', tier: 'bronze' },
+{ id: 'quest_10', title: 'Destiny Awaits', description: 'Use the Quest Giver 10 times.', icon: 'Sparkles', tier: 'silver' },
+
+// 8. Special / Complex (Existing)
+{ id: 'jack_of_all_trades', title: 'Jack of All Trades', description: 'Have at least one game in Playing, Completed, Dropped, and Backlog.', icon: 'Palette', tier: 'silver' },
+{ id: 'marathon', title: 'Marathon', description: 'Complete a game with over 100 hours of playtime.', icon: 'Hourglass', tier: 'gold' },
+{ id: 'quick_fix', title: 'Quick Fix', description: 'Complete a game with under 2 hours of playtime.', icon: 'Zap', tier: 'bronze' },
+
+// 9. Hard / Long Term (New)
+{ id: 'completionist_50', title: 'The Completionist', description: 'Complete 50 games.', icon: 'Trophy', tier: 'gold' },
+{ id: 'library_100', title: 'Library of Alexandria', description: 'Own 100 games.', icon: 'Library', tier: 'gold' },
+{ id: 'century_club', title: 'Century Club', description: 'Reach 1000 hours of total playtime.', icon: 'Clock', tier: 'platinum', secret: true },
+{ id: 'epic_hero', title: 'Epic Hero', description: 'Reach User Level 20.', icon: 'Crown', tier: 'platinum' },
+{ id: 'empty_plate', title: 'Empty Plate', description: 'Have 0 games in your backlog (min. 5 total games).', icon: 'CheckCircle2', tier: 'platinum', secret: true },
+
+// 10. Specific / Fun (New)
+{ id: 'slow_burn', title: 'Slow Burn', description: 'Complete a game more than 1 year after starting it.', icon: 'Timer', tier: 'gold' },
+// 11. Genre Specialist (New)
+{ id: 'genre_indie_5', title: 'Indie Darling', description: 'Own 5 Indie games.', icon: 'Palette', tier: 'silver' },
+{ id: 'genre_rpg_3', title: 'RPG Legend', description: 'Complete 3 RPGs.', icon: 'Map', tier: 'gold' },
+{ id: 'genre_action_5', title: 'Adrenalin Junkie', description: 'Own 5 Action or Shooter games.', icon: 'Zap', tier: 'silver' },
+
+// 12. App Features (New)
+{ id: 'safety_first', title: 'Safety First', description: 'Export your data backup.', icon: 'Server', tier: 'bronze' },
+{ id: 'show_off', title: 'Show Off', description: 'Download your Gamer Card.', icon: 'Crown', tier: 'bronze' },
+
+// 13. Habits / Meta (New)
+{ id: 'weekend_warrior', title: 'Weekend Warrior', description: 'Complete a game on a Saturday or Sunday.', icon: 'Calendar', tier: 'silver' },
+{ id: 'pile_of_shame', title: 'Pile of Shame', description: 'Have more games in Backlog than Completed.', icon: 'Layers', tier: 'bronze' },
 ];
 
 // Persistent State
@@ -154,6 +205,8 @@ export function useAchievements() {
         // 1. Quest Beginner & Builder
         if (allGames.length >= 1) unlock('add_1');
         if (allGames.length >= 3) unlock('add_3');
+        if (allGames.length >= 10) unlock('add_10_total'); // NEW add 10
+        if (allGames.length >= 25) unlock('add_25_total'); // NEW add 25
 
         // 2. Backlog Warrior
         if (backlogGames.value.length >= 10) unlock('add_10_backlog');
@@ -172,6 +225,7 @@ export function useAchievements() {
 
         // 5. High Five
         if (completedGames.value.length >= 5) unlock('complete_5');
+        if (completedGames.value.length >= 10) unlock('complete_10'); // NEW complete 10
 
         // 6. Veteran Gamer
         if (completedGames.value.length >= 20) unlock('complete_20');
@@ -230,16 +284,24 @@ export function useAchievements() {
         const totalHours = allGames.reduce((acc, g) => acc + (g.playtime || 0), 0);
         if (totalHours >= 1000) unlock('century_club');
 
-        // 24. Epic Hero
+        // 24. Epic Hero & Leveling
         const level = Math.floor(Math.pow(userXP.value / 500, 1 / 1.2)) + 1;
+
+        if (level >= 5) unlock('level_5');
+        if (level >= 10) unlock('level_10');
         if (level >= 20) unlock('epic_hero');
-        // FIX: Consistency check for level resets (e.g. Beta Tester reset)
-        else if (unlockedAchievements.value['epic_hero']) {
-            delete unlockedAchievements.value['epic_hero'];
-            saveAchievements();
-            // Also remove from recentUnlocks if it's there (edge case)
-            recentUnlocks.value = recentUnlocks.value.filter(a => a.id !== 'epic_hero');
-        }
+        if (level >= 50) unlock('level_50');
+        if (level >= 100) unlock('level_100');
+
+        // FIX: Consistency check for level resets
+        ['level_5', 'level_10', 'epic_hero', 'level_50', 'level_100'].forEach(id => {
+            const requiredLevel = id === 'epic_hero' ? 20 : parseInt(id.split('_')[1]);
+            if (unlockedAchievements.value[id] && level < requiredLevel) {
+                delete unlockedAchievements.value[id];
+                saveAchievements();
+                recentUnlocks.value = recentUnlocks.value.filter(a => a.id !== id);
+            }
+        });
 
         // 25. Empty Plate
         if (allGames.length >= 5 && backlogGames.value.length === 0) unlock('empty_plate');
