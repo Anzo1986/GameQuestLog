@@ -10,26 +10,82 @@ const achievementsList = [
     { id: 'add_25_total', title: 'Dedicated Collector', description: 'Amass a collection of 25 games.', icon: 'Library', tier: 'silver' }, // NEW
     { id: 'add_50_total', title: 'The Collector', description: 'Amass a collection of 50 games.', icon: 'Library', tier: 'gold' },
     { id: 'add_10_backlog', title: 'Backlog Warrior', description: 'Have 10 games in your backlog.', icon: 'Layers', tier: 'silver' },
+    { id: 'add_25_backlog', title: 'Digital Hoarder', description: 'Have 25 games in your backlog.', icon: 'Layers', tier: 'gold' }, // NEW
 
-    // 2. Completing Games
-    { id: 'complete_1', title: 'First Blood', description: 'Complete 1 game.', icon: 'Trophy', tier: 'bronze' },
-    { id: 'complete_5', title: 'High Five', description: 'Complete 5 games.', icon: 'Trophy', tier: 'bronze' },
-    { id: 'complete_10', title: 'On a Roll', description: 'Complete 10 games.', icon: 'Trophy', tier: 'silver' }, // NEW
-    { id: 'complete_20', title: 'Veteran Gamer', description: 'Complete 20 games.', icon: 'Crown', tier: 'silver' },
+    // ... 
 
-    // ... (Dropping, Playing Habits, Diversity, Ratings, etc remain)
+    // 6. Ratings
+    { id: 'rate_5_stars', title: 'Critic\'s Choice', description: 'Rate a game 5 stars.', icon: 'Star', tier: 'bronze' },
+    { id: 'rate_1_star', title: 'Harsh Critic', description: 'Rate a game 1 star.', icon: 'ThumbsDown', tier: 'bronze' },
+    { id: 'rate_10_total', title: 'Opinionated', description: 'Rate 10 games.', icon: 'Star', tier: 'silver' }, // NEW
 
-    // 24. Epic Hero & Leveling
-    { id: 'level_5', title: 'Rising Star', description: 'Reach User Level 5.', icon: 'Sparkles', tier: 'bronze' }, // NEW
-    { id: 'level_10', title: 'Seasoned Pro', description: 'Reach User Level 10.', icon: 'Star', tier: 'silver' }, // NEW
-    { id: 'epic_hero', title: 'Epic Hero', description: 'Reach User Level 20.', icon: 'Crown', tier: 'platinum' },
-    { id: 'level_50', title: 'Living Legend', description: 'Reach User Level 50.', icon: 'Zap', tier: 'platinum' }, // NEW
-    { id: 'level_100', title: 'Ascended', description: 'Reach User Level 100.', icon: 'Sun', tier: 'platinum', secret: true }, // NEW
+    // 7. Features
+    { id: 'quest_1', title: 'Quest Accepted', description: 'Use the Quest Giver once.', icon: 'Dices', tier: 'bronze' },
+    { id: 'quest_5', title: 'Feeling Lucky', description: 'Use the Quest Giver 5 times.', icon: 'Dices', tier: 'bronze' }, // NEW
+    { id: 'quest_10', title: 'Destiny Awaits', description: 'Use the Quest Giver 10 times.', icon: 'Sparkles', tier: 'silver' },
+
+    // ...
+
+    // 11. Genre Specialist (New)
+    { id: 'genre_indie_1', title: 'Hidden Gem', description: 'Own 1 Indie game.', icon: 'Palette', tier: 'bronze' }, // NEW
+    { id: 'genre_indie_5', title: 'Indie Darling', description: 'Own 5 Indie games.', icon: 'Palette', tier: 'silver' },
+    { id: 'genre_rpg_1', title: 'Hero\'s Journey', description: 'Complete 1 RPG.', icon: 'Map', tier: 'bronze' }, // NEW
+    { id: 'genre_rpg_3', title: 'RPG Legend', description: 'Complete 3 RPGs.', icon: 'Map', tier: 'gold' },
+    { id: 'genre_action_1', title: 'Adrenaline Rush', description: 'Own 1 Action or Shooter game.', icon: 'Zap', tier: 'bronze' }, // NEW
+    { id: 'genre_action_5', title: 'Adrenalin Junkie', description: 'Own 5 Action or Shooter games.', icon: 'Zap', tier: 'silver' },
 
 // ... (In checkAchievements)
 
-        // 1. Quest Beginner & Builder
-        if (allGames.length >= 1) unlock('add_1');
+        // 2. Backlog Warrior
+        if (backlogGames.value.length >= 10) unlock('add_10_backlog');
+if (backlogGames.value.length >= 25) unlock('add_25_backlog'); // NEW
+
+// ...
+
+// 14/15. Ratings
+if (allGames.some(g => g.rating === 5)) unlock('rate_5_stars');
+if (allGames.some(g => g.rating === 1)) unlock('rate_1_star');
+if (allGames.filter(g => g.rating > 0).length >= 10) unlock('rate_10_total'); // NEW
+
+// 16/17. Quest Usage
+const questUsage = parseInt(localStorage.getItem('game-tracker-quest-usage') || '0');
+if (questUsage >= 1) unlock('quest_1');
+if (questUsage >= 5) unlock('quest_5'); // NEW
+if (questUsage >= 10) unlock('quest_10');
+
+// ...
+
+// 30. Indie Darling
+const indieCount = allGames.filter(g => g.genres && g.genres.some(gen => gen.name === 'Indie')).length;
+if (indieCount >= 1) unlock('genre_indie_1'); // NEW
+if (indieCount >= 5) unlock('genre_indie_5');
+
+// 31. RPG Legend
+const rpgCount = completedGames.value.filter(g => g.genres && g.genres.some(gen => gen.name === 'Role-playing Games' || gen.name === 'RPG')).length;
+if (rpgCount >= 1) unlock('genre_rpg_1'); // NEW
+if (rpgCount >= 3) unlock('genre_rpg_3');
+
+// 32. Adrenalin Junkie
+const actionCount = allGames.filter(g => g.genres && g.genres.some(gen => gen.name === 'Action' || gen.name === 'Shooter')).length;
+if (actionCount >= 1) unlock('genre_action_1'); // NEW
+if (actionCount >= 5) unlock('genre_action_5');
+{ id: 'complete_5', title: 'High Five', description: 'Complete 5 games.', icon: 'Trophy', tier: 'bronze' },
+{ id: 'complete_10', title: 'On a Roll', description: 'Complete 10 games.', icon: 'Trophy', tier: 'silver' }, // NEW
+{ id: 'complete_20', title: 'Veteran Gamer', description: 'Complete 20 games.', icon: 'Crown', tier: 'silver' },
+
+// ... (Dropping, Playing Habits, Diversity, Ratings, etc remain)
+
+// 24. Epic Hero & Leveling
+{ id: 'level_5', title: 'Rising Star', description: 'Reach User Level 5.', icon: 'Sparkles', tier: 'bronze' }, // NEW
+{ id: 'level_10', title: 'Seasoned Pro', description: 'Reach User Level 10.', icon: 'Star', tier: 'silver' }, // NEW
+{ id: 'epic_hero', title: 'Epic Hero', description: 'Reach User Level 20.', icon: 'Crown', tier: 'platinum' },
+{ id: 'level_50', title: 'Living Legend', description: 'Reach User Level 50.', icon: 'Zap', tier: 'platinum' }, // NEW
+{ id: 'level_100', title: 'Ascended', description: 'Reach User Level 100.', icon: 'Sun', tier: 'platinum', secret: true }, // NEW
+
+// ... (In checkAchievements)
+
+// 1. Quest Beginner & Builder
+if (allGames.length >= 1) unlock('add_1');
 if (allGames.length >= 3) unlock('add_3');
 if (allGames.length >= 10) unlock('add_10_total'); // NEW
 if (allGames.length >= 25) unlock('add_25_total'); // NEW
