@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue';
 import { X, ShoppingBag, Check, Lock, Coins, Palette, UserCircle, Sparkles, Image } from 'lucide-vue-next';
 import { useShop } from '../composables/useShop';
+import { useCardStyles } from '../composables/useCardStyles';
 import AvatarFrame from './AvatarFrame.vue';
 import GameCardInnerEffects from './GameCardInnerEffects.vue';
 
@@ -12,6 +13,7 @@ const props = defineProps({
 defineEmits(['close']);
 
 const { SHOP_ITEMS, balance, buyItem, equipItem, isOwned, getEquippedItem } = useShop();
+const { getCardClasses } = useCardStyles();
 
 const activeTab = ref('theme'); // 'theme', 'frame', 'card_style', 'background'
 const tabs = ['theme', 'frame', 'card_style', 'background'];
@@ -185,28 +187,21 @@ const handleTouchEnd = (e) => {
                      </div>
 
                      <!-- Card Style Preview -->
-                     <div v-if="item.type === 'card_style'" class="w-16 h-10 bg-gray-800 rounded border border-gray-600 relative overflow-hidden group">
+                     <div v-if="item.type === 'card_style'" 
+                          class="w-16 h-10 rounded relative overflow-hidden group transition-all duration-300"
+                          :class="getCardClasses(item.value)"
+                     >
                          <!-- Content Mock -->
-                         <div class="absolute top-1 left-1 w-8 h-1 bg-gray-600 rounded-full"></div>
-                         <div class="absolute bottom-1 right-1 w-4 h-4 bg-gray-700 rounded-full"></div>
+                         <div class="absolute top-1 left-1 w-8 h-1 bg-gray-600 rounded-full z-20 opacity-50"></div>
+                         <div class="absolute bottom-1 right-1 w-4 h-4 bg-gray-700 rounded-full z-20 opacity-50"></div>
 
-                         <!-- Effect Overlay -->
-                         <div v-if="item.value === 'holo'" class="absolute inset-0 mix-blend-color-dodge bg-gradient-to-tr from-transparent via-white/40 to-transparent bg-[length:200%_200%] animate-holo"></div>
-                         <div v-if="item.value === 'gold'" class="absolute inset-0 border border-yellow-500/50 shadow-[inset_0_0_10px_rgba(234,179,8,0.4)]"></div>
-                         <div v-if="item.value === 'cyber'" class="absolute inset-0 border border-pink-500/50 bg-[linear-gradient(45deg,transparent_25%,rgba(236,72,153,0.1)_50%,transparent_75%)]"></div>
-                         <div v-if="item.value === 'retro'" class="absolute inset-0 border border-green-500/50 bg-[linear-gradient(transparent_50%,rgba(34,197,94,0.1)_50%)] bg-[size:100%_4px]"></div>
-                         <div v-if="item.value === 'fire'" class="absolute inset-0 border-b-2 border-orange-500 shadow-[inset_0_-10px_20px_rgba(234,88,12,0.3)]"></div>
-                         
-                         <!-- New Style Previews -->
-                         <div v-if="item.value === 'glitter'" class="absolute inset-0 bg-[radial-gradient(white,transparent_1px)] bg-[size:10px_10px] opacity-40 animate-pulse"></div>
-                         <div v-if="item.value === 'spotlight'" class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent w-[200%] animate-shine"></div>
-                         
-                         <!-- Simplified Prism Preview -->
-                         <div v-if="item.value === 'prism'" class="absolute inset-0 bg-gradient-to-tr from-red-500 via-green-500 to-blue-500 p-[2px] animate-spin-slow">
-                             <div class="w-full h-full bg-gray-900"></div>
+                         <!-- Inner Effects -->
+                         <GameCardInnerEffects :style-name="item.value" size="sm" />
+
+                         <!-- Prism Special Preview (Emulate Outer Border inside container) -->
+                         <div v-if="item.value === 'prism'" class="absolute inset-0 bg-gradient-to-tr from-red-500 via-green-500 to-blue-500 p-[2px] animate-spin-slow z-0">
+                             <div class="w-full h-full bg-gray-900 rounded-[inherit]"></div>
                          </div>
-                         <div v-if="item.value === 'glitch'" class="absolute inset-0 border-2 border-cyan-500 border-dashed opacity-70"></div>
-
                      </div>
 
                      <!-- Background Preview -->
