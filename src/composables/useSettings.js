@@ -3,10 +3,12 @@ import { ref, watch } from 'vue';
 const API_KEY_STORAGE_KEY = 'game-tracker-api-key';
 const USER_STORAGE_KEY = 'game-tracker-user';
 const THEME_STORAGE_KEY = 'game-tracker-theme';
+const SORT_STORAGE_KEY = 'game-tracker-sort';
 
 // Shared State
 const apiKey = ref(localStorage.getItem(API_KEY_STORAGE_KEY) || '');
 const themeColor = ref(localStorage.getItem(THEME_STORAGE_KEY) || 'blue');
+const sortOption = ref(localStorage.getItem(SORT_STORAGE_KEY) || 'dateDesc');
 const userName = ref('Guest');
 const userAvatar = ref(null);
 const selectedTitle = ref(null);
@@ -89,10 +91,15 @@ watch(themeColor, (newColor) => {
     applyTheme(newColor);
 });
 
+watch(sortOption, (newVal) => {
+    localStorage.setItem(SORT_STORAGE_KEY, newVal);
+});
+
 export function useSettings() {
     return {
         apiKey,
         themeColor,
+        sortOption,
         userName,
         userAvatar,
         selectedTitle,

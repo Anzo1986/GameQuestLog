@@ -8,6 +8,8 @@ import SettingsSection from './components/SettingsSection.vue';
 import UserProfile from './components/UserProfile.vue';
 import StatsModal from './components/StatsModal.vue';
 import QuestGiverModal from './components/QuestGiverModal.vue';
+import BackgroundAurora from './components/BackgroundAurora.vue';
+
 import { useGames } from './composables/useGames';
 import { useAchievements } from './composables/useAchievements';
 import AchievementsModal from './components/AchievementsModal.vue';
