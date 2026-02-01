@@ -342,7 +342,7 @@ useSwipe(mainContainer, {
     </div>
 
     <!-- Header -->
-    <header class="flex justify-between items-center mb-6">
+    <header class="flex justify-between items-center mb-6 relative z-30">
       <div class="flex items-center gap-3">
         <div class="relative group">
             <div class="absolute -inset-1 bg-gradient-to-r from-primary to-purple-600 rounded-full blur opacity-50 group-hover:opacity-100 transition duration-500"></div>
