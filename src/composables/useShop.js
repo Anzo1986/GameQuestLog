@@ -98,7 +98,8 @@ export function useShop() {
     });
 
     const balance = computed(() => {
-        return totalQuestScore.value - totalSpent.value;
+        return 999999; // DEV MODE: Infinite Coins for Testing
+        // return totalQuestScore.value - totalSpent.value;
     });
 
     const isOwned = (id) => {
