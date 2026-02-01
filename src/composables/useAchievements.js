@@ -27,11 +27,11 @@ const achievementsList = [
     // ...
 
     // 11. Genre Specialist (New)
-    { id: 'genre_indie_1', title: 'Hidden Gem', description: 'Own 1 Indie game.', icon: 'Palette', tier: 'bronze' }, // NEW
+    { id: 'genre_indie_2', title: 'Hidden Gems', description: 'Own 2 Indie games.', icon: 'Palette', tier: 'bronze' }, // Changed to 2
     { id: 'genre_indie_5', title: 'Indie Darling', description: 'Own 5 Indie games.', icon: 'Palette', tier: 'silver' },
-    { id: 'genre_rpg_1', title: 'Hero\'s Journey', description: 'Complete 1 RPG.', icon: 'Map', tier: 'bronze' }, // NEW
+    { id: 'genre_rpg_2', title: 'Start of a Journey', description: 'Complete 2 RPGs.', icon: 'Map', tier: 'bronze' }, // Changed to 2
     { id: 'genre_rpg_3', title: 'RPG Legend', description: 'Complete 3 RPGs.', icon: 'Map', tier: 'gold' },
-    { id: 'genre_action_1', title: 'Adrenaline Rush', description: 'Own 1 Action or Shooter game.', icon: 'Zap', tier: 'bronze' }, // NEW
+    { id: 'genre_action_2', title: 'Double Tap', description: 'Own 2 Action or Shooter games.', icon: 'Zap', tier: 'bronze' }, // Changed to 2
     { id: 'genre_action_5', title: 'Adrenalin Junkie', description: 'Own 5 Action or Shooter games.', icon: 'Zap', tier: 'silver' },
 
 // ... (In checkAchievements)
