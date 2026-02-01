@@ -93,6 +93,7 @@ const handleUpdateStatus = (id, status) => {
 const { searchQuery: localSearchQuery, sortOption: currentSort, getProcessedGames } = useGameFilters();
 
 const showCopyFeedback = ref(false);
+const isMenuOpen = ref(false);
 
 const displayGames = computed(() => {
     switch(currentTab.value) {
@@ -372,9 +373,10 @@ useSwipe(mainContainer, {
     </main>
 
     <!-- FAB Menu Group -->
-    <div class="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3">
+    <div class="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3" @touchstart.stop>
 
         <!-- Initial Actions (Hidden by default, slide up when menu open) -->
+
         <div class="flex flex-col gap-3 transition-all duration-300 origin-bottom" :class="isMenuOpen ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-10 scale-0 pointer-events-none'">
              
              <!-- Add Game -->

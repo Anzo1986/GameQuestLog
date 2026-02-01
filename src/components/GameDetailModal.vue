@@ -28,6 +28,9 @@ const gameDetails = computed(() => {
     return games.value.find(g => g.id === props.gameId);
 });
 
+const showEditModal = ref(false);
+
+
 
 const formatDate = (dateString) => {
   if (!dateString) return 'N/A';
