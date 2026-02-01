@@ -25,6 +25,11 @@ const THEMES = {
     indigo: { name: 'Indigo', rgb: '99 102 241' }, // indigo-500
     fuchsia: { name: 'Fuchsia', rgb: '217 70 239' }, // fuchsia-500
 
+    // Neutral / "Ugly" Themes (Requested)
+    brown: { name: 'Brown', rgb: '120 53 15' }, // amber-900
+    white: { name: 'White', rgb: '229 231 235' }, // gray-200 (using light gray for visibility on dark bg)
+    black: { name: 'Black', rgb: '75 85 99' }, // gray-600 (using dark gray, pure black is invisible)
+
     // Shop Themes (Special)
     cyberpunk: { name: 'Cyberpunk', rgb: '6 182 212' }, // cyan-500
     emerald: { name: 'Emerald', rgb: '16 185 129' }, // emerald-500

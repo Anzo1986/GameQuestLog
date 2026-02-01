@@ -32,7 +32,8 @@ const frameClasses = computed(() => {
         // NEW FRAMES
         case 'rainbow': return `${base} border-[4px] border-t-red-500 border-r-green-500 border-b-blue-500 border-l-yellow-500 animate-spin`;
         case 'lightning': return `${base} border-[3px] border-blue-300 border-dashed shadow-[0_0_15px_rgba(147,197,253,0.8)] animate-spin-reverse-fast`;
-        case 'magma': return `${base} border-[3px] border-orange-700 shadow-[0_0_20px_rgba(194,65,12,0.6)] bg-red-900/20 animate-pulse`;
+        // Replaced Magma with Cosmos
+        case 'cosmos': return `${base} border-[3px] border-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.8)] bg-black/20`;
         
         case 'none': 
         default: return `${base} border-2 border-gray-700`; // Default Neutral
@@ -60,6 +61,10 @@ const sizeClasses = computed(() => {
 
     <!-- Frame Overlay -->
     <div :class="frameClasses"></div>
+    <!-- Cosmos Particles (Only if cosmos) -->
+    <div v-if="frame === 'cosmos'" class="absolute inset-0 rounded-full overflow-hidden z-20 pointer-events-none">
+        <div class="absolute inset-0 bg-[radial-gradient(white,transparent_1px)] bg-[size:5px_5px] opacity-70 animate-spin-slow"></div>
+    </div>
   </div>
 </template>
 

@@ -22,18 +22,25 @@ const equippedStyle = computed(() => getEquippedItem('card_style'));
 
 const modalStyles = computed(() => {
     const s = equippedStyle.value?.value;
-    // Existing
-    if (s === 'gold') return 'border-2 border-yellow-500 shadow-[0_0_80px_rgba(234,179,8,0.2)] bg-gradient-to-br from-gray-900 via-gray-900 to-yellow-900/20';
-    if (s === 'holo') return 'border-2 border-cyan-500/30 shadow-[0_0_80px_rgba(6,182,212,0.2)] bg-gray-900 relative overflow-hidden';
-    if (s === 'cyber') return 'border-2 border-pink-500 shadow-[0_0_80px_rgba(236,72,153,0.3)] bg-gray-900 relative overflow-hidden';
-    if (s === 'retro') return 'border-2 border-green-500 shadow-[0_0_80px_rgba(34,197,94,0.2)] bg-gray-900 relative overflow-hidden font-mono';
-    if (s === 'fire') return 'border-2 border-orange-600 shadow-[0_0_80px_rgba(234,88,12,0.4)] bg-gray-900 relative overflow-hidden';
     
-    // NEW
-    if (s === 'glitter') return 'border-2 border-purple-300 shadow-[0_0_60px_rgba(216,180,254,0.3)] bg-gray-900 relative overflow-hidden';
-    if (s === 'spotlight') return 'border-2 border-white/40 shadow-[0_0_80px_rgba(255,255,255,0.2)] bg-gray-900 relative overflow-hidden';
+    // Base Classes
+    let classes = 'bg-gray-900 border-2 ';
 
-    return 'bg-gray-900 border border-gray-700';
+    if (s === 'gold') return classes + 'border-yellow-500 shadow-[0_0_80px_rgba(234,179,8,0.2)] bg-gradient-to-br from-gray-900 via-gray-900 to-yellow-900/20';
+    if (s === 'holo') return classes + 'border-cyan-500/30 shadow-[0_0_80px_rgba(6,182,212,0.2)] relative overflow-hidden';
+    if (s === 'cyber') return classes + 'border-pink-500 shadow-[0_0_80px_rgba(236,72,153,0.3)] relative overflow-hidden';
+    if (s === 'retro') return classes + 'border-green-500 shadow-[0_0_80px_rgba(34,197,94,0.2)] relative overflow-hidden font-mono';
+    if (s === 'fire') return classes + 'border-orange-600 shadow-[0_0_80px_rgba(234,88,12,0.4)] relative overflow-hidden';
+    
+    if (s === 'glitter') return classes + 'border-purple-300 shadow-[0_0_60px_rgba(216,180,254,0.3)] relative overflow-hidden';
+    if (s === 'spotlight') return classes + 'border-white/40 shadow-[0_0_80px_rgba(255,255,255,0.2)] relative overflow-hidden';
+
+    // NEW STYLE WITH ANIMATED BORDERS
+    // We use Transparent border for Prism to show simple color, but the animation is handled in Template via Overlays
+    if (s === 'prism') return 'border-transparent bg-gray-900 shadow-[0_0_40px_rgba(255,255,255,0.2)] relative overflow-hidden ring-4 ring-transparent'; 
+    if (s === 'glitch') return 'border-cyan-500 border-dashed shadow-[0_0_40px_rgba(6,182,212,0.4)] relative overflow-hidden';
+
+    return 'bg-gray-900 border-gray-700';
 });
 const gameDetails = ref(null);
 const showEditModal = ref(false);
@@ -114,168 +121,184 @@ const handleAction = async (action, val) => {
     <!-- Backdrop -->
     <div class="absolute inset-0 bg-black/90 backdrop-blur-sm" @click="$emit('close')"></div>
 
-    <!-- Modal Content -->
-    <div 
-        class="relative w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in duration-200"
-        :class="modalStyles"
-    >
-      <!-- EFFECT LAYERS -->
-      <div v-if="equippedStyle?.value === 'holo'" class="absolute inset-0 pointer-events-none opacity-20 bg-gradient-to-tr from-purple-500/20 via-transparent to-cyan-500/20 animate-pulse z-0"></div>
-      <div v-if="equippedStyle?.value === 'holo'" class="absolute -inset-[100%] top-0 block h-[200%] w-[200%] -rotate-45 bg-gradient-to-r from-transparent via-white/5 to-transparent bg-[length:50%_50%] animate-shine pointer-events-none z-0"></div>
-      
-      <div v-if="equippedStyle?.value === 'cyber'" class="absolute inset-0 pointer-events-none opacity-20 bg-[linear-gradient(rgba(236,72,153,0.2)_1px,transparent_1px),linear-gradient(90deg,rgba(236,72,153,0.2)_1px,transparent_1px)] bg-[size:20px_20px] z-0"></div>
-      <div v-if="equippedStyle?.value === 'cyber'" class="absolute inset-x-0 top-0 h-px bg-pink-500 shadow-[0_0_10px_#ec4899] z-10"></div>
-      
-      <div v-if="equippedStyle?.value === 'retro'" class="absolute inset-0 pointer-events-none opacity-10 bg-[linear-gradient(rgba(34,197,94,0.3)_1px,transparent_1px)] bg-[size:100%_4px] z-0"></div>
-      
-      <div v-if="equippedStyle?.value === 'fire'" class="absolute inset-0 pointer-events-none opacity-20 bg-gradient-to-t from-orange-600/30 to-transparent z-0"></div>
-      <div v-if="equippedStyle?.value === 'fire'" class="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-orange-500/20 to-transparent animate-pulse z-0"></div>
-      
-      <!-- NEW EFFECTS -->
-      <div v-if="equippedStyle?.value === 'glitter'" class="absolute inset-0 pointer-events-none opacity-30 bg-[radial-gradient(white,transparent_1px)] bg-[size:20px_20px] animate-pulse z-0"></div>
-      <div v-if="equippedStyle?.value === 'glitter'" class="absolute inset-0 pointer-events-none opacity-30 bg-[radial-gradient(white,transparent_1px)] bg-[size:15px_15px] animate-pulse-slow z-0"></div>
-      
-      <div v-if="equippedStyle?.value === 'spotlight'" class="absolute inset-0 pointer-events-none bg-gradient-to-tr from-transparent via-white/10 to-transparent w-[200%] h-[200%] -translate-x-1/2 -translate-y-1/2 animate-spin-slow-reverse z-0 opacity-30"></div>
+    <!-- Modal Content (Wrapper for Animation) -->
+    <div class="relative w-full max-w-2xl rounded-2xl flex flex-col max-h-[90vh] animate-in fade-in zoom-in duration-200 isolation-auto">
+        
+        <!-- PRISM BORDER ANIMATION (Behind) -->
+        <div v-if="equippedStyle?.value === 'prism'" class="absolute -inset-[3px] rounded-2xl bg-gradient-to-tr from-red-500 via-green-500 to-blue-500 z-[-1] animate-spin-slow opacity-80 blur-sm"></div>
+        <div v-if="equippedStyle?.value === 'prism'" class="absolute -inset-[3px] rounded-2xl bg-gradient-to-tr from-red-500 via-green-500 to-blue-500 z-[-1] animate-spin-slow"></div>
 
-      <!-- Content -->
-      <template v-if="gameDetails">
-        <!-- Controls -->
-        <div class="absolute top-4 right-4 z-10 flex items-center gap-2">
-            <button @click="showEditModal = true" class="bg-black/50 p-2 rounded-full hover:bg-black/70 text-white transition-colors" title="Edit Game Details">
-                <PenLine class="w-5 h-5" />
-            </button>
-            <button @click="$emit('close')" class="bg-black/50 p-2 rounded-full hover:bg-black/70 text-white transition-colors">
-                <X class="w-5 h-5" />
-            </button>
-        </div>
+        <!-- GLITCH BORDER ANIMATION -->
+        <!-- Handled via border-dashed in class, maybe add scanline overlay behind? -->
 
-        <!-- Header Image & Title & Rating -->
-        <div class="relative h-64 flex-shrink-0">
-          <img :src="gameDetails.background_image" class="w-full h-full object-cover" :alt="gameDetails.name">
-          <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent"></div>
+        <!-- Main Card -->
+        <div 
+            class="relative w-full h-full rounded-2xl overflow-hidden flex flex-col bg-gray-900" 
+            :class="modalStyles"
+        >
+          <!-- EFFECT LAYERS -->
+          <div v-if="equippedStyle?.value === 'holo'" class="absolute inset-0 pointer-events-none opacity-20 bg-gradient-to-tr from-purple-500/20 via-transparent to-cyan-500/20 animate-pulse z-0"></div>
+          <div v-if="equippedStyle?.value === 'holo'" class="absolute -inset-[100%] top-0 block h-[200%] w-[200%] -rotate-45 bg-gradient-to-r from-transparent via-white/5 to-transparent bg-[length:50%_50%] animate-shine pointer-events-none z-0"></div>
           
-          <div class="absolute bottom-0 left-0 right-0 p-6 flex flex-col items-center text-center">
-             <h2 class="text-3xl md:text-3xl font-black text-white leading-tight drop-shadow-xl mb-2">{{ gameDetails.name }}</h2>
-             
-             <!-- My Rating Stars (Large & Centered) -->
-             <div class="flex gap-2">
-                   <button 
-                    v-for="star in 5" 
-                    :key="star" 
-                    @click.stop="rateGame(gameId, star)"
-                    class="transition-transform active:scale-110 focus:outline-none"
-                   >
-                       <Star 
-                        class="w-6 h-6 drop-shadow-md" 
-                        :class="star <= (gameDetails.rating || 0) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-500/50'" 
-                       />
-                   </button>
-             </div>
-             <p class="text-xs text-gray-400 mt-1 font-medium tracking-wide uppercase">My Personal Rating</p>
-          </div>
-        </div>
+          <div v-if="equippedStyle?.value === 'cyber'" class="absolute inset-0 pointer-events-none opacity-20 bg-[linear-gradient(rgba(236,72,153,0.2)_1px,transparent_1px),linear-gradient(90deg,rgba(236,72,153,0.2)_1px,transparent_1px)] bg-[size:20px_20px] z-0"></div>
+          <div v-if="equippedStyle?.value === 'cyber'" class="absolute inset-x-0 top-0 h-px bg-pink-500 shadow-[0_0_10px_#ec4899] z-10"></div>
+          
+          <div v-if="equippedStyle?.value === 'retro'" class="absolute inset-0 pointer-events-none opacity-10 bg-[linear-gradient(rgba(34,197,94,0.3)_1px,transparent_1px)] bg-[size:100%_4px] z-0"></div>
+          
+          <div v-if="equippedStyle?.value === 'fire'" class="absolute inset-0 pointer-events-none opacity-20 bg-gradient-to-t from-orange-600/30 to-transparent z-0"></div>
+          <div v-if="equippedStyle?.value === 'fire'" class="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-orange-500/20 to-transparent animate-pulse z-0"></div>
+          
+          <div v-if="equippedStyle?.value === 'glitter'" class="absolute inset-0 pointer-events-none opacity-30 bg-[radial-gradient(white,transparent_1px)] bg-[size:20px_20px] animate-pulse z-0"></div>
+          <div v-if="equippedStyle?.value === 'glitter'" class="absolute inset-0 pointer-events-none opacity-30 bg-[radial-gradient(white,transparent_1px)] bg-[size:15px_15px] animate-pulse-slow z-0"></div>
+          
+          <div v-if="equippedStyle?.value === 'spotlight'" class="absolute inset-0 pointer-events-none bg-gradient-to-tr from-transparent via-white/10 to-transparent w-[200%] h-[200%] -translate-x-1/2 -translate-y-1/2 animate-spin-slow-reverse z-0 opacity-30"></div>
 
-        <!-- Meta Bar (Consolidated Info) -->
-        <div class="flex items-center justify-between gap-3 px-6 py-4 bg-gray-800/50 border-b border-gray-800 overflow-x-auto">
-            
-            <!-- Status Badge -->
-            <div class="flex items-center gap-2 flex-shrink-0">
-                <span v-if="gameDetails.status === 'completed'" class="text-green-400 font-bold flex items-center gap-1 text-sm"><Check class="w-4 h-4"/> Completed</span>
-                <span v-else-if="gameDetails.status === 'playing'" class="text-primary font-bold flex items-center gap-1 text-sm"><Play class="w-4 h-4"/> Playing</span>
-                <span v-else-if="gameDetails.status === 'dropped'" class="text-gray-400 font-bold flex items-center gap-1 text-sm"><Ban class="w-4 h-4"/> Dropped</span>
-                <span v-else class="text-yellow-400 font-bold flex items-center gap-1 text-sm"><Layers class="w-4 h-4"/> Backlog</span>
+          <!-- PRISM OVERLAY (Inner Glow) -->
+          <div v-if="equippedStyle?.value === 'prism'" class="absolute inset-0 pointer-events-none bg-gradient-to-tr from-red-500/10 via-green-500/10 to-blue-500/10 z-0"></div>
+
+          <!-- GLITCH OVERLAY -->
+          <div v-if="equippedStyle?.value === 'glitch'" class="absolute inset-0 pointer-events-none bg-[repeating-linear-gradient(0deg,transparent,transparent_2px,rgba(6,182,212,0.1)_3px)] animate-pulse z-0"></div>
+
+          <!-- Content -->
+          <template v-if="gameDetails">
+            <!-- Controls -->
+            <div class="absolute top-4 right-4 z-10 flex items-center gap-2">
+                <button @click="showEditModal = true" class="bg-black/50 p-2 rounded-full hover:bg-black/70 text-white transition-colors" title="Edit Game Details">
+                    <PenLine class="w-5 h-5" />
+                </button>
+                <button @click="$emit('close')" class="bg-black/50 p-2 rounded-full hover:bg-black/70 text-white transition-colors">
+                    <X class="w-5 h-5" />
+                </button>
             </div>
 
-            <div class="h-4 w-px bg-gray-700 flex-shrink-0"></div>
-
-            <!-- RAWG Rating -->
-            <div class="flex items-center gap-1 text-sm text-gray-300 flex-shrink-0" title="RAWG Rating">
-                <Star class="w-4 h-4 text-orange-400" />
-                <span class="font-bold text-white">{{ gameDetails.rating_top || '?' }}</span>/5
-            </div>
-
-            <!-- Release Date -->
-            <div class="flex items-center gap-1 text-sm text-gray-400 flex-shrink-0">
-                <Calendar class="w-4 h-4" />
-                {{ formatDate(gameDetails.released) }}
-            </div>
-
-            <!-- Playtime / HLTB (Days Played Only) -->
-            <div class="flex items-center gap-1 text-sm flex-shrink-0" v-if="gameDetails.startedAt">
-                <Timer class="w-4 h-4 text-primary" />
-                <span class="text-white font-bold">{{ calculateDaysPlayed(gameDetails.startedAt) }} Days</span>
-            </div>
-
-        </div>
-
-        <!-- Scrollable Content -->
-        <div class="overflow-y-auto p-6 space-y-6">
-           
-           <!-- Description -->
-           <div class="prose prose-invert prose-sm max-w-none text-gray-300">
-              <div v-html="gameDetails.description"></div>
-           </div>
-
-           <!-- Platforms & Genres & Web -->
-           <!-- Platforms & Genres & Web Stacked -->
-           <div class="space-y-4 pt-4 border-t border-gray-800">
+            <!-- Header Image & Title & Rating -->
+            <div class="relative h-64 flex-shrink-0">
+              <img :src="gameDetails.background_image" class="w-full h-full object-cover" :alt="gameDetails.name">
+              <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent"></div>
               
-              <!-- Row 1: Platforms -->
-              <div v-if="gameDetails.parent_platforms && gameDetails.parent_platforms.length > 0">
-                  <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Platforms</h4>
-                  <div class="flex flex-wrap gap-2">
-                       <span v-for="p in gameDetails.parent_platforms" :key="p.platform.id" 
-                          class="px-2 py-1 rounded text-xs border transition-colors duration-300"
-                          :class="isOwnedPlatform(p.platform.name) 
-                            ? 'bg-primary/20 text-primary border-primary/50 font-bold shadow-[0_0_10px_rgba(var(--primary-rgb),0.3)] scale-105' 
-                            : 'bg-gray-800 text-gray-500 border-gray-700 opacity-60'"
-                      >
-                          {{ p.platform.name }}
-                      </span>
+              <div class="absolute bottom-0 left-0 right-0 p-6 flex flex-col items-center text-center">
+                 <h2 class="text-3xl md:text-3xl font-black text-white leading-tight drop-shadow-xl mb-2">{{ gameDetails.name }}</h2>
+                 
+                 <!-- My Rating Stars (Large & Centered) -->
+                 <div class="flex gap-2">
+                       <button 
+                        v-for="star in 5" 
+                        :key="star" 
+                        @click.stop="rateGame(gameId, star)"
+                        class="transition-transform active:scale-110 focus:outline-none"
+                       >
+                           <Star 
+                            class="w-6 h-6 drop-shadow-md" 
+                            :class="star <= (gameDetails.rating || 0) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-500/50'" 
+                           />
+                       </button>
+                 </div>
+                 <p class="text-xs text-gray-400 mt-1 font-medium tracking-wide uppercase">My Personal Rating</p>
+              </div>
+            </div>
+
+            <!-- Meta Bar (Consolidated Info) -->
+            <div class="flex items-center justify-between gap-3 px-6 py-4 bg-gray-800/50 border-b border-gray-800 overflow-x-auto">
+                
+                <!-- Status Badge -->
+                <div class="flex items-center gap-2 flex-shrink-0">
+                    <span v-if="gameDetails.status === 'completed'" class="text-green-400 font-bold flex items-center gap-1 text-sm"><Check class="w-4 h-4"/> Completed</span>
+                    <span v-else-if="gameDetails.status === 'playing'" class="text-primary font-bold flex items-center gap-1 text-sm"><Play class="w-4 h-4"/> Playing</span>
+                    <span v-else-if="gameDetails.status === 'dropped'" class="text-gray-400 font-bold flex items-center gap-1 text-sm"><Ban class="w-4 h-4"/> Dropped</span>
+                    <span v-else class="text-yellow-400 font-bold flex items-center gap-1 text-sm"><Layers class="w-4 h-4"/> Backlog</span>
+                </div>
+
+                <div class="h-4 w-px bg-gray-700 flex-shrink-0"></div>
+
+                <!-- RAWG Rating -->
+                <div class="flex items-center gap-1 text-sm text-gray-300 flex-shrink-0" title="RAWG Rating">
+                    <Star class="w-4 h-4 text-orange-400" />
+                    <span class="font-bold text-white">{{ gameDetails.rating_top || '?' }}</span>/5
+                </div>
+
+                <!-- Release Date -->
+                <div class="flex items-center gap-1 text-sm text-gray-400 flex-shrink-0">
+                    <Calendar class="w-4 h-4" />
+                    {{ formatDate(gameDetails.released) }}
+                </div>
+
+                <!-- Playtime / HLTB (Days Played Only) -->
+                <div class="flex items-center gap-1 text-sm flex-shrink-0" v-if="gameDetails.startedAt">
+                    <Timer class="w-4 h-4 text-primary" />
+                    <span class="text-white font-bold">{{ calculateDaysPlayed(gameDetails.startedAt) }} Days</span>
+                </div>
+
+            </div>
+
+            <!-- Scrollable Content -->
+            <div class="overflow-y-auto p-6 space-y-6">
+               
+               <!-- Description -->
+               <div class="prose prose-invert prose-sm max-w-none text-gray-300">
+                  <div v-html="gameDetails.description"></div>
+               </div>
+
+               <!-- Platforms & Genres & Web -->
+               <!-- Platforms & Genres & Web Stacked -->
+               <div class="space-y-4 pt-4 border-t border-gray-800">
+                  
+                  <!-- Row 1: Platforms -->
+                  <div v-if="gameDetails.parent_platforms && gameDetails.parent_platforms.length > 0">
+                      <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Platforms</h4>
+                      <div class="flex flex-wrap gap-2">
+                           <span v-for="p in gameDetails.parent_platforms" :key="p.platform.id" 
+                              class="px-2 py-1 rounded text-xs border transition-colors duration-300"
+                              :class="isOwnedPlatform(p.platform.name) 
+                                ? 'bg-primary/20 text-primary border-primary/50 font-bold shadow-[0_0_10px_rgba(var(--primary-rgb),0.3)] scale-105' 
+                                : 'bg-gray-800 text-gray-500 border-gray-700 opacity-60'"
+                          >
+                              {{ p.platform.name }}
+                          </span>
+                      </div>
                   </div>
-              </div>
 
-              <!-- Row 2: Genres -->
-              <div v-if="gameDetails.genres && gameDetails.genres.length > 0">
-                  <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Genres</h4>
-                  <div class="flex flex-wrap gap-2">
-                       <span v-for="g in gameDetails.genres" :key="g.id" class="px-2 py-1 bg-gray-800 rounded text-xs text-gray-300 border border-gray-700">
-                          {{ g.name }}
-                      </span>
+                  <!-- Row 2: Genres -->
+                  <div v-if="gameDetails.genres && gameDetails.genres.length > 0">
+                      <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Genres</h4>
+                      <div class="flex flex-wrap gap-2">
+                           <span v-for="g in gameDetails.genres" :key="g.id" class="px-2 py-1 bg-gray-800 rounded text-xs text-gray-300 border border-gray-700">
+                              {{ g.name }}
+                          </span>
+                      </div>
                   </div>
-              </div>
 
-              <!-- Row 3: Website -->
-              <div v-if="gameDetails.website">
-                   <a :href="gameDetails.website" target="_blank" class="inline-flex items-center gap-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm text-primary border border-gray-700 transition-colors">
-                      <Globe class="w-4 h-4" /> 
-                      <span class="font-medium">Official Website</span>
-                  </a>
-              </div>
+                  <!-- Row 3: Website -->
+                  <div v-if="gameDetails.website">
+                       <a :href="gameDetails.website" target="_blank" class="inline-flex items-center gap-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm text-primary border border-gray-700 transition-colors">
+                          <Globe class="w-4 h-4" /> 
+                          <span class="font-medium">Official Website</span>
+                      </a>
+                  </div>
 
-           </div>
+               </div>
 
+            </div>
+
+            <!-- Footer Actions -->
+            <div class="p-4 border-t border-gray-800 bg-gray-900/95 backdrop-blur flex items-center gap-3">
+                 <button @click="handleAction('update-status', 'playing')" class="flex-1 bg-primary hover:bg-primary/90 text-white py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-transform active:scale-95">
+                    <Play class="w-5 h-5" /> Playing
+                </button>
+                <button @click="handleAction('update-status', 'completed')" class="flex-1 bg-green-600 hover:bg-green-500 text-white py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-transform active:scale-95">
+                    <Check class="w-5 h-5" /> Finish
+                </button>
+                
+                <button @click="handleAction('update-status', 'dropped')" class="bg-gray-800 hover:bg-gray-700 text-white py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-transform active:scale-95" title="Drop Game">
+                    <Ban class="w-5 h-5 text-gray-400" />
+                </button>
+
+                 <button @click="handleAction('delete')" class="p-3 bg-red-900/20 text-red-400 hover:bg-red-900/40 rounded-xl transition-transform active:scale-95" title="Delete Game">
+                    <Trash2 class="w-5 h-5" />
+                </button>
+            </div>
+
+          </template>
         </div>
-
-        <!-- Footer Actions -->
-        <div class="p-4 border-t border-gray-800 bg-gray-900/95 backdrop-blur flex items-center gap-3">
-             <button @click="handleAction('update-status', 'playing')" class="flex-1 bg-primary hover:bg-primary/90 text-white py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-transform active:scale-95">
-                <Play class="w-5 h-5" /> Playing
-            </button>
-            <button @click="handleAction('update-status', 'completed')" class="flex-1 bg-green-600 hover:bg-green-500 text-white py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-transform active:scale-95">
-                <Check class="w-5 h-5" /> Finish
-            </button>
-            
-            <button @click="handleAction('update-status', 'dropped')" class="bg-gray-800 hover:bg-gray-700 text-white py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-transform active:scale-95" title="Drop Game">
-                <Ban class="w-5 h-5 text-gray-400" />
-            </button>
-
-             <button @click="handleAction('delete')" class="p-3 bg-red-900/20 text-red-400 hover:bg-red-900/40 rounded-xl transition-transform active:scale-95" title="Delete Game">
-                <Trash2 class="w-5 h-5" />
-            </button>
-        </div>
-
-      </template>
     </div>
     
     <EditGameModal 
@@ -303,6 +326,9 @@ const handleAction = async (action, val) => {
 }
 .animate-spin-slow-reverse {
     animation: spin 10s linear infinite reverse;
+}
+.animate-spin-slow {
+    animation: spin 8s linear infinite;
 }
 @keyframes spin {
     from { transform: rotate(0deg); }
