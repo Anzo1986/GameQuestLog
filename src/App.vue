@@ -2,28 +2,18 @@
 import { ref, computed, onMounted, watch } from 'vue';
 
 import GameCard from './components/GameCard.vue';
-import AddGameModal from './components/AddGameModal.vue';
-import GameDetailModal from './components/GameDetailModal.vue';
-import SettingsSection from './components/SettingsSection.vue';
 import UserProfile from './components/UserProfile.vue';
-import StatsModal from './components/StatsModal.vue';
-import QuestGiverModal from './components/QuestGiverModal.vue';
 import BackgroundAurora from './components/BackgroundAurora.vue';
-
+import TheModals from './components/TheModals.vue'; // Centralized Modals
+import AchievementToast from './components/AchievementToast.vue'; 
+import SmartBar from './components/SmartBar.vue'; 
 
 import { useGames } from './composables/useGames';
 import { useAchievements } from './composables/useAchievements';
 import { useGameFilters } from './composables/useGameFilters';
-import AchievementsModal from './components/AchievementsModal.vue';
-import AchievementToast from './components/AchievementToast.vue'; // New Toast Component
-import SmartBar from './components/SmartBar.vue'; // Search & Sort
-import TimelineModal from './components/TimelineModal.vue'; // Journey Timeline
-import GamerCardModal from './components/GamerCardModal.vue'; // New Gamer Card
-import LevelUpOverlay from './components/LevelUpOverlay.vue'; // New Level Up Screen
-import VictoryOverlay from './components/VictoryOverlay.vue'; // New Victory Screen
-import ShopModal from './components/ShopModal.vue'; // New Shop Modal
 import { useSettings } from './composables/useSettings';
 import { useShop } from './composables/useShop';
+import { useModals } from './composables/useModals';
 import { Settings, Plus, Gamepad2, Layers, CheckCircle2, LayoutDashboard, Ban, Timer, Bell, Dices, Trophy, Menu, X, ShoppingBag } from 'lucide-vue-next';
 
 const { playingGames, backlogGames, completedGames, droppedGames, updateStatus, removeGame, games, userXP, userLevel, userTitle } = useGames();
@@ -46,48 +36,44 @@ const backgroundClass = computed(() => {
     return 'bg-gray-900';
 });
 
-const showAddModal = ref(false);
-const showSettings = ref(false);
-const showStats = ref(false);
-const showQuestModal = ref(false);
-const showDetailModal = ref(false);
-const showTimeline = ref(false); // Timeline State
-const showGamerCard = ref(false); // Gamer Card State
-const showShopModal = ref(false); // Shop State
-const showLevelUp = ref(false); // Level Up State
-const showVictory = ref(false); // Victory State
-const victoryGame = ref(null); // Game that triggered victory
-const pendingLevelUp = ref(false); // Queue for level up
+// Modals State
+const { openModal, resetModal, activeModal } = useModals();
 
-const selectedGameId = ref(null);
-
-const currentTab = ref('dashboard'); // 'dashboard', 'backlog', 'completed'
-
-// Level Up Logic (Sequenced)
+// Queue Level Up if Victory is showing
 watch(userLevel, (newVal, oldVal) => {
     if (newVal > oldVal) {
-        if (showVictory.value) {
-            // If Victory is showing, queue level up
+        if (activeModal.value === 'victory') {
+            // Logic handled in Victory overlay close? 
+            // Actually, in TheModals we didn't add queue logic.
+            // We can just open it immediately? Or wait? 
+            // Let's just open it. Overlays can stack if we change logic, but here activeModal is single string.
+            // So we must queue it?
+            // "pendingLevelUp" was local ref. Let's keep a local ref for queueing if we want that behavior.
             pendingLevelUp.value = true;
         } else {
-            showLevelUp.value = true;
+            openModal('levelUp');
         }
     }
 });
+const pendingLevelUp = ref(false);
 
-// Handle Victory Close (Check Queue)
-const closeVictory = () => {
-    showVictory.value = false;
-    victoryGame.value = null;
-    if (pendingLevelUp.value) {
+// Handle Victory Close (Check Queue) - We need to watch activeModal changes?
+// Or TheModals emits close? 
+// TheModals handles close => history.back().
+// When activeModal becomes null (via popstate), we check pendingLevelUp?
+watch(activeModal, (newVal, oldVal) => {
+    if (oldVal === 'victory' && !newVal && pendingLevelUp.value) {
         setTimeout(() => {
-            showLevelUp.value = true;
+            openModal('levelUp');
             pendingLevelUp.value = false;
-        }, 500); // Small delay for breathing room
+        }, 500);
     }
-};
+});
 
-const xpGained = ref(0);
+const selectedGameId = ref(null); // Still needed? detailed modal uses props.gameId. 
+// We can remove it if we pass ID in openModal.
+
+const currentTab = ref('dashboard'); // 'dashboard', 'backlog', 'completed'
 
 // Intercept Status Updates for Victory
 const handleUpdateStatus = (id, status) => {
@@ -95,18 +81,9 @@ const handleUpdateStatus = (id, status) => {
     if (status === 'completed') {
         const game = games.value.find(g => g.id === id);
         if (game && game.status !== 'completed') {
-            victoryGame.value = game;
-            
-            // Calculate XP (Mirroring logic in useGames.js)
-            // playing -> completed = 200
-            // backlog/dropped -> completed = 250 (Start 50 + Complete 200)
-            if (game.status === 'playing') {
-                xpGained.value = 200;
-            } else {
-                xpGained.value = 250;
-            }
-
-            showVictory.value = true;
+             // Calculate XP
+            const xp = game.status === 'playing' ? 200 : 250;
+            openModal('victory', { game: game, xpGained: xp });
         }
     }
     updateStatus(id, status);
@@ -127,99 +104,16 @@ const displayGames = computed(() => {
     }
 });
 
-const openSettings = () => {
-    showSettings.value = true;
-    history.pushState({ modal: 'settings' }, '', '');
-};
+// Helper functions removed - using openModal directly in template.
 
-const closeSettings = () => {
-    history.back();
-};
-
-const openStats = () => {
-    showStats.value = true;
-    history.pushState({ modal: 'stats' }, '', '');
-};
-
-const closeStats = () => {
-    history.back();
-};
-
-const openTimeline = () => {
-    showStats.value = false; // Close stats to focus on timeline (optional, or keep generic)
-    showTimeline.value = true;
-    history.pushState({ modal: 'timeline' }, '', '');
-};
-
-const closeTimeline = () => {
-    history.back();
-};
-
-const openGamerCard = () => {
-    showGamerCard.value = true;
-    history.pushState({ modal: 'gamerCard' }, '', '');
-};
-
-const closeGamerCard = () => {
-    history.back();
-};
-
-const openQuest = () => {
-    showQuestModal.value = true;
-    history.pushState({ modal: 'quest' }, '', '');
-};
-
-const closeQuest = () => {
-    history.back();
-};
-
-const openAchievements = () => {
-    showAchievements.value = true;
-    history.pushState({ modal: 'achievements' }, '', '');
-};
-
-const closeAchievements = () => {
-    history.back();
-};
-
+// Open Game Details (Used in GameCard click)
 const openGameDetails = (gameId) => {
-  selectedGameId.value = gameId;
-  showDetailModal.value = true;
-  history.pushState({ modal: 'gameDetail' }, '', '');
-};
-
-const closeGameDetails = () => {
-    history.back();
-};
-
-const openShop = () => {
-    showShopModal.value = true;
-    history.pushState({ modal: 'shop' }, '', '');
-};
-
-const closeShop = () => {
-    history.back();
+    openModal('gameDetail', { gameId, onUpdateStatus: handleUpdateStatus });
 };
 
 onMounted(() => {
     window.addEventListener('popstate', (event) => {
-        if (showDetailModal.value) {
-            showDetailModal.value = false;
-        } else if (showSettings.value) {
-            showSettings.value = false;
-        } else if (showStats.value) {
-            showStats.value = false;
-        } else if (showTimeline.value) {
-            showTimeline.value = false;
-        } else if (showQuestModal.value) {
-            showQuestModal.value = false;
-        } else if (showAchievements.value) {
-            showAchievements.value = false;
-        } else if (showGamerCard.value) {
-            showGamerCard.value = false;
-        } else if (showShopModal.value) {
-            showShopModal.value = false;
-        }
+        resetModal();
     });
 
     // Check achievements on mount
@@ -320,30 +214,18 @@ useSwipe(mainContainer, {
             </span>
         </button>
 
-        <button @click="openSettings" class="p-2 text-gray-400 hover:text-white transition-colors rounded-full hover:bg-gray-800">
+        <button @click="openModal('settings')" class="p-2 text-gray-400 hover:text-white transition-colors rounded-full hover:bg-gray-800">
             <Settings class="w-6 h-6" />
         </button>
       </div>
     </header>
 
     <!-- User Profile -->
-    <UserProfile @open-stats="openStats" @open-gamer-card="openGamerCard" />
+    <UserProfile @open-stats="openModal('stats')" @open-gamer-card="openModal('gamerCard')" />
 
     <!-- Settings Section (Modal) -->
-    <SettingsSection v-if="showSettings" @close="closeSettings" />
-
-    <!-- Stats Modal -->
-    <StatsModal v-if="showStats" :is-open="showStats" @close="closeStats" @open-timeline="openTimeline" />
-
-    <!-- Timeline Modal -->
-    <TimelineModal v-if="showTimeline" :is-open="showTimeline" @close="closeTimeline" />
-
-    <!-- Achievements -->
-    <AchievementsModal v-if="showAchievements" :is-open="showAchievements" @close="closeAchievements" />
-    <AchievementToast />
-    <VictoryOverlay v-if="showVictory" :game="victoryGame" :xp-gained="xpGained" @close="closeVictory" />
-    <LevelUpOverlay v-if="showLevelUp" :level="userLevel" :title="userTitle" @close="showLevelUp = false" />
-    <GamerCardModal v-if="showGamerCard" :is-open="showGamerCard" @close="closeGamerCard" />
+    <!-- Centralized Modals -->
+    <TheModals />
     
     <!-- Smart Bar (Search & Sort) -->
     <SmartBar 
@@ -497,7 +379,7 @@ useSwipe(mainContainer, {
              
              <!-- Add Game -->
             <button 
-                @click="showAddModal = true; isMenuOpen = false"
+                @click="openModal('addGame'); isMenuOpen = false"
                 class="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white p-3 rounded-full shadow-lg border-2 border-gray-900 group transition-all"
             >
                 <div class="bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 absolute right-16 transition-opacity whitespace-nowrap pointer-events-none">Add Game</div>
@@ -506,7 +388,7 @@ useSwipe(mainContainer, {
 
             <!-- Quest Giver -->
             <button 
-               @click="openQuest(); isMenuOpen = false"
+               @click="openModal('quest'); isMenuOpen = false"
                class="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white p-3 rounded-full shadow-lg border-2 border-gray-900 group transition-all"
             >
                 <div class="bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 absolute right-16 transition-opacity whitespace-nowrap pointer-events-none">Quest Giver</div>
@@ -515,16 +397,16 @@ useSwipe(mainContainer, {
 
             <!-- Shop -->
             <button 
-               @click="openShop(); isMenuOpen = false"
+               @click="openModal('shop'); isMenuOpen = false"
                class="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white p-3 rounded-full shadow-lg border-2 border-gray-900 group transition-all"
             >
                 <div class="bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 absolute right-16 transition-opacity whitespace-nowrap pointer-events-none">Loot Shop</div>
                 <ShoppingBag class="w-6 h-6" />
             </button>
 
-             <!-- Achievements -->
+            <!-- Achievements -->
             <button 
-               @click="openAchievements(); isMenuOpen = false"
+               @click="openModal('achievements'); isMenuOpen = false"
                class="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white p-3 rounded-full shadow-lg border-2 border-gray-900 group transition-all"
             >
                 <div class="bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 absolute right-16 transition-opacity whitespace-nowrap pointer-events-none">Achievements</div>
@@ -543,19 +425,7 @@ useSwipe(mainContainer, {
 
     </div>
 
-    <!-- Modals -->
-    <AddGameModal :is-open="showAddModal" @close="showAddModal = false" />
-    <QuestGiverModal v-if="showQuestModal" :is-open="showQuestModal" @close="closeQuest" />
-    
-    <GameDetailModal 
-      :is-open="showDetailModal" 
-      :game-id="selectedGameId" 
-      @close="closeGameDetails"
-      @update-status="handleUpdateStatus"
-      @delete="removeGame"
-    />
 
-    <ShopModal v-if="showShopModal" :is-open="showShopModal" @close="closeShop" />
 
 
 
