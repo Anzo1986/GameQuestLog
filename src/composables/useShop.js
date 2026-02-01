@@ -6,17 +6,24 @@ const SHOP_STORAGE_KEY = 'game-tracker-shop-v2';
 
 // Shop Catalog
 export const SHOP_ITEMS = [
-    // Themes (Standard Price: 50)
+    // Themes (Standard Price: 50-75)
     { id: 'theme_default', type: 'theme', name: 'Original Blue', price: 0, description: 'The classic look.', value: 'blue', owned: true },
     { id: 'theme_emerald', type: 'theme', name: 'Matrix Emerald', price: 50, description: 'Enter the matrix.', value: 'emerald' },
     { id: 'theme_orange', type: 'theme', name: 'Sunset Orange', price: 50, description: 'Warm and energetic.', value: 'orange' },
     { id: 'theme_rose', type: 'theme', name: 'Rose Pink', price: 50, description: 'Soft and elegant.', value: 'pink' },
     { id: 'theme_midnight', type: 'theme', name: 'Midnight Purple', price: 50, description: 'Deep purple vibes.', value: 'purple' },
     { id: 'theme_dracula', type: 'theme', name: 'Vampire Red', price: 50, description: 'Dark and bloody.', value: 'red' },
+
+    // New Themes
+    { id: 'theme_lime', type: 'theme', name: 'Toxic Lime', price: 75, description: 'Radioactive green.', value: 'lime' },
+    { id: 'theme_teal', type: 'theme', name: 'Abyss Teal', price: 75, description: 'From the depths.', value: 'teal' },
+    { id: 'theme_indigo', type: 'theme', name: 'Deep Indigo', price: 75, description: 'Night sky.', value: 'indigo' },
+    { id: 'theme_fuchsia', type: 'theme', name: 'Neon Fuchsia', price: 75, description: 'Retrowave vibes.', value: 'fuchsia' },
+
     { id: 'theme_cyberpunk', type: 'theme', name: 'Cyberpunk Neon', price: 50, description: 'High contrast pink and cyan.', value: 'cyberpunk' },
     { id: 'theme_royal', type: 'theme', name: 'Royal Gold', price: 50, description: 'Luxury for the elite.', value: 'gold' },
 
-    // Frames (Standard Price: 80)
+    // Frames (Standard Price: 80-300)
     { id: 'frame_default', type: 'frame', name: 'No Frame', price: 0, description: 'Clean and simple.', value: 'none', owned: true },
     { id: 'frame_gold', type: 'frame', name: 'Golden Ring', price: 80, description: 'A solid gold border.', value: 'gold_ring' },
     { id: 'frame_nature', type: 'frame', name: 'Forest', price: 80, description: 'Natural double border.', value: 'nature' },
@@ -26,13 +33,24 @@ export const SHOP_ITEMS = [
     { id: 'frame_glitch', type: 'frame', name: 'System Error', price: 80, description: 'Digital corruption.', value: 'glitch' },
     { id: 'frame_fire', type: 'frame', name: 'Inferno', price: 80, description: 'Animated fire effect.', value: 'fire' },
 
-    // Card Styles (Window Effects) - Standard Price 100
+    // New Frames
+    { id: 'frame_rainbow', type: 'frame', name: 'Prism', price: 300, description: 'Taste the rainbow.', value: 'rainbow' },
+    { id: 'frame_lightning', type: 'frame', name: 'Thunder god', price: 300, description: 'Wield the storm.', value: 'lightning' },
+    { id: 'frame_magma', type: 'frame', name: 'Molten Core', price: 300, description: 'Liquid heat.', value: 'magma' },
+
+
+    // Card Styles (Standard Price 100-500)
     { id: 'style_default', type: 'card_style', name: 'Standard Window', price: 0, description: 'Clean and readable.', value: 'none', owned: true },
     { id: 'style_holo', type: 'card_style', name: 'Holo Foil', price: 100, description: 'Shiny rainbow finish.', value: 'holo' },
     { id: 'style_gold', type: 'card_style', name: 'Golden Plate', price: 100, description: 'Solid gold coating.', value: 'gold' },
     { id: 'style_cyber', type: 'card_style', name: 'Cyberpunk', price: 100, description: 'Neon & Grid vibes.', value: 'cyber' },
     { id: 'style_retro', type: 'card_style', name: 'Retro Terminal', price: 100, description: 'Green phosphor scanlines.', value: 'retro' },
     { id: 'style_fire', type: 'card_style', name: 'Inferno', price: 100, description: 'Burning hot.', value: 'fire' },
+
+    // New Styles
+    { id: 'style_glitter', type: 'card_style', name: 'Stardust', price: 500, description: 'Sparkle sparkle.', value: 'glitter' },
+    { id: 'style_spotlight', type: 'card_style', name: 'Cinema', price: 500, description: 'You are the star.', value: 'spotlight' },
+
 
     // Backgrounds - Standard Price 100
     { id: 'bg_default', type: 'background', name: 'Deep Void', price: 0, description: 'Standard dark mode.', value: 'none', owned: true },

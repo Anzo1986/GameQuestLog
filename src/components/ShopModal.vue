@@ -158,14 +158,22 @@ const handleTouchEnd = (e) => {
                      }">
                          <div class="w-6 h-6 rounded-full shadow-lg" :style="{ backgroundColor: `rgb(${
                             {
-                                blue: '59 130 246',
-                                cyberpunk: '6 182 212',
-                                emerald: '16 185 129',
-                                gold: '234 179 8',
-                                red: '239 68 68',
-                                purple: '168 85 247',
-                                pink: '236 72 153',
-                                orange: '249 115 22'
+                                blue: '59 130 246', // blue-500
+                                pink: '236 72 153', // pink-500
+                                purple: '168 85 247', // purple-500
+                                orange: '249 115 22', // orange-500
+                                red: '239 68 68', // red-500
+                                
+                                // Enhanced Shop
+                                cyberpunk: '6 182 212', // cyan-500
+                                emerald: '16 185 129', // emerald-500
+                                gold: '234 179 8', // yellow-500
+                                
+                                // New
+                                lime: '132 204 22', 
+                                teal: '20 184 166',
+                                indigo: '99 102 241',
+                                fuchsia: '217 70 239'
                             }[item.value] || '59 130 246'
                          })` }"></div>
                          <div class="w-10 h-3 rounded bg-gray-700"></div>
@@ -188,6 +196,10 @@ const handleTouchEnd = (e) => {
                          <div v-if="item.value === 'cyber'" class="absolute inset-0 border border-pink-500/50 bg-[linear-gradient(45deg,transparent_25%,rgba(236,72,153,0.1)_50%,transparent_75%)]"></div>
                          <div v-if="item.value === 'retro'" class="absolute inset-0 border border-green-500/50 bg-[linear-gradient(transparent_50%,rgba(34,197,94,0.1)_50%)] bg-[size:100%_4px]"></div>
                          <div v-if="item.value === 'fire'" class="absolute inset-0 border-b-2 border-orange-500 shadow-[inset_0_-10px_20px_rgba(234,88,12,0.3)]"></div>
+                         
+                         <!-- New Style Previews -->
+                         <div v-if="item.value === 'glitter'" class="absolute inset-0 bg-[radial-gradient(white,transparent_1px)] bg-[size:10px_10px] opacity-40 animate-pulse"></div>
+                         <div v-if="item.value === 'spotlight'" class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent w-[200%] animate-shine"></div>
                      </div>
 
                      <!-- Background Preview -->
@@ -197,33 +209,23 @@ const handleTouchEnd = (e) => {
                              <div v-if="item.value === 'stars'" class="w-full h-full bg-[radial-gradient(white,transparent_2px)] bg-[size:15px_15px] opacity-70"></div>
                              <div v-if="item.value === 'grid'" class="w-full h-full bg-gray-900 bg-[linear-gradient(rgba(0,255,255,0.2)_1px,transparent_1px),linear-gradient(90deg,rgba(0,255,255,0.2)_1px,transparent_1px)] bg-[size:10px_10px]"></div>
                              
-                             <div v-if="item.value === 'grid'" class="w-full h-full bg-gray-900 bg-[linear-gradient(rgba(0,255,255,0.2)_1px,transparent_1px),linear-gradient(90deg,rgba(0,255,255,0.2)_1px,transparent_1px)] bg-[size:10px_10px]"></div>
-                             
-                             <!-- Matrix Preview (Inline SVG - Robust Fix) -->
                              <div v-if="item.value === 'matrix'" class="w-full h-full bg-black border border-gray-700">
                                  <svg width="100%" height="100%" viewBox="0 0 100 80" preserveAspectRatio="xMidYMid slice">
                                      <text x="50" y="25" fill="#22c55e" font-family="monospace" font-size="25" text-anchor="middle" font-weight="bold">1 0 1</text>
                                      <text x="50" y="50" fill="#22c55e" font-family="monospace" font-size="25" text-anchor="middle" font-weight="bold" opacity="0.6">0 1 0</text>
-                                     <text x="50" y="75" fill="#22c55e" font-family="monospace" font-size="25" text-anchor="middle" font-weight="bold" opacity="0.3">1 1 0</text>
                                  </svg>
                              </div>
                              
-                             <!-- Hex Preview (Restored Data URI) -->
                              <div v-if="item.value === 'hex'" class="w-full h-full bg-gray-800" style="background-image: url('data:image/svg+xml,%3Csvg width=\'12\' height=\'12\' viewBox=\'0 0 28 49\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5z\' fill=\'%23ffffff\' fill-opacity=\'0.2\'/%3E%3C/svg%3E')"></div>
                              
-                             <!-- Aurora Preview (Blobs - Kept New) -->
                              <div v-if="item.value === 'aurora'" class="w-full h-full bg-slate-900 relative overflow-hidden">
                                  <div class="absolute top-[-10%] left-[-10%] w-10 h-10 bg-teal-400 rounded-full blur-md opacity-60"></div>
                                  <div class="absolute top-[-10%] right-[-10%] w-12 h-12 bg-fuchsia-500 rounded-full blur-md opacity-60"></div>
-                                 <div class="absolute bottom-[-10%] left-[20%] w-14 h-8 bg-emerald-500 rounded-full blur-md opacity-50"></div>
-                                 <svg viewBox="0 0 100 20" class="absolute bottom-0 w-full text-black fill-current opacity-80" preserveAspectRatio="none"><path d="M0,20 L40,10 L70,15 L100,5 L100,20 Z"></path></svg>
                              </div>
 
-                             <!-- Pulse Preview (Restored) -->
                              <div v-if="item.value === 'pulse'" class="w-full h-full bg-gray-900 flex items-center justify-center relative overflow-hidden">
                                  <div class="absolute inset-0 bg-blue-500/10 animate-pulse"></div>
                                  <div class="w-full h-[1px] bg-blue-500/50"></div>
-                                 <div class="h-full w-[1px] bg-blue-500/50 absolute"></div>
                              </div>
 
                              <div v-if="item.value === 'dots'" class="w-full h-full bg-[radial-gradient(rgba(255,255,255,0.2)_1px,transparent_1px)] bg-[size:6px_6px] bg-gray-900"></div>
@@ -294,6 +296,13 @@ const handleTouchEnd = (e) => {
 }
 .animate-holo {
     animation: holo 3s ease infinite;
+}
+@keyframes shine {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(100%); }
+}
+.animate-shine {
+    animation: shine 3s ease infinite;
 }
 .no-scrollbar::-webkit-scrollbar {
     display: none;
