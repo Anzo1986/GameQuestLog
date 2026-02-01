@@ -28,6 +28,12 @@ const frameClasses = computed(() => {
         case 'neon_pink': return `${base} border-[3px] border-pink-500 shadow-[0_0_15px_rgba(236,72,153,0.8)]`;
         case 'nature': return `${base} border-[4px] border-emerald-600 border-double shadow-sm`;
         case 'ice': return `${base} border-[3px] border-cyan-200 shadow-[0_0_10px_rgba(165,243,252,0.6)] bg-white/5`;
+        
+        // NEW FRAMES
+        case 'rainbow': return `${base} border-[4px] border-t-red-500 border-r-green-500 border-b-blue-500 border-l-yellow-500 animate-spin`;
+        case 'lightning': return `${base} border-[3px] border-blue-300 border-dashed shadow-[0_0_15px_rgba(147,197,253,0.8)] animate-spin-reverse-fast`;
+        case 'magma': return `${base} border-[3px] border-orange-700 shadow-[0_0_20px_rgba(194,65,12,0.6)] bg-red-900/20 animate-pulse`;
+        
         case 'none': 
         default: return `${base} border-2 border-gray-700`; // Default Neutral
     }
@@ -60,6 +66,9 @@ const sizeClasses = computed(() => {
 <style scoped>
 .animate-spin-slow {
     animation: spin 8s linear infinite;
+}
+.animate-spin-reverse-fast {
+    animation: spin 3s linear infinite reverse;
 }
 @keyframes spin {
     from { transform: rotate(0deg); }

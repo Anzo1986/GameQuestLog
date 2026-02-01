@@ -18,7 +18,14 @@ const THEMES = {
     purple: { name: 'Purple', rgb: '168 85 247' },   // purple-500
     orange: { name: 'Orange', rgb: '249 115 22' },   // orange-500
     red: { name: 'Red', rgb: '239 68 68' },    // red-500
-    // Shop Themes
+
+    // Expanded Standard Themes
+    lime: { name: 'Lime', rgb: '132 204 22' }, // lime-500
+    teal: { name: 'Teal', rgb: '20 184 166' }, // teal-500
+    indigo: { name: 'Indigo', rgb: '99 102 241' }, // indigo-500
+    fuchsia: { name: 'Fuchsia', rgb: '217 70 239' }, // fuchsia-500
+
+    // Shop Themes (Special)
     cyberpunk: { name: 'Cyberpunk', rgb: '6 182 212' }, // cyan-500
     emerald: { name: 'Emerald', rgb: '16 185 129' }, // emerald-500
     gold: { name: 'Gold', rgb: '234 179 8' }, // yellow-500
@@ -69,20 +76,6 @@ const setUserAvatar = (dataUrl) => {
 const setUserTitle = (title) => {
     selectedTitle.value = title;
 };
-
-// Persist User Data (Partial)
-// Note: XP is managed by Gamification, but we might share the storage key or coordinate storage.
-// For now, let's expose a way to save full user object if needed, or watch internal parts.
-// To avoid circular dependency with XP, `useSettings` will only save what it owns, 
-// OR we keep the watcher external/in the facade.
-// Decision: Let's export persistUser to allow external callers (Gamification) to trigger save,
-// OR simply provide getters/setters and let the composition root (useGames) handle the unified watcher.
-// FOR NOW: We'll keep local watchers for distinct parts, but XP is missing here.
-// Best approach: Expose a `saveUserData` helper that takes XP as argument, or separate Storages.
-// Current `useGames.js` saves {xp, name, avatar, title} in one object.
-// To support this, we need to coordinate. 
-// A simple event bus or shared reactive object works. 
-// Let's stick to the current plan: `useGames` (Facade) will have the watcher that combines everything.
 
 // Watchers (for isolated parts)
 // Theme is isolated.

@@ -22,11 +22,17 @@ const equippedStyle = computed(() => getEquippedItem('card_style'));
 
 const modalStyles = computed(() => {
     const s = equippedStyle.value?.value;
+    // Existing
     if (s === 'gold') return 'border-2 border-yellow-500 shadow-[0_0_80px_rgba(234,179,8,0.2)] bg-gradient-to-br from-gray-900 via-gray-900 to-yellow-900/20';
     if (s === 'holo') return 'border-2 border-cyan-500/30 shadow-[0_0_80px_rgba(6,182,212,0.2)] bg-gray-900 relative overflow-hidden';
     if (s === 'cyber') return 'border-2 border-pink-500 shadow-[0_0_80px_rgba(236,72,153,0.3)] bg-gray-900 relative overflow-hidden';
     if (s === 'retro') return 'border-2 border-green-500 shadow-[0_0_80px_rgba(34,197,94,0.2)] bg-gray-900 relative overflow-hidden font-mono';
     if (s === 'fire') return 'border-2 border-orange-600 shadow-[0_0_80px_rgba(234,88,12,0.4)] bg-gray-900 relative overflow-hidden';
+    
+    // NEW
+    if (s === 'glitter') return 'border-2 border-purple-300 shadow-[0_0_60px_rgba(216,180,254,0.3)] bg-gray-900 relative overflow-hidden';
+    if (s === 'spotlight') return 'border-2 border-white/40 shadow-[0_0_80px_rgba(255,255,255,0.2)] bg-gray-900 relative overflow-hidden';
+
     return 'bg-gray-900 border border-gray-700';
 });
 const gameDetails = ref(null);
@@ -44,7 +50,6 @@ watch(() => props.isOpen, (newVal) => {
     gameDetails.value = null;
   }
 });
-// ... (keep existing methods)
 
 const formatDate = (dateString) => {
   if (!dateString) return 'N/A';
@@ -114,21 +119,24 @@ const handleAction = async (action, val) => {
         class="relative w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in duration-200"
         :class="modalStyles"
     >
-      <!-- Holo Background Effect -->
+      <!-- EFFECT LAYERS -->
       <div v-if="equippedStyle?.value === 'holo'" class="absolute inset-0 pointer-events-none opacity-20 bg-gradient-to-tr from-purple-500/20 via-transparent to-cyan-500/20 animate-pulse z-0"></div>
       <div v-if="equippedStyle?.value === 'holo'" class="absolute -inset-[100%] top-0 block h-[200%] w-[200%] -rotate-45 bg-gradient-to-r from-transparent via-white/5 to-transparent bg-[length:50%_50%] animate-shine pointer-events-none z-0"></div>
       
-      <!-- Cyber Effect -->
       <div v-if="equippedStyle?.value === 'cyber'" class="absolute inset-0 pointer-events-none opacity-20 bg-[linear-gradient(rgba(236,72,153,0.2)_1px,transparent_1px),linear-gradient(90deg,rgba(236,72,153,0.2)_1px,transparent_1px)] bg-[size:20px_20px] z-0"></div>
       <div v-if="equippedStyle?.value === 'cyber'" class="absolute inset-x-0 top-0 h-px bg-pink-500 shadow-[0_0_10px_#ec4899] z-10"></div>
       
-      <!-- Retro Effect -->
       <div v-if="equippedStyle?.value === 'retro'" class="absolute inset-0 pointer-events-none opacity-10 bg-[linear-gradient(rgba(34,197,94,0.3)_1px,transparent_1px)] bg-[size:100%_4px] z-0"></div>
       
-      <!-- Fire Effect -->
       <div v-if="equippedStyle?.value === 'fire'" class="absolute inset-0 pointer-events-none opacity-20 bg-gradient-to-t from-orange-600/30 to-transparent z-0"></div>
       <div v-if="equippedStyle?.value === 'fire'" class="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-orange-500/20 to-transparent animate-pulse z-0"></div>
       
+      <!-- NEW EFFECTS -->
+      <div v-if="equippedStyle?.value === 'glitter'" class="absolute inset-0 pointer-events-none opacity-30 bg-[radial-gradient(white,transparent_1px)] bg-[size:20px_20px] animate-pulse z-0"></div>
+      <div v-if="equippedStyle?.value === 'glitter'" class="absolute inset-0 pointer-events-none opacity-30 bg-[radial-gradient(white,transparent_1px)] bg-[size:15px_15px] animate-pulse-slow z-0"></div>
+      
+      <div v-if="equippedStyle?.value === 'spotlight'" class="absolute inset-0 pointer-events-none bg-gradient-to-tr from-transparent via-white/10 to-transparent w-[200%] h-[200%] -translate-x-1/2 -translate-y-1/2 animate-spin-slow-reverse z-0 opacity-30"></div>
+
       <!-- Content -->
       <template v-if="gameDetails">
         <!-- Controls -->
@@ -292,5 +300,12 @@ const handleAction = async (action, val) => {
 }
 .animate-shine {
     animation: shine 8s ease-in-out infinite;
+}
+.animate-spin-slow-reverse {
+    animation: spin 10s linear infinite reverse;
+}
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 </style>
