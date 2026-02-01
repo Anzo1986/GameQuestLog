@@ -3,7 +3,9 @@ import { ref, onMounted, watch, computed } from 'vue';
 import { X, Calendar, Gamepad2, Globe, Star, Play, Check, Trash2, Timer, Ban, Layers, PenLine } from 'lucide-vue-next';
 import { useGames } from '../composables/useGames';
 import { useShop } from '../composables/useShop';
+import { useCardStyles } from '../composables/useCardStyles';
 import EditGameModal from './EditGameModal.vue';
+import GameCardInnerEffects from './GameCardInnerEffects.vue';
 
 const props = defineProps({
   gameId: {
@@ -17,31 +19,12 @@ const emit = defineEmits(['close', 'update-status', 'delete']);
 
 const { games, rateGame, updateGame } = useGames();
 const { getEquippedItem } = useShop();
+const { getCardClasses } = useCardStyles();
 
 const equippedStyle = computed(() => getEquippedItem('card_style'));
 
-const modalStyles = computed(() => {
-    const s = equippedStyle.value?.value;
-    
-    // Base Classes
-    let classes = 'bg-gray-900 border-2 ';
+// Removed local modalStyles computed property in favor of useCardStyles logic
 
-    if (s === 'gold') return classes + 'border-yellow-500 shadow-[0_0_80px_rgba(234,179,8,0.2)] bg-gradient-to-br from-gray-900 via-gray-900 to-yellow-900/20';
-    if (s === 'holo') return classes + 'border-cyan-500/30 shadow-[0_0_80px_rgba(6,182,212,0.2)] relative overflow-hidden';
-    if (s === 'cyber') return classes + 'border-pink-500 shadow-[0_0_80px_rgba(236,72,153,0.3)] relative overflow-hidden';
-    if (s === 'retro') return classes + 'border-green-500 shadow-[0_0_80px_rgba(34,197,94,0.2)] relative overflow-hidden font-mono';
-    if (s === 'fire') return classes + 'border-orange-600 shadow-[0_0_80px_rgba(234,88,12,0.4)] relative overflow-hidden';
-    
-    if (s === 'glitter') return classes + 'border-purple-300 shadow-[0_0_60px_rgba(216,180,254,0.3)] relative overflow-hidden';
-    if (s === 'spotlight') return classes + 'border-white/40 shadow-[0_0_80px_rgba(255,255,255,0.2)] relative overflow-hidden';
-
-    // NEW STYLE WITH ANIMATED BORDERS
-    // Use border-transparent for Prism so it doesn't override the outer glow visually, but maintains spacing
-    if (s === 'prism') return 'border-2 border-transparent bg-gray-900 shadow-[0_0_40px_rgba(255,255,255,0.2)] relative overflow-hidden'; 
-    if (s === 'glitch') return 'border-2 border-cyan-500 border-dashed shadow-[0_0_40px_rgba(6,182,212,0.4)] relative overflow-hidden';
-
-    return 'bg-gray-900 border-gray-700';
-});
 const gameDetails = ref(null);
 const showEditModal = ref(false);
 
@@ -134,30 +117,11 @@ const handleAction = async (action, val) => {
         <!-- Main Card -->
         <div 
             class="relative w-full h-full rounded-2xl overflow-hidden flex flex-col bg-gray-900 z-10" 
-            :class="modalStyles"
+            :class="getCardClasses(equippedStyle?.value)"
         >
-          <!-- EFFECT LAYERS -->
-          <div v-if="equippedStyle?.value === 'holo'" class="absolute inset-0 pointer-events-none opacity-20 bg-gradient-to-tr from-purple-500/20 via-transparent to-cyan-500/20 animate-pulse z-0"></div>
-          <div v-if="equippedStyle?.value === 'holo'" class="absolute -inset-[100%] top-0 block h-[200%] w-[200%] -rotate-45 bg-gradient-to-r from-transparent via-white/5 to-transparent bg-[length:50%_50%] animate-shine pointer-events-none z-0"></div>
-          
-          <div v-if="equippedStyle?.value === 'cyber'" class="absolute inset-0 pointer-events-none opacity-20 bg-[linear-gradient(rgba(236,72,153,0.2)_1px,transparent_1px),linear-gradient(90deg,rgba(236,72,153,0.2)_1px,transparent_1px)] bg-[size:20px_20px] z-0"></div>
-          <div v-if="equippedStyle?.value === 'cyber'" class="absolute inset-x-0 top-0 h-px bg-pink-500 shadow-[0_0_10px_#ec4899] z-10"></div>
-          
-          <div v-if="equippedStyle?.value === 'retro'" class="absolute inset-0 pointer-events-none opacity-10 bg-[linear-gradient(rgba(34,197,94,0.3)_1px,transparent_1px)] bg-[size:100%_4px] z-0"></div>
-          
-          <div v-if="equippedStyle?.value === 'fire'" class="absolute inset-0 pointer-events-none opacity-20 bg-gradient-to-t from-orange-600/30 to-transparent z-0"></div>
-          <div v-if="equippedStyle?.value === 'fire'" class="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-orange-500/20 to-transparent animate-pulse z-0"></div>
-          
-          <div v-if="equippedStyle?.value === 'glitter'" class="absolute inset-0 pointer-events-none opacity-30 bg-[radial-gradient(white,transparent_1px)] bg-[size:20px_20px] animate-pulse z-0"></div>
-          <div v-if="equippedStyle?.value === 'glitter'" class="absolute inset-0 pointer-events-none opacity-30 bg-[radial-gradient(white,transparent_1px)] bg-[size:15px_15px] animate-pulse-slow z-0"></div>
-          
-          <div v-if="equippedStyle?.value === 'spotlight'" class="absolute inset-0 pointer-events-none bg-gradient-to-tr from-transparent via-white/10 to-transparent w-[200%] h-[200%] -translate-x-1/2 -translate-y-1/2 animate-spin-slow-reverse z-0 opacity-30"></div>
+          <!-- REFACTORED INNER EFFECTS -->
+          <GameCardInnerEffects :style-name="equippedStyle?.value" />
 
-          <!-- PRISM OVERLAY (Inner Glow) -->
-          <div v-if="equippedStyle?.value === 'prism'" class="absolute inset-0 pointer-events-none bg-gradient-to-tr from-red-500/10 via-green-500/10 to-blue-500/10 z-0"></div>
-
-          <!-- GLITCH OVERLAY -->
-          <div v-if="equippedStyle?.value === 'glitch'" class="absolute inset-0 pointer-events-none bg-[repeating-linear-gradient(0deg,transparent,transparent_2px,rgba(6,182,212,0.1)_3px)] animate-pulse z-0"></div>
 
           <!-- Content -->
           <template v-if="gameDetails">
