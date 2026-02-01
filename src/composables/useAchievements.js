@@ -233,6 +233,13 @@ export function useAchievements() {
         // 24. Epic Hero
         const level = Math.floor(Math.pow(userXP.value / 500, 1 / 1.2)) + 1;
         if (level >= 20) unlock('epic_hero');
+        // FIX: Consistency check for level resets (e.g. Beta Tester reset)
+        else if (unlockedAchievements.value['epic_hero']) {
+            delete unlockedAchievements.value['epic_hero'];
+            saveAchievements();
+            // Also remove from recentUnlocks if it's there (edge case)
+            recentUnlocks.value = recentUnlocks.value.filter(a => a.id !== 'epic_hero');
+        }
 
         // 25. Empty Plate
         if (allGames.length >= 5 && backlogGames.value.length === 0) unlock('empty_plate');
