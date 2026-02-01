@@ -62,7 +62,7 @@ const achievementsList = [
     { id: 'safety_first', title: 'Safety First', description: 'Export your data backup.', icon: 'Server', tier: 'bronze' },
     { id: 'share_card', title: 'Show Off', description: 'Share your Gamer Card.', icon: 'Share2', tier: 'bronze' },
     { id: 'download_card', title: 'Digital Souvenir', description: 'Download your Gamer Card.', icon: 'Download', tier: 'bronze' },
-    { id: 'show_off', title: 'Card Collector', description: 'Download your Gamer Card.', icon: 'Crown', tier: 'bronze' }, // Duplicate ID map handled in logic? 'show_off' and 'download_card' seem redundant. Keeping 'show_off' as per newest code.
+    { id: 'show_off', title: 'Card Collector', description: 'Download your gamer card.', icon: 'Crown', tier: 'bronze' },
 
     // 11. Genre Specialist
     { id: 'genre_indie_2', title: 'Hidden Gems', description: 'Own 2 Indie games.', icon: 'Palette', tier: 'bronze' },
@@ -75,8 +75,8 @@ const achievementsList = [
     // 12. Leveling
     { id: 'level_5', title: 'Rising Star', description: 'Reach User Level 5.', icon: 'Sparkles', tier: 'bronze' },
     { id: 'level_10', title: 'Seasoned Pro', description: 'Reach User Level 10.', icon: 'Star', tier: 'silver' },
-    { id: 'level_20', title: 'Epic Hero', description: 'Reach User Level 20.', icon: 'Crown', tier: 'platinum' }, // Mapped to 'epic_hero'
-    { id: 'epic_hero', title: 'Epic Hero', description: 'Reach User Level 20.', icon: 'Crown', tier: 'platinum' }, // Duplicate ID? Logic handles it.
+    { id: 'level_20', title: 'Epic Hero', description: 'Reach User Level 20.', icon: 'Crown', tier: 'platinum' },
+    { id: 'epic_hero', title: 'Epic Hero', description: 'Reach User Level 20.', icon: 'Crown', tier: 'platinum' },
     { id: 'level_50', title: 'Living Legend', description: 'Reach User Level 50.', icon: 'Zap', tier: 'platinum' },
     { id: 'level_100', title: 'Ascended', description: 'Reach User Level 100.', icon: 'Sun', tier: 'platinum', secret: true },
 
@@ -173,6 +173,8 @@ export function useAchievements() {
         if (action === 'export') {
             achievementStats.value.exported = true;
             saveStats();
+            // unlock call happens in checkAchievements or here? Better handled in check via stats.
+            // But immediate unlock ensures toast visibility.
             unlock('safety_first');
         }
         if (action === 'download_card') {
@@ -212,103 +214,109 @@ export function useAchievements() {
         const { games, playingGames, backlogGames, completedGames, droppedGames, userXP } = context;
         const allGames = games.value;
 
+        // HELPER: Validate condition. If false, revoke achievement!
+        // This ensures strict consistency (e.g. completed 5 games -> unlock; remove one -> lock again).
+        const check = (id, condition) => {
+            if (condition) {
+                unlock(id);
+            } else {
+                // STRICT REVOCATION: If enabled (unlocked or claimed) but condition false -> Revoke.
+                // This will naturally deduct value from totalQuestScore (and thus Balance).
+                if (unlockedAchievements.value[id]) {
+                    delete unlockedAchievements.value[id];
+                    saveAchievements();
+                    // Clean up UI
+                    recentUnlocks.value = recentUnlocks.value.filter(a => a.id !== id);
+                }
+            }
+        };
+
         // 1. Quest Beginner & Builder & Collector
-        if (allGames.length >= 1) unlock('add_1');
-        if (allGames.length >= 3) unlock('add_3');
-        if (allGames.length >= 10) unlock('add_10_total');
-        if (allGames.length >= 25) unlock('add_25_total');
-        if (allGames.length >= 50) unlock('add_50_total');
-        if (allGames.length >= 100) unlock('library_100');
+        check('add_1', allGames.length >= 1);
+        check('add_3', allGames.length >= 3);
+        check('add_10_total', allGames.length >= 10);
+        check('add_25_total', allGames.length >= 25);
+        check('add_50_total', allGames.length >= 50);
+        check('library_100', allGames.length >= 100);
 
         // 2. Backlog
-        if (backlogGames.value.length >= 10) unlock('add_10_backlog');
-        if (backlogGames.value.length >= 25) unlock('add_25_backlog');
+        check('add_10_backlog', backlogGames.value.length >= 10);
+        check('add_25_backlog', backlogGames.value.length >= 25);
 
         // 3. Start Playing
-        if (playingGames.value.length >= 1) unlock('start_playing');
+        check('start_playing', playingGames.value.length >= 1);
 
         // 4. Rankings / Reviews
-        if (allGames.some(g => g.rating > 0)) unlock('first_review');
-        if (allGames.some(g => g.rating === 5)) unlock('rate_5_stars');
-        if (allGames.some(g => g.rating === 1)) unlock('rate_1_star');
-        if (allGames.filter(g => g.rating > 0).length >= 10) unlock('rate_10_total');
-        if (allGames.filter(g => g.rating === 5).length >= 5) unlock('critics_darling');
+        check('first_review', allGames.some(g => g.rating > 0));
+        check('rate_5_stars', allGames.some(g => g.rating === 5));
+        check('rate_1_star', allGames.some(g => g.rating === 1));
+        check('rate_10_total', allGames.filter(g => g.rating > 0).length >= 10);
+        check('critics_darling', allGames.filter(g => g.rating === 5).length >= 5);
 
         // 5. Completion Count
-        if (completedGames.value.length >= 1) unlock('complete_1');
-        if (completedGames.value.length >= 5) unlock('complete_5');
-        if (completedGames.value.length >= 10) unlock('complete_10');
-        if (completedGames.value.length >= 20) unlock('complete_20');
-        if (completedGames.value.length >= 50) unlock('completionist_50');
+        check('complete_1', completedGames.value.length >= 1);
+        check('complete_5', completedGames.value.length >= 5);
+        check('complete_10', completedGames.value.length >= 10);
+        check('complete_20', completedGames.value.length >= 20);
+        check('completionist_50', completedGames.value.length >= 50);
 
         // 6. Dropping Games
-        if (droppedGames.value.length >= 1) unlock('drop_1');
-        if (droppedGames.value.length >= 5) unlock('drop_5');
+        check('drop_1', droppedGames.value.length >= 1);
+        check('drop_5', droppedGames.value.length >= 5);
 
         // 7. Habits
-        if (playingGames.value.length >= 5) unlock('playing_5_concurrent');
-        if (playingGames.value.length === 1 && backlogGames.value.length > 0) unlock('playing_1_only');
+        check('playing_5_concurrent', playingGames.value.length >= 5);
+        check('playing_1_only', playingGames.value.length === 1 && backlogGames.value.length > 0);
 
         // 8. Diversity (Platforms/Genres)
         const platforms = new Set(allGames.map(g => g.platform));
-        if (platforms.size >= 3) unlock('platforms_3');
-        if (platforms.size >= 5) unlock('platforms_5');
+        check('platforms_3', platforms.size >= 3);
+        check('platforms_5', platforms.size >= 5);
 
         const genres = new Set();
         allGames.forEach(g => {
             if (g.genres) g.genres.forEach(gen => genres.add(gen.name));
         });
-        if (genres.size >= 5) unlock('genres_5');
+        check('genres_5', genres.size >= 5);
 
         // 9. Quest Usage
         const questUsage = parseInt(localStorage.getItem('game-tracker-quest-usage') || '0');
-        if (questUsage >= 1) unlock('quest_1');
-        if (questUsage >= 5) unlock('quest_5');
-        if (questUsage >= 10) unlock('quest_10');
+        check('quest_1', questUsage >= 1);
+        check('quest_5', questUsage >= 5);
+        check('quest_10', questUsage >= 10);
 
         // 10. Jack of all trades
-        if (playingGames.value.length > 0 && backlogGames.value.length > 0 && completedGames.value.length > 0 && droppedGames.value.length > 0) {
-            unlock('jack_of_all_trades');
-        }
+        const isJack = playingGames.value.length > 0 && backlogGames.value.length > 0 && completedGames.value.length > 0 && droppedGames.value.length > 0;
+        check('jack_of_all_trades', isJack);
 
         // 11. Playtime
         const totalHours = allGames.reduce((acc, g) => acc + (g.playtime || 0), 0);
-        if (totalHours >= 1000) unlock('century_club');
+        check('century_club', totalHours >= 1000);
 
-        if (completedGames.value.some(g => g.playtime && g.playtime >= 100)) unlock('marathon');
-        if (completedGames.value.some(g => g.playtime > 0 && g.playtime < 2)) unlock('quick_fix');
+        check('marathon', completedGames.value.some(g => g.playtime && g.playtime >= 100));
+        check('quick_fix', completedGames.value.some(g => g.playtime > 0 && g.playtime < 2));
 
         // 12. Leveling
         const level = Math.floor(Math.pow(userXP.value / 500, 1 / 1.2)) + 1;
-        if (level >= 5) unlock('level_5');
-        if (level >= 10) unlock('level_10');
-        if (level >= 20) unlock('epic_hero');
-        if (level >= 50) unlock('level_50');
-        if (level >= 100) unlock('level_100');
-
-        // FIX: Consistency check for level resets
-        ['level_5', 'level_10', 'epic_hero', 'level_50', 'level_100'].forEach(id => {
-            const requiredLevel = id === 'epic_hero' ? 20 : parseInt(id.split('_')[1]);
-            if (unlockedAchievements.value[id] && level < requiredLevel) {
-                delete unlockedAchievements.value[id];
-                saveAchievements();
-                recentUnlocks.value = recentUnlocks.value.filter(a => a.id !== id);
-            }
-        });
+        check('level_5', level >= 5);
+        check('level_10', level >= 10);
+        check('epic_hero', level >= 20); // Mapped
+        check('level_50', level >= 50);
+        check('level_100', level >= 100);
 
         // 13. Advanced / Meta
-        if (allGames.length >= 5 && backlogGames.value.length === 0) unlock('empty_plate');
-        if (backlogGames.value.length > completedGames.value.length && completedGames.value.length > 0) unlock('pile_of_shame');
+        check('empty_plate', allGames.length >= 5 && backlogGames.value.length === 0);
+        check('pile_of_shame', backlogGames.value.length > completedGames.value.length && completedGames.value.length > 0);
 
         // Slow Burn
         const oneYearMs = 365 * 24 * 60 * 60 * 1000;
-        if (completedGames.value.some(g => g.startedAt && g.completedAt && (new Date(g.completedAt) - new Date(g.startedAt)) > oneYearMs)) unlock('slow_burn');
+        check('slow_burn', completedGames.value.some(g => g.startedAt && g.completedAt && (new Date(g.completedAt) - new Date(g.startedAt)) > oneYearMs));
 
         // Old School
-        if (allGames.some(g => g.released && parseInt(g.released.split('-')[0]) < 2000)) unlock('old_school');
+        check('old_school', allGames.some(g => g.released && parseInt(g.released.split('-')[0]) < 2000));
 
         // Future Proof
-        if (allGames.some(g => g.released && new Date(g.released) > new Date())) unlock('future_proof');
+        check('future_proof', allGames.some(g => g.released && new Date(g.released) > new Date()));
 
         // Weekend Warrior
         const weekendWarrior = completedGames.value.some(g => {
@@ -316,24 +324,24 @@ export function useAchievements() {
             const day = new Date(g.completedAt).getDay();
             return day === 0 || day === 6; // Sun or Sat
         });
-        if (weekendWarrior) unlock('weekend_warrior');
+        check('weekend_warrior', weekendWarrior);
 
         // 14. Genre Specialist
         const indieCount = allGames.filter(g => g.genres && g.genres.some(gen => gen.name === 'Indie')).length;
-        if (indieCount >= 2) unlock('genre_indie_2');
-        if (indieCount >= 5) unlock('genre_indie_5');
+        check('genre_indie_2', indieCount >= 2);
+        check('genre_indie_5', indieCount >= 5);
 
         const rpgCount = completedGames.value.filter(g => g.genres && g.genres.some(gen => gen.name === 'Role-playing Games' || gen.name === 'RPG')).length;
-        if (rpgCount >= 2) unlock('genre_rpg_2');
-        if (rpgCount >= 3) unlock('genre_rpg_3');
+        check('genre_rpg_2', rpgCount >= 2);
+        check('genre_rpg_3', rpgCount >= 3);
 
         const actionCount = allGames.filter(g => g.genres && g.genres.some(gen => gen.name === 'Action' || gen.name === 'Shooter')).length;
-        if (actionCount >= 2) unlock('genre_action_2');
-        if (actionCount >= 5) unlock('genre_action_5');
+        check('genre_action_2', actionCount >= 2);
+        check('genre_action_5', actionCount >= 5);
 
         // 15. Stats
-        if (achievementStats.value.exported) unlock('safety_first');
-        if (achievementStats.value.gamerCardDownloaded) unlock('show_off');
+        check('safety_first', achievementStats.value.exported);
+        check('show_off', achievementStats.value.gamerCardDownloaded);
     };
 
     const totalQuestScore = computed(() => {
