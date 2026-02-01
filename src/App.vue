@@ -9,6 +9,7 @@ import UserProfile from './components/UserProfile.vue';
 import StatsModal from './components/StatsModal.vue';
 import QuestGiverModal from './components/QuestGiverModal.vue';
 import BackgroundAurora from './components/BackgroundAurora.vue';
+import BackgroundAurora from './components/BackgroundAurora.vue';
 
 import { useGames } from './composables/useGames';
 import { useAchievements } from './composables/useAchievements';
@@ -111,8 +112,13 @@ const handleUpdateStatus = (id, status) => {
 };
 
 // Search & Sort State
+// Search & Sort State
 const localSearchQuery = ref('');
-const currentSort = ref('added'); // 'added', 'name', 'released', 'rating'
+// Fix for persistence: Use global sortOption
+const { sortOption } = useSettings();
+const currentSort = sortOption; 
+// Removed local currentSort ref
+
 
 const showCopyFeedback = ref(false);
 const showAchievements = ref(false);
@@ -321,27 +327,8 @@ useSwipe(mainContainer, {
     ref="mainContainer"
   >
     
-    <!-- Aurora Layer (Complex DOM) -->
-    <div v-if="equippedBackground?.value === 'aurora'" class="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <!-- Deep Space Base -->
-        <div class="absolute inset-0 bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-900"></div>
-        
-        <!-- Stars -->
-        <div class="absolute inset-0 bg-[radial-gradient(white,transparent_1px)] bg-[size:50px_50px] opacity-50"></div>
-
-        <!-- Color Blobs (The Swril) -->
-        <div class="absolute top-[-10%] left-[-10%] w-[50vw] h-[80vh] bg-teal-400 rounded-full mix-blend-screen blur-[100px] opacity-40 animate-blob"></div>
-        <div class="absolute top-[-20%] right-[10%] w-[50vw] h-[80vh] bg-fuchsia-500 rounded-full mix-blend-screen blur-[100px] opacity-40 animate-blob animation-delay-2000"></div>
-        <div class="absolute top-[20%] left-[30%] w-[60vw] h-[60vw] bg-violet-600 rounded-full mix-blend-screen blur-[100px] opacity-50 animate-blob animation-delay-4000"></div>
-        <div class="absolute bottom-[-10%] right-[-10%] w-[60vw] h-[50vh] bg-emerald-500 rounded-full mix-blend-screen blur-[100px] opacity-30 animate-blob"></div>
-
-        <!-- Mountains Silhouette -->
-        <div class="absolute bottom-0 left-0 right-0 h-[20vh] z-10 flex items-end">
-            <svg viewBox="0 0 1440 320" class="w-full h-full text-gray-950 fill-current opacity-90" preserveAspectRatio="none">
-                <path d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,224C672,245,768,267,864,261.3C960,256,1056,224,1152,197.3C1248,171,1344,149,1392,138.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
-            </svg>
-        </div>
-    </div>
+    <!-- Aurora Layer (Refactored) -->
+    <BackgroundAurora v-if="equippedBackground?.value === 'aurora'" />
 
     <!-- Header -->
     <header class="flex justify-between items-center mb-6 relative z-30">
@@ -635,22 +622,7 @@ useSwipe(mainContainer, {
     to { background-position: 0 0, 0 200px; }
 }
 
-/* Blob Animation for Aurora */
-@keyframes blob {
-  0% { transform: translate(0px, 0px) scale(1) rotate(0deg); }
-  33% { transform: translate(30px, -20px) scale(1.1) rotate(5deg); }
-  66% { transform: translate(-20px, 20px) scale(0.9) rotate(-5deg); }
-  100% { transform: translate(0px, 0px) scale(1) rotate(0deg); }
-}
-.animate-blob {
-  animation: blob 20s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
-}
-.animation-delay-2000 {
-  animation-delay: 2s;
-}
-.animation-delay-4000 {
-    animation-delay: 4s;
-}
+/* Aurora animations moved to BackgroundAurora.vue */
 
 /* Hex Core Effect */
 .hex-bg {
