@@ -23,23 +23,11 @@ const { getCardClasses } = useCardStyles();
 
 const equippedStyle = computed(() => getEquippedItem('card_style'));
 
-// Removed local modalStyles computed property in favor of useCardStyles logic
-
-const gameDetails = ref(null);
-const showEditModal = ref(false);
-
-watch(() => props.isOpen, (newVal) => {
-  if (newVal) {
-    const game = games.value.find(g => g.id === props.gameId);
-    if (game) {
-        gameDetails.value = game;
-    } else {
-        gameDetails.value = null; 
-    }
-  } else {
-    gameDetails.value = null;
-  }
+// Use computed for gameDetails to ensure immediate availability on mount
+const gameDetails = computed(() => {
+    return games.value.find(g => g.id === props.gameId);
 });
+
 
 const formatDate = (dateString) => {
   if (!dateString) return 'N/A';
@@ -261,15 +249,14 @@ const handleAction = async (action, val) => {
                 </button>
             </div>
 
+            <EditGameModal 
+                :is-open="showEditModal" 
+                :game="gameDetails" 
+                @close="showEditModal = false" 
+            />
           </template>
         </div>
     </div>
-    
-    <EditGameModal 
-        :is-open="showEditModal" 
-        :game="gameDetails" 
-        @close="showEditModal = false" 
-    />
   </div>
 </template>
 
