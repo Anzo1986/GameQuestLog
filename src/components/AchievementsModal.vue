@@ -39,10 +39,38 @@ const getUnlockDate = (id) => {
 
 // Tier Styling
 const tierColors = {
-  bronze: { border: 'border-amber-600', bg: 'from-amber-900/40 to-gray-900', text: 'text-amber-500', badge: 'bg-amber-500/10 text-amber-500 border-amber-500/50' },
-  silver: { border: 'border-slate-400', bg: 'from-slate-800 to-gray-900', text: 'text-slate-300', badge: 'bg-slate-500/10 text-slate-300 border-slate-400/50' },
-  gold: { border: 'border-yellow-500', bg: 'from-yellow-900/40 to-gray-900', text: 'text-yellow-400', badge: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/50' },
-  platinum: { border: 'border-cyan-400', bg: 'from-cyan-900/40 to-gray-900', text: 'text-cyan-400', badge: 'bg-cyan-500/10 text-cyan-400 border-cyan-400/50' }
+  bronze: { 
+      border: 'border-amber-600', 
+      bg: 'from-amber-900/40 to-gray-900', 
+      text: 'text-amber-500', 
+      badge: 'bg-amber-500/10 text-amber-500 border-amber-500/50',
+      glow: 'shadow-[0_0_30px_rgba(245,158,11,0.4)]', // High glow
+      ring: 'ring-amber-500'
+  },
+  silver: { 
+      border: 'border-slate-300', 
+      bg: 'from-slate-700/50 to-gray-900', 
+      text: 'text-slate-200', 
+      badge: 'bg-slate-500/10 text-slate-300 border-slate-400/50',
+      glow: 'shadow-[0_0_30px_rgba(203,213,225,0.4)]',
+      ring: 'ring-slate-300'
+  },
+  gold: { 
+      border: 'border-yellow-400', 
+      bg: 'from-yellow-800/40 to-gray-900', 
+      text: 'text-yellow-400', 
+      badge: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/50',
+      glow: 'shadow-[0_0_30px_rgba(250,204,21,0.5)]',
+      ring: 'ring-yellow-400'
+  },
+  platinum: { 
+      border: 'border-cyan-400', 
+      bg: 'from-cyan-900/40 to-gray-900', 
+      text: 'text-cyan-400', 
+      badge: 'bg-cyan-500/10 text-cyan-400 border-cyan-400/50',
+      glow: 'shadow-[0_0_30px_rgba(34,211,238,0.5)]',
+      ring: 'ring-cyan-400'
+  }
 };
 
 const getTierClass = (achievement) => {
@@ -51,21 +79,15 @@ const getTierClass = (achievement) => {
     const colors = tierColors[achievement.tier] || tierColors.bronze;
     const claimed = isClaimed(achievement.id);
 
-    // Unlocked Style (Applies to both claimed and unclaimed, but claimed is less "active")
+    // Unlocked Style
     const base = `border-2 bg-gradient-to-br ${colors.bg} ${colors.border}`;
     
     if (claimed) {
-        return `${base} opacity-90`; // High visibility but solid
+        return `${base} opacity-90`; 
     } else {
-        return `${base} shadow-[0_0_20px_rgba(0,0,0,0.5)] cursor-pointer hover:scale-[1.02] transition-transform animate-pulse-slow`;
+        // UNCLAIMED: Strong Glow + Ring + Pulse
+        return `${base} ${colors.glow} ring-2 ring-offset-2 ring-offset-gray-900 ${colors.ring} cursor-pointer hover:scale-[1.02] transition-transform animate-pulse`;
     }
-};
-
-const getBadgeClass = (achievement) => {
-    // Only used for the icon wrapper? The new design integrates badge differently.
-    // Let's keep it simple or inline it in template.
-    // In template below, I used inline logic for badge.
-    return ''; 
 };
 
 const getRewardValue = (tier) => {
@@ -85,7 +107,6 @@ const filter = ref('all');
 const claimingAchievement = ref(null);
 
 const handleItemClick = (achievement) => {
-    // Only open claim overlay if unlocked AND NOT claimed
     if (isUnlocked(achievement.id) && !isClaimed(achievement.id)) {
         claimingAchievement.value = achievement;
     }
@@ -191,7 +212,7 @@ const filteredAchievements = computed(() => {
          </div>
       </div>
 
-      <!-- List (Grid Layout) -->
+      <!-- List -->
       <div class="flex-1 overflow-y-auto p-6">
          <!-- Empty State -->
          <div v-if="filteredAchievements.length === 0" class="text-center py-12 text-gray-500">
@@ -226,7 +247,6 @@ const filteredAchievements = computed(() => {
                            :class="isUnlocked(achievement.id) ? (tierColors[achievement.tier]?.text || 'text-white') : 'text-gray-500'">
                           {{ (achievement.secret && !isUnlocked(achievement.id)) ? '???' : achievement.title }}
                        </h3>
-                       <!-- Date (if unlocked) -->
                        <span v-if="isUnlocked(achievement.id)" class="text-[10px] text-gray-400 font-mono tracking-tighter opacity-70">
                            {{ getUnlockDate(achievement.id) }}
                        </span>
@@ -240,7 +260,7 @@ const filteredAchievements = computed(() => {
                    <!-- Bottom: Tags & Reward -->
                    <div class="flex items-center gap-2 mt-1">
                        
-                       <!-- Tier Label (GOLD, SILVER..) -->
+                       <!-- Tier Label -->
                        <div 
                            class="text-[10px] font-black uppercase px-2 py-0.5 rounded border"
                            :class="isUnlocked(achievement.id) 
@@ -252,13 +272,13 @@ const filteredAchievements = computed(() => {
 
                        <!-- Reward Logic -->
                        <div v-if="isUnlocked(achievement.id) && !isClaimed(achievement.id)" class="ml-auto">
-                            <button class="bg-yellow-500 hover:bg-yellow-400 text-black text-[10px] font-bold px-3 py-1 rounded-full shadow-lg flex items-center gap-1 animate-pulse hover:scale-105 transition-transform">
+                            <!-- Stronger Pulse Button -->
+                            <button class="bg-yellow-500 hover:bg-yellow-400 text-black text-[10px] font-bold px-3 py-1 rounded-full shadow-lg flex items-center gap-1 animate-pulse hover:scale-110 hover:rotate-2 transition-all">
                                 <span>CLAIM</span>
                                 <Coins class="w-3 h-3" />
                             </button>
                        </div>
                        
-                       <!-- Passive Reward Value (if claimed or just locked info) -->
                        <div v-else class="ml-auto flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/30 border border-white/5" 
                             :class="isUnlocked(achievement.id) ? 'text-yellow-400' : 'text-gray-600'">
                            <span class="font-bold text-xs">+{{ getRewardValue(achievement.tier) }}</span>
@@ -268,8 +288,7 @@ const filteredAchievements = computed(() => {
                    </div>
                 </div>
 
-                <!-- Unclaimed Dot Indicator -->
-                <div v-if="isUnlocked(achievement.id) && !isClaimed(achievement.id)" class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 border-2 border-gray-900 animate-ping"></div>
+                <!-- REMOVED RED DOT -->
 
              </div>
          </div>
