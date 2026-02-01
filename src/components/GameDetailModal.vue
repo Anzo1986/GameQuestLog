@@ -125,15 +125,15 @@ const handleAction = async (action, val) => {
     <div class="relative w-full max-w-2xl rounded-2xl flex flex-col max-h-[90vh] animate-in fade-in zoom-in duration-200 isolation-auto">
         
         <!-- PRISM BORDER ANIMATION (Behind) -->
-        <div v-if="equippedStyle?.value === 'prism'" class="absolute -inset-[3px] rounded-2xl bg-gradient-to-tr from-red-500 via-green-500 to-blue-500 z-[-1] animate-spin-slow opacity-80 blur-sm"></div>
-        <div v-if="equippedStyle?.value === 'prism'" class="absolute -inset-[3px] rounded-2xl bg-gradient-to-tr from-red-500 via-green-500 to-blue-500 z-[-1] animate-spin-slow"></div>
+        <div v-if="equippedStyle?.value === 'prism'" class="absolute -inset-[3px] rounded-2xl bg-gradient-to-tr from-red-500 via-green-500 to-blue-500 z-0 animate-spin-slow opacity-80 blur-sm"></div>
+        <div v-if="equippedStyle?.value === 'prism'" class="absolute -inset-[3px] rounded-2xl bg-gradient-to-tr from-red-500 via-green-500 to-blue-500 z-0 animate-spin-slow"></div>
 
         <!-- GLITCH BORDER ANIMATION -->
         <!-- Handled via border-dashed in class, maybe add scanline overlay behind? -->
 
         <!-- Main Card -->
         <div 
-            class="relative w-full h-full rounded-2xl overflow-hidden flex flex-col bg-gray-900" 
+            class="relative w-full h-full rounded-2xl overflow-hidden flex flex-col bg-gray-900 z-10" 
             :class="modalStyles"
         >
           <!-- EFFECT LAYERS -->
