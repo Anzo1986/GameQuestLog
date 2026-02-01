@@ -98,11 +98,23 @@ const achievementStats = ref({
     gamerCardDownloaded: false
 });
 
-// Load from storage
+// Load from storage with Migration Logic
 const savedAchievements = localStorage.getItem(ACHIEVEMENTS_STORAGE_KEY);
 if (savedAchievements) {
     try {
-        unlockedAchievements.value = JSON.parse(savedAchievements);
+        const parsed = JSON.parse(savedAchievements);
+        // Migration: Check if values are strings (Old Format) -> Convert to Object (New Format)
+        let migrated = false;
+        for (const key in parsed) {
+            if (typeof parsed[key] === 'string') {
+                parsed[key] = { unlockedAt: parsed[key], claimed: true }; // Legacy items are auto-claimed
+                migrated = true;
+            }
+        }
+        unlockedAchievements.value = parsed;
+        if (migrated) {
+            localStorage.setItem(ACHIEVEMENTS_STORAGE_KEY, JSON.stringify(unlockedAchievements.value));
+        }
     } catch (e) {
         console.error('Failed to parse achievements', e);
     }
@@ -131,17 +143,29 @@ export function useAchievements() {
 
     const unlock = (id) => {
         if (!unlockedAchievements.value[id]) {
-            unlockedAchievements.value[id] = new Date().toISOString();
-            saveAchievements(); // Save immediately
+            // New Unlock: Not claimed yet
+            unlockedAchievements.value[id] = {
+                unlockedAt: new Date().toISOString(),
+                claimed: false
+            };
+            saveAchievements();
 
             const achievement = achievementsList.find(a => a.id === id);
             if (achievement) {
                 recentUnlocks.value.push(achievement);
-                // Remove from queue after 5 seconds automatically if UI doesn't handle it
+                // Remove from queue after 5 seconds
                 setTimeout(() => {
                     recentUnlocks.value = recentUnlocks.value.filter(a => a.id !== id);
                 }, 5000);
             }
+        }
+    };
+
+    const claim = (id) => {
+        if (unlockedAchievements.value[id] && !unlockedAchievements.value[id].claimed) {
+            unlockedAchievements.value[id].claimed = true;
+            saveAchievements();
+            // Trigger any "on claim" effects if needed (e.g. sound)
         }
     };
 
@@ -322,9 +346,16 @@ export function useAchievements() {
         };
 
         for (const id in unlockedAchievements.value) {
-            const achievement = achievementsList.find(a => a.id === id);
-            if (achievement) {
-                score += (tierValues[achievement.tier] || 0);
+            // Count Score ONLY if Claimed
+            const achievementData = unlockedAchievements.value[id];
+            // Backward compatibility check inside loop not needed if migration ran, but good for safety
+            const isClaimed = achievementData === true || (typeof achievementData === 'object' && achievementData.claimed);
+
+            if (isClaimed) {
+                const achievement = achievementsList.find(a => a.id === id);
+                if (achievement) {
+                    score += (tierValues[achievement.tier] || 0);
+                }
             }
         }
         return score;
@@ -337,6 +368,7 @@ export function useAchievements() {
         checkAchievements,
         nukeAchievements,
         trackAction,
-        totalQuestScore
+        totalQuestScore,
+        claim
     };
 }
