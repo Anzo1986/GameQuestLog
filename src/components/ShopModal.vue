@@ -5,7 +5,8 @@ import { useShop } from '../composables/useShop';
 import { useCardStyles } from '../composables/useCardStyles';
 import AvatarFrame from './AvatarFrame.vue';
 import GameCardInnerEffects from './GameCardInnerEffects.vue';
-
+import prismBg from '@/assets/shop_background_prism.png';
+import neonBg from '@/assets/shop_background_neon.png';
 
 const props = defineProps({
   isOpen: Boolean
@@ -218,6 +219,9 @@ const handleTouchEnd = (e) => {
                                   <!-- Grid -->
                                   <div class="absolute bottom-0 w-full h-1/2 bg-[linear-gradient(rgba(255,0,255,0.4)_1px,transparent_1px),linear-gradient(90deg,rgba(255,0,255,0.4)_1px,transparent_1px)] bg-[size:10px_10px] [transform:perspective(50px)_rotateX(60deg)] origin-bottom"></div>
                              </div>
+
+                             <div v-if="item.value === 'prism_bg'" class="w-full h-full bg-cover bg-center" :style="{ backgroundImage: `url(${prismBg})` }"></div>
+                             <div v-if="item.value === 'neon_bg'" class="w-full h-full bg-cover bg-center" :style="{ backgroundImage: `url(${neonBg})` }"></div>
 
                              <div v-if="item.value === 'matrix'" class="w-full h-full bg-black border border-gray-700">
                                  <svg width="100%" height="100%" viewBox="0 0 100 80" preserveAspectRatio="xMidYMid slice">

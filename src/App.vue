@@ -29,6 +29,8 @@ const backgroundClass = computed(() => {
     if (val === 'stars') return 'bg-gray-900 bg-[radial-gradient(white,transparent_2px)] bg-[size:30px_30px]';
     if (val === 'grid') return 'bg-gray-900 bg-[linear-gradient(rgba(0,255,255,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(0,255,255,0.1)_1px,transparent_1px)] bg-[size:40px_40px]';
     if (val === 'synthwave') return 'bg-transparent overflow-hidden'; /* Component handles bg */
+    if (val === 'prism_bg') return 'bg-black bg-prism';
+    if (val === 'neon_bg') return 'bg-black bg-neon';
     if (val === 'matrix') return 'bg-black matrix-bg';
     if (val === 'matrix') return 'bg-black matrix-bg';
     if (val === 'hex') return 'bg-gray-900 hex-bg';
@@ -450,6 +452,24 @@ useSwipe(mainContainer, {
 }
 
 
+
+/* Prism Effect */
+.bg-prism {
+    background-color: #000;
+    background-image: url('@/assets/shop_background_prism.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+
+/* Neon Effect */
+.bg-neon {
+    background-color: #000;
+    background-image: url('@/assets/shop_background_neon.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
 
 /* Matrix Effect */
 .matrix-bg {
