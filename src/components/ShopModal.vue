@@ -3,6 +3,7 @@ import { ref, computed } from 'vue';
 import { X, ShoppingBag, Check, Lock, Coins, Palette, UserCircle, Sparkles, Image } from 'lucide-vue-next';
 import { useShop } from '../composables/useShop';
 import AvatarFrame from './AvatarFrame.vue';
+import GameCardInnerEffects from './GameCardInnerEffects.vue';
 
 const props = defineProps({
   isOpen: Boolean
