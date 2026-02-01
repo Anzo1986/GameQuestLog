@@ -75,7 +75,7 @@ const downloadCard = async () => {
     <div class="relative w-full max-w-lg flex flex-col gap-6 animate-in fade-in zoom-in duration-300">
         
         <!-- Controls -->
-        <div class="flex justify-between items-center text-white">
+        <div class="flex justify-between items-center text-white relative z-50">
             <h2 class="text-xl font-bold">Your Gamer Card</h2>
             <button @click="$emit('close')" class="p-2 bg-gray-800 rounded-full hover:bg-gray-700 transition-colors">
                 <X class="w-6 h-6" />
@@ -89,9 +89,9 @@ const downloadCard = async () => {
             style="background-color: #111827; border-color: #374151; font-family: Arial, sans-serif; overflow: visible;"
         >
             <!-- Background Decoration -->
-            <div class="absolute inset-0 z-0" style="background: linear-gradient(to bottom right, rgba(49, 46, 129, 0.3), rgba(88, 28, 135, 0.1), #111827); border-radius: 1.5rem; overflow: hidden;"></div>
-            <div class="absolute -top-20 -right-20 w-64 h-64 rounded-full" :style="{ background: `rgba(${primaryColorRgbSafe}, 0.2)`, filter: 'blur(80px)' }"></div>
-            <div class="absolute -bottom-20 -left-20 w-64 h-64 rounded-full" style="background: rgba(147, 51, 234, 0.2); filter: blur(80px);"></div>
+            <div class="absolute inset-0 z-0" style="background: linear-gradient(to bottom right, rgba(49, 46, 129, 0.3), rgba(88, 28, 135, 0.1), #111827); border-radius: 1.5rem; overflow: hidden; pointer-events: none;"></div>
+            <div class="absolute -top-20 -right-20 w-64 h-64 rounded-full" :style="{ background: `rgba(${primaryColorRgbSafe}, 0.2)`, filter: 'blur(80px)', pointerEvents: 'none' }"></div>
+            <div class="absolute -bottom-20 -left-20 w-64 h-64 rounded-full" style="background: rgba(147, 51, 234, 0.2); filter: blur(80px); pointer-events: none;"></div>
 
             <!-- Header: Avatar & Name -->
             <div class="relative z-10 p-8 flex flex-col items-center border-b" style="border-color: rgba(31, 41, 55, 0.5); background-color: rgba(17, 24, 39, 0.3); border-top-left-radius: 1.5rem; border-top-right-radius: 1.5rem;">
