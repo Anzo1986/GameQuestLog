@@ -83,7 +83,12 @@ export function useShop() {
         return totalQuestScore.value - totalSpent.value;
     });
 
-    const isOwned = (id) => shopState.value.ownedItems.includes(id);
+    const isOwned = (id) => {
+        const item = SHOP_ITEMS.find(i => i.id === id);
+        // Default check first to avoid storage dependency for base items
+        if (item && (item.price === 0 || item.owned)) return true;
+        return shopState.value.ownedItems.includes(id);
+    };
 
     const saveState = () => {
         localStorage.setItem(SHOP_STORAGE_KEY, JSON.stringify(shopState.value));
