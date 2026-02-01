@@ -13,6 +13,7 @@ import BackgroundAurora from './components/BackgroundAurora.vue';
 
 import { useGames } from './composables/useGames';
 import { useAchievements } from './composables/useAchievements';
+import { useGameFilters } from './composables/useGameFilters';
 import AchievementsModal from './components/AchievementsModal.vue';
 import AchievementToast from './components/AchievementToast.vue'; // New Toast Component
 import SmartBar from './components/SmartBar.vue'; // Search & Sort
@@ -111,44 +112,10 @@ const handleUpdateStatus = (id, status) => {
     updateStatus(id, status);
 };
 
-// Search & Sort State
-const localSearchQuery = ref('');
-// Fix for persistence: Use global sortOption
-const { sortOption } = useSettings();
-const currentSort = sortOption; 
-// Removed local currentSort ref
-
+// Search & Sort State (Refactored to composable)
+const { searchQuery: localSearchQuery, sortOption: currentSort, getProcessedGames } = useGameFilters();
 
 const showCopyFeedback = ref(false);
-const showAchievements = ref(false);
-const isMenuOpen = ref(false); // FAB Menu State
-
-// Helper: Filter and Sort
-const getProcessedGames = (gameList) => {
-  let result = [...gameList];
-
-  // 1. Filter
-  if (localSearchQuery.value.trim()) {
-      const q = localSearchQuery.value.toLowerCase();
-      result = result.filter(g => g.title.toLowerCase().includes(q));
-  }
-
-  // 2. Sort
-  result.sort((a, b) => {
-      switch (currentSort.value) {
-          case 'name': return a.title.localeCompare(b.title);
-          case 'released': 
-              return new Date(b.released || 0) - new Date(a.released || 0); // Newest first
-          case 'rating': 
-               return (b.rating || 0) - (a.rating || 0); // Highest rating first
-          case 'added':
-          default:
-               return (b.id || 0) - (a.id || 0); // Newest ID = Newest Added
-      }
-  });
-
-  return result;
-};
 
 const displayGames = computed(() => {
     switch(currentTab.value) {
