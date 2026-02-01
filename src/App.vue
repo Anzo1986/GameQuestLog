@@ -9,7 +9,7 @@ import UserProfile from './components/UserProfile.vue';
 import StatsModal from './components/StatsModal.vue';
 import QuestGiverModal from './components/QuestGiverModal.vue';
 import BackgroundAurora from './components/BackgroundAurora.vue';
-import BackgroundAurora from './components/BackgroundAurora.vue';
+
 
 import { useGames } from './composables/useGames';
 import { useAchievements } from './composables/useAchievements';
@@ -111,7 +111,6 @@ const handleUpdateStatus = (id, status) => {
     updateStatus(id, status);
 };
 
-// Search & Sort State
 // Search & Sort State
 const localSearchQuery = ref('');
 // Fix for persistence: Use global sortOption
