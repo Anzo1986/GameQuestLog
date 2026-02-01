@@ -6,6 +6,7 @@ import { useCardStyles } from '../composables/useCardStyles';
 import AvatarFrame from './AvatarFrame.vue';
 import GameCardInnerEffects from './GameCardInnerEffects.vue';
 
+
 const props = defineProps({
   isOpen: Boolean
 });
@@ -211,6 +212,13 @@ const handleTouchEnd = (e) => {
                              <div v-if="item.value === 'stars'" class="w-full h-full bg-[radial-gradient(white,transparent_2px)] bg-[size:15px_15px] opacity-70"></div>
                              <div v-if="item.value === 'grid'" class="w-full h-full bg-gray-900 bg-[linear-gradient(rgba(0,255,255,0.2)_1px,transparent_1px),linear-gradient(90deg,rgba(0,255,255,0.2)_1px,transparent_1px)] bg-[size:10px_10px]"></div>
                              
+                             <div v-if="item.value === 'synthwave'" class="w-full h-full bg-[#1a0b2e] relative overflow-hidden">
+                                  <!-- Sun -->
+                                  <div class="absolute top-[15%] left-[50%] -translate-x-1/2 w-8 h-8 rounded-full bg-gradient-to-b from-yellow-300 to-pink-500 shadow-[0_0_10px_#ff0055]"></div>
+                                  <!-- Grid -->
+                                  <div class="absolute bottom-0 w-full h-1/2 bg-[linear-gradient(rgba(255,0,255,0.4)_1px,transparent_1px),linear-gradient(90deg,rgba(255,0,255,0.4)_1px,transparent_1px)] bg-[size:10px_10px] [transform:perspective(50px)_rotateX(60deg)] origin-bottom"></div>
+                             </div>
+
                              <div v-if="item.value === 'matrix'" class="w-full h-full bg-black border border-gray-700">
                                  <svg width="100%" height="100%" viewBox="0 0 100 80" preserveAspectRatio="xMidYMid slice">
                                      <text x="50" y="25" fill="#22c55e" font-family="monospace" font-size="25" text-anchor="middle" font-weight="bold">1 0 1</text>
@@ -271,7 +279,6 @@ const handleTouchEnd = (e) => {
               </div>
           </div>
       </div>
-
     </div>
   </div>
 </template>

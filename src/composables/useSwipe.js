@@ -6,7 +6,7 @@ export function useSwipe(elementRef, options = {}) {
 
     // Configurable options with defaults
     const minSwipeDistance = options.minSwipeDistance || 50;
-    const maxVerticalDistance = options.maxVerticalDistance || 30; // To prevent scrolling from triggering swipe
+    const maxSlope = options.maxSlope || 0.5; // New: Accept diagonal swipes up to this slope (dy/dx)
 
     const handleTouchStart = (e) => {
         touchEnd.value = { x: 0, y: 0 }; // Reset
@@ -24,19 +24,30 @@ export function useSwipe(elementRef, options = {}) {
         checkSwipe();
     };
 
+    const handleTouchCancel = (e) => {
+        // Reset on cancel
+        touchStart.value = { x: 0, y: 0 };
+        touchEnd.value = { x: 0, y: 0 };
+    }
+
     const checkSwipe = () => {
         const distanceX = touchStart.value.x - touchEnd.value.x;
         const distanceY = touchStart.value.y - touchEnd.value.y;
 
-        const isLeftSwipe = distanceX > minSwipeDistance;
-        const isRightSwipe = distanceX < -minSwipeDistance;
+        const absX = Math.abs(distanceX);
+        const absY = Math.abs(distanceY);
 
-        // Ensure the swipe is mostly horizontal
-        if (Math.abs(distanceY) < maxVerticalDistance) {
-            if (isLeftSwipe && options.onSwipeLeft) {
+        // 1. Minimum Horizontal Distance
+        if (absX < minSwipeDistance) return;
+
+        // 2. Slope Check (ensures it's mostly horizontal)
+        // Avoid division by zero, though absX >= 50 ensures it's > 0
+        const slope = absY / absX;
+
+        if (slope < maxSlope) {
+            if (distanceX > 0 && options.onSwipeLeft) {
                 options.onSwipeLeft();
-            }
-            if (isRightSwipe && options.onSwipeRight) {
+            } else if (distanceX < 0 && options.onSwipeRight) {
                 options.onSwipeRight();
             }
         }
@@ -46,6 +57,7 @@ export function useSwipe(elementRef, options = {}) {
         if (elementRef.value) {
             elementRef.value.addEventListener('touchstart', handleTouchStart, { passive: true });
             elementRef.value.addEventListener('touchend', handleTouchEnd, { passive: true });
+            elementRef.value.addEventListener('touchcancel', handleTouchCancel, { passive: true });
         }
     });
 
@@ -53,6 +65,7 @@ export function useSwipe(elementRef, options = {}) {
         if (elementRef.value) {
             elementRef.value.removeEventListener('touchstart', handleTouchStart);
             elementRef.value.removeEventListener('touchend', handleTouchEnd);
+            elementRef.value.removeEventListener('touchcancel', handleTouchCancel);
         }
     });
 

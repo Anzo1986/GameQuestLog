@@ -4,6 +4,7 @@ import { ref, computed, onMounted, watch } from 'vue';
 import GameCard from './components/GameCard.vue';
 import UserProfile from './components/UserProfile.vue';
 import BackgroundAurora from './components/BackgroundAurora.vue';
+import BackgroundSynthwave from './components/BackgroundSynthwave.vue';
 import TheModals from './components/TheModals.vue'; // Centralized Modals
 import AchievementToast from './components/AchievementToast.vue'; 
 import SmartBar from './components/SmartBar.vue'; 
@@ -27,6 +28,8 @@ const backgroundClass = computed(() => {
     const val = equippedBackground.value?.value;
     if (val === 'stars') return 'bg-gray-900 bg-[radial-gradient(white,transparent_2px)] bg-[size:30px_30px]';
     if (val === 'grid') return 'bg-gray-900 bg-[linear-gradient(rgba(0,255,255,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(0,255,255,0.1)_1px,transparent_1px)] bg-[size:40px_40px]';
+    if (val === 'synthwave') return 'bg-transparent overflow-hidden'; /* Component handles bg */
+    if (val === 'matrix') return 'bg-black matrix-bg';
     if (val === 'matrix') return 'bg-black matrix-bg';
     if (val === 'hex') return 'bg-gray-900 hex-bg';
     if (val === 'aurora') return 'bg-gray-950 overflow-hidden'; /* Base dark bg for aurora */
@@ -183,13 +186,14 @@ useSwipe(mainContainer, {
 
 <template>
   <div 
-    class="min-h-screen pb-24 px-4 pt-4 max-w-4xl mx-auto flex flex-col transition-colors duration-500 relative" 
+    class="min-h-screen pb-24 px-4 pt-4 max-w-4xl mx-auto flex flex-col transition-colors duration-500 relative touch-pan-y" 
     :class="backgroundClass"
     ref="mainContainer"
   >
     
     <!-- Aurora Layer (Refactored) -->
     <BackgroundAurora v-if="equippedBackground?.value === 'aurora'" />
+    <BackgroundSynthwave v-if="equippedBackground?.value === 'synthwave'" />
 
     <!-- Header -->
     <header class="flex justify-between items-center mb-6 relative z-30">
@@ -444,6 +448,8 @@ useSwipe(mainContainer, {
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
+
+
 
 /* Matrix Effect */
 .matrix-bg {

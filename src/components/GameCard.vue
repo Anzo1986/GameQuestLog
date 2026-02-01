@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue';
-import { Play, Check, Trash2, Calendar, MoreVertical, X, Star, Ban, Layers } from 'lucide-vue-next';
+import { Play, Check, Trash2, Calendar, MoreVertical, X, Star, Ban, Layers, Gamepad2 } from 'lucide-vue-next';
 import { useGames } from '../composables/useGames';
 import { useShop } from '../composables/useShop';
 
@@ -39,7 +39,7 @@ const formatDate = (dateString) => {
 };
 
 const backgroundImage = computed(() => {
-  return props.game.background_image || 'https://via.placeholder.com/600x400?text=No+Image';
+  return props.game.background_image || null;
 });
 
 const isNew = computed(() => {
@@ -65,8 +65,14 @@ const isNew = computed(() => {
     <div v-if="equippedStyle?.value === 'holo'" class="absolute inset-0 z-20 pointer-events-none bg-gradient-to-tr from-transparent via-white/5 to-transparent mix-blend-overlay"></div>
 
     <!-- Image Background -->
-    <div class="aspect-video w-full overflow-hidden">
-      <img :src="backgroundImage" :alt="game.title" class="w-full h-full object-cover transition-opacity duration-300" loading="lazy">
+    <div class="aspect-video w-full overflow-hidden bg-gray-700 relative">
+      <img v-if="backgroundImage" :src="backgroundImage" :alt="game.title" class="w-full h-full object-cover transition-opacity duration-300" loading="lazy">
+      
+      <!-- Fallback for No Image -->
+      <div v-else class="absolute inset-0 flex items-center justify-center bg-gray-800">
+          <Gamepad2 class="w-12 h-12 text-gray-600 mb-1" />
+      </div>
+
       <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent opacity-90"></div>
     </div>
 

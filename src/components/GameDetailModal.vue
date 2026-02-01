@@ -127,8 +127,11 @@ const handleAction = async (action, val) => {
             </div>
 
             <!-- Header Image & Title & Rating -->
-            <div class="relative h-64 flex-shrink-0">
-              <img :src="gameDetails.background_image" class="w-full h-full object-cover" :alt="gameDetails.name">
+            <div class="relative h-64 flex-shrink-0 bg-gray-800">
+              <img v-if="gameDetails.background_image" :src="gameDetails.background_image" class="w-full h-full object-cover" :alt="gameDetails.name">
+              <div v-else class="absolute inset-0 flex items-center justify-center">
+                  <Gamepad2 class="w-24 h-24 text-gray-700" />
+              </div>
               <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent"></div>
               
               <div class="absolute bottom-0 left-0 right-0 p-6 flex flex-col items-center text-center">
@@ -190,7 +193,12 @@ const handleAction = async (action, val) => {
                
                <!-- Description -->
                <div class="prose prose-invert prose-sm max-w-none text-gray-300">
-                  <div v-html="gameDetails.description"></div>
+                  <div 
+                      contenteditable="true"
+                      class="outline-none focus:ring-2 focus:ring-primary/50 rounded p-1 transition-all -ml-1"
+                      @blur="(e) => updateGame(gameDetails.id, { description: e.target.innerHTML })"
+                      v-html="gameDetails.description"
+                  ></div>
                </div>
 
                <!-- Platforms & Genres & Web -->

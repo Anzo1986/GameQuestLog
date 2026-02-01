@@ -41,8 +41,8 @@ export function useGames() {
         // Award XP
         gamification.awardXP(10);
 
-        // Fetch Full Details
-        if (settings.apiKey.value) {
+        // Fetch Full Details (Only for API games, skip manual timestamps)
+        if (settings.apiKey.value && newGameData.id < 10000000000) {
             try {
                 const response = await fetch(`https://api.rawg.io/api/games/${newGameData.id}?key=${settings.apiKey.value}`);
                 if (response.ok) {

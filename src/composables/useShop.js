@@ -57,7 +57,8 @@ export const SHOP_ITEMS = [
     // Backgrounds (Price: 100)
     { id: 'bg_default', type: 'background', name: 'Deep Void', price: 0, description: 'Standard dark mode.', value: 'none', owned: true },
     { id: 'bg_stars', type: 'background', name: 'Starfield', price: 100, description: 'Lost in space.', value: 'stars' },
-    { id: 'bg_grid', type: 'background', name: 'Retro Grid', price: 100, description: 'Synthwave horizon.', value: 'grid' },
+    { id: 'bg_synthwave', type: 'background', name: 'Synthwave', price: 100, description: 'Retro 80s grid.', value: 'synthwave' },
+    { id: 'bg_grid', type: 'background', name: 'Retro Grid', price: 100, description: 'Simple grid.', value: 'grid' },
     { id: 'bg_matrix', type: 'background', name: 'The Matrix', price: 100, description: 'Wake up, Neo.', value: 'matrix' },
     { id: 'bg_hex', type: 'background', name: 'Hex Core', price: 100, description: 'Geometric perfection.', value: 'hex' },
     { id: 'bg_aurora', type: 'background', name: 'Northern Lights', price: 100, description: 'Real aurora effects.', value: 'aurora' },

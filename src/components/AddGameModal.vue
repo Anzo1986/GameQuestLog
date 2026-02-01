@@ -261,7 +261,12 @@ const handleAdd = (game) => {
           <!-- Results List -->
           <div v-else class="overflow-y-auto p-2 space-y-2">
             <div v-for="game in searchResults" :key="game.id" class="flex gap-3 bg-gray-800/50 p-2 rounded-lg hover:bg-gray-800 transition-colors group">
-              <img :src="game.background_image || 'https://via.placeholder.com/150'" class="w-16 h-20 object-cover rounded-md flex-shrink-0 bg-gray-700" alt="">
+              <div class="w-16 h-20 rounded-md flex-shrink-0 bg-gray-700 overflow-hidden relative">
+                  <img v-if="game.background_image" :src="game.background_image" class="w-full h-full object-cover" alt="">
+                  <div v-else class="w-full h-full flex items-center justify-center">
+                     <Gamepad2 class="w-6 h-6 text-gray-500" />
+                  </div>
+              </div>
               <div class="flex-1 min-w-0 flex flex-col justify-center">
                 <h4 class="text-white font-medium truncate">{{ game.name }}</h4>
                 <div class="flex items-center gap-2 mt-1">

@@ -146,13 +146,39 @@ const filteredAchievements = computed(() => {
     }
     return list;
 });
+
+// Swipe Navigation
+import { useSwipe } from '../composables/useSwipe';
+const modalContainer = ref(null);
+const tabs = ['all', 'unlocked', 'locked'];
+
+const nextTab = () => {
+    const currentIndex = tabs.indexOf(filter.value);
+    if (currentIndex < tabs.length - 1) {
+        filter.value = tabs[currentIndex + 1];
+    }
+};
+
+const prevTab = () => {
+    const currentIndex = tabs.indexOf(filter.value);
+    if (currentIndex > 0) {
+        filter.value = tabs[currentIndex - 1];
+    }
+};
+
+useSwipe(modalContainer, {
+    onSwipeLeft: nextTab,
+    onSwipeRight: prevTab,
+    minSwipeDistance: 50,
+    maxSlope: 0.5 // Matching App.vue tolerance
+});
 </script>
 
 <template>
   <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
     <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="$emit('close')"></div>
     
-    <div class="relative bg-gray-900 w-full max-w-4xl rounded-2xl shadow-xl border border-gray-700 max-h-[85vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200">
+    <div ref="modalContainer" class="relative bg-gray-900 w-full max-w-4xl rounded-2xl shadow-xl border border-gray-700 max-h-[85vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200 touch-pan-y">
       
       <!-- Header -->
       <div class="p-6 border-b border-gray-800 bg-gray-900/95 sticky top-0 z-10 space-y-4">
