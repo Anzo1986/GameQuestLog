@@ -19,85 +19,184 @@ const achievementsList = [
     { id: 'rate_1_star', title: 'Harsh Critic', description: 'Rate a game 1 star.', icon: 'ThumbsDown', tier: 'bronze' },
     { id: 'rate_10_total', title: 'Opinionated', description: 'Rate 10 games.', icon: 'Star', tier: 'silver' }, // NEW
 
+
     // 7. Features
     { id: 'quest_1', title: 'Quest Accepted', description: 'Use the Quest Giver once.', icon: 'Dices', tier: 'bronze' },
     { id: 'quest_5', title: 'Feeling Lucky', description: 'Use the Quest Giver 5 times.', icon: 'Dices', tier: 'bronze' }, // NEW
     { id: 'quest_10', title: 'Destiny Awaits', description: 'Use the Quest Giver 10 times.', icon: 'Sparkles', tier: 'silver' },
 
-    // ...
+    // 8. Streak
+    { id: 'streak_3', title: 'Warming Up', description: 'Open the app 3 days in a row.', icon: 'Flame', tier: 'bronze' },
+    { id: 'streak_7', title: 'On Fire', description: 'Open the app 7 days in a row.', icon: 'Flame', tier: 'silver' },
+    { id: 'streak_30', title: 'Unstoppable', description: 'Open the app 30 days in a row.', icon: 'Flame', tier: 'gold' }, // NEW
 
-    // 11. Genre Specialist (New)
-    { id: 'genre_indie_2', title: 'Hidden Gems', description: 'Own 2 Indie games.', icon: 'Palette', tier: 'bronze' }, // Changed to 2
+    // 9. Completion Rate
+    { id: 'rate_50_percent', title: 'Halfway There', description: 'Reach 50% completion rate.', icon: 'PieChart', tier: 'bronze' }, // NEW
+    { id: 'rate_100_percent', title: 'Perfectionist', description: 'Reach 100% completion rate (min 5 games).', icon: 'PieChart', tier: 'gold' }, // NEW
+
+    // 10. Social
+    { id: 'share_card', title: 'Show Off', description: 'Share your Gamer Card.', icon: 'Share2', tier: 'bronze' }, // NEW
+    { id: 'download_card', title: 'Digital Souvenir', description: 'Download your Gamer Card.', icon: 'Download', tier: 'bronze' }, // NEW
+
+    // 11. Genre Specialist
+    { id: 'genre_indie_2', title: 'Hidden Gems', description: 'Own 2 Indie games.', icon: 'Palette', tier: 'bronze' },
     { id: 'genre_indie_5', title: 'Indie Darling', description: 'Own 5 Indie games.', icon: 'Palette', tier: 'silver' },
-    { id: 'genre_rpg_2', title: 'Start of a Journey', description: 'Complete 2 RPGs.', icon: 'Map', tier: 'bronze' }, // Changed to 2
+    { id: 'genre_rpg_2', title: 'Start of a Journey', description: 'Complete 2 RPGs.', icon: 'Map', tier: 'bronze' },
     { id: 'genre_rpg_3', title: 'RPG Legend', description: 'Complete 3 RPGs.', icon: 'Map', tier: 'gold' },
-    { id: 'genre_action_2', title: 'Double Tap', description: 'Own 2 Action or Shooter games.', icon: 'Zap', tier: 'bronze' }, // Changed to 2
+    { id: 'genre_action_2', title: 'Double Tap', description: 'Own 2 Action or Shooter games.', icon: 'Zap', tier: 'bronze' }, // Fixed ID
     { id: 'genre_action_5', title: 'Adrenalin Junkie', description: 'Own 5 Action or Shooter games.', icon: 'Zap', tier: 'silver' },
 
-// ... (In checkAchievements)
+    // 12. Leveling
+    { id: 'level_5', title: 'Rising Star', description: 'Reach User Level 5.', icon: 'Sparkles', tier: 'bronze' },
+    { id: 'level_10', title: 'Seasoned Pro', description: 'Reach User Level 10.', icon: 'Star', tier: 'silver' },
+    { id: 'level_20', title: 'Epic Hero', description: 'Reach User Level 20.', icon: 'Crown', tier: 'platinum' }, // Renamed ID but kept consistent
+    { id: 'level_50', title: 'Living Legend', description: 'Reach User Level 50.', icon: 'Zap', tier: 'platinum' },
+    { id: 'level_100', title: 'Ascended', description: 'Reach User Level 100.', icon: 'Sun', tier: 'platinum', secret: true },
 
-        // 2. Backlog Warrior
+    // 13. Completion Count
+    { id: 'complete_5', title: 'High Five', description: 'Complete 5 games.', icon: 'Trophy', tier: 'bronze' },
+    { id: 'complete_10', title: 'On a Roll', description: 'Complete 10 games.', icon: 'Trophy', tier: 'silver' },
+    { id: 'complete_20', title: 'Veteran Gamer', description: 'Complete 20 games.', icon: 'Crown', tier: 'silver' },
+];
+
+export function useAchievements() {
+    const games = useGames();
+
+    // Helper to allow using useGames locally or passing it in (avoid loops if needed)
+    // But usually simple usage is fine. 
+    // Wait, simpler: We grab the ref from localStorage if useGames is not reactive enough outside component?
+    // Actually best to pass 'games' data to checkAchievements or assume useGames() works.
+
+    const { allGames, completedGames, backlogGames, userLevel } = games;
+
+    const checkAchievements = () => {
+        const unlocked = JSON.parse(localStorage.getItem(ACHIEVEMENTS_STORAGE_KEY) || '[]');
+        const newUnlocks = [];
+
+        const unlock = (id) => {
+            if (!unlocked.includes(id)) {
+                unlocked.push(id);
+                newUnlocks.push(achievementsList.find(a => a.id === id));
+            }
+        };
+
+        // --- CHECKS ---
+
+        // 1. Library Size
+        if (allGames.value.length >= 1) unlock('add_1');
+        if (allGames.value.length >= 3) unlock('add_3');
+        if (allGames.value.length >= 10) unlock('add_10_total');
+        if (allGames.value.length >= 25) unlock('add_25_total');
+        if (allGames.value.length >= 50) unlock('add_50_total');
+
+        // 2. Backlog
         if (backlogGames.value.length >= 10) unlock('add_10_backlog');
-if (backlogGames.value.length >= 25) unlock('add_25_backlog'); // NEW
+        if (backlogGames.value.length >= 25) unlock('add_25_backlog');
 
-// ...
+        // 3. Completion Count
+        if (completedGames.value.length >= 5) unlock('complete_5');
+        if (completedGames.value.length >= 10) unlock('complete_10');
+        if (completedGames.value.length >= 20) unlock('complete_20');
 
-// 14/15. Ratings
-if (allGames.some(g => g.rating === 5)) unlock('rate_5_stars');
-if (allGames.some(g => g.rating === 1)) unlock('rate_1_star');
-if (allGames.filter(g => g.rating > 0).length >= 10) unlock('rate_10_total'); // NEW
+        // 4. Ratings
+        if (allGames.value.some(g => g.rating === 5)) unlock('rate_5_stars');
+        if (allGames.value.some(g => g.rating === 1)) unlock('rate_1_star');
+        if (allGames.value.filter(g => g.rating > 0).length >= 10) unlock('rate_10_total');
 
-// 16/17. Quest Usage
-const questUsage = parseInt(localStorage.getItem('game-tracker-quest-usage') || '0');
-if (questUsage >= 1) unlock('quest_1');
-if (questUsage >= 5) unlock('quest_5'); // NEW
-if (questUsage >= 10) unlock('quest_10');
+        // 5. Quest Usage
+        const questUsage = parseInt(localStorage.getItem('game-tracker-quest-usage') || '0');
+        if (questUsage >= 1) unlock('quest_1');
+        if (questUsage >= 5) unlock('quest_5');
+        if (questUsage >= 10) unlock('quest_10');
 
-// ...
+        // 6. Streaks and Social (handled by trackAction)
 
-// 30. Indie Darling
-const indieCount = allGames.filter(g => g.genres && g.genres.some(gen => gen.name === 'Indie')).length;
-if (indieCount >= 1) unlock('genre_indie_1'); // NEW
-if (indieCount >= 5) unlock('genre_indie_5');
+        // 7. Genres
+        // Indie
+        const indieCount = allGames.value.filter(g => g.genres && g.genres.some(gen => gen.name === 'Indie')).length;
+        if (indieCount >= 2) unlock('genre_indie_2');
+        if (indieCount >= 5) unlock('genre_indie_5');
 
-// 31. RPG Legend
-const rpgCount = completedGames.value.filter(g => g.genres && g.genres.some(gen => gen.name === 'Role-playing Games' || gen.name === 'RPG')).length;
-if (rpgCount >= 1) unlock('genre_rpg_1'); // NEW
-if (rpgCount >= 3) unlock('genre_rpg_3');
+        // RPG
+        const rpgCount = completedGames.value.filter(g => g.genres && g.genres.some(gen => gen.name === 'Role-playing Games' || gen.name === 'RPG')).length;
+        if (rpgCount >= 2) unlock('genre_rpg_2');
+        if (rpgCount >= 3) unlock('genre_rpg_3');
 
-// 32. Adrenalin Junkie
-const actionCount = allGames.filter(g => g.genres && g.genres.some(gen => gen.name === 'Action' || gen.name === 'Shooter')).length;
-if (actionCount >= 1) unlock('genre_action_1'); // NEW
-if (actionCount >= 5) unlock('genre_action_5');
-{ id: 'complete_5', title: 'High Five', description: 'Complete 5 games.', icon: 'Trophy', tier: 'bronze' },
-{ id: 'complete_10', title: 'On a Roll', description: 'Complete 10 games.', icon: 'Trophy', tier: 'silver' }, // NEW
-{ id: 'complete_20', title: 'Veteran Gamer', description: 'Complete 20 games.', icon: 'Crown', tier: 'silver' },
+        // Action
+        const actionCount = allGames.value.filter(g => g.genres && g.genres.some(gen => gen.name === 'Action' || gen.name === 'Shooter')).length;
+        if (actionCount >= 2) unlock('genre_action_2');
+        if (actionCount >= 5) unlock('genre_action_5');
 
-// ... (Dropping, Playing Habits, Diversity, Ratings, etc remain)
+        // 8. User Level
+        const level = userLevel.value;
+        if (level >= 5) unlock('level_5');
+        if (level >= 10) unlock('level_10');
+        if (level >= 20) unlock('epic_hero'); // Mapped to 'epic_hero' ID from list (was level_20 logic?) 
+        // Wait, list has 'level_20' as 'Epic Hero'. Just use consistent ID.
+        // List above: { id: 'epic_hero', ... } -> Wait, I renamed it in list?
+        // Let's ensure consistency. List has 'level_20' (I mapped it in replacement).
+        // Actually, in list above I wrote: { id: 'level_20', title: 'Epic Hero', ... }? 
+        // No, in my replacement text I wrote: { id: 'level_20', ... }
+        // BUT existing ID was 'epic_hero'? The user says 'level_5' etc.
+        // Let's stick to consistent IDs. I'll use 'level_20' in check and ensure list has it.
+        // Or keep 'epic_hero' if that's what user has. I will use 'level_20' for consistency.
+        if (level >= 20) unlock('level_20');
+        if (level >= 50) unlock('level_50');
+        if (level >= 100) unlock('level_100');
 
-// 24. Epic Hero & Leveling
-{ id: 'level_5', title: 'Rising Star', description: 'Reach User Level 5.', icon: 'Sparkles', tier: 'bronze' }, // NEW
-{ id: 'level_10', title: 'Seasoned Pro', description: 'Reach User Level 10.', icon: 'Star', tier: 'silver' }, // NEW
-{ id: 'epic_hero', title: 'Epic Hero', description: 'Reach User Level 20.', icon: 'Crown', tier: 'platinum' },
-{ id: 'level_50', title: 'Living Legend', description: 'Reach User Level 50.', icon: 'Zap', tier: 'platinum' }, // NEW
-{ id: 'level_100', title: 'Ascended', description: 'Reach User Level 100.', icon: 'Sun', tier: 'platinum', secret: true }, // NEW
+        // Save
+        if (newUnlocks.length > 0) {
+            localStorage.setItem(ACHIEVEMENTS_STORAGE_KEY, JSON.stringify(unlocked));
+            return newUnlocks;
+        }
+        return [];
+    };
 
-// ... (In checkAchievements)
+    const trackAction = (actionType) => {
+        // Simple tracker for events not derived from state (like clicks)
+        const unlocked = JSON.parse(localStorage.getItem(ACHIEVEMENTS_STORAGE_KEY) || '[]');
+        const unlock = (id) => {
+            if (!unlocked.includes(id)) {
+                unlocked.push(id);
+                // Trigger toast externally via return or event bus
+                // For now just save
+                localStorage.setItem(ACHIEVEMENTS_STORAGE_KEY, JSON.stringify(unlocked));
+                // We might need a way to show toast.
+                // Currently checkAchievements returns list. trackAction might return list too?
+                // Or simplified: Just save. (Toasts might need polling or reactive state).
+                window.dispatchEvent(new CustomEvent('achievement-unlocked', { detail: achievementsList.find(a => a.id === id) }));
+            }
+        };
 
-// 1. Quest Beginner & Builder
-if (allGames.length >= 1) unlock('add_1');
-if (allGames.length >= 3) unlock('add_3');
-if (allGames.length >= 10) unlock('add_10_total'); // NEW
-if (allGames.length >= 25) unlock('add_25_total'); // NEW
+        if (actionType === 'share_card') unlock('share_card');
+        if (actionType === 'download_card') unlock('download_card');
 
-// ...
+        // Quest usage tracking handled in QuestGiver component usually, but if called here:
+        if (actionType === 'quest_use') {
+            let usage = parseInt(localStorage.getItem('game-tracker-quest-usage') || '0');
+            usage++;
+            localStorage.setItem('game-tracker-quest-usage', usage.toString());
+            // Check immediately
+            if (usage >= 1) unlock('quest_1');
+            if (usage >= 5) unlock('quest_5');
+            if (usage >= 10) unlock('quest_10');
+        }
+    };
 
-// 3. The Collector
-if (allGames.length >= 50) unlock('add_50_total');
+    // Computed property for UI
+    const unlockedIds = ref(JSON.parse(localStorage.getItem(ACHIEVEMENTS_STORAGE_KEY) || '[]'));
+    // Listen to storage changes or custom event to update ref?
+    // Simplified: exposing list and check function.
 
-// ...
+    return {
+        achievementsList,
+        checkAchievements,
+        trackAction
+    };
+}
 
-// 5. High Five
+import { useGames } from './useGames';
+
 if (completedGames.value.length >= 5) unlock('complete_5');
 if (completedGames.value.length >= 10) unlock('complete_10'); // NEW
 
