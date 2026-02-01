@@ -12,7 +12,8 @@ defineEmits(['close']);
 
 const { SHOP_ITEMS, balance, buyItem, equipItem, isOwned, getEquippedItem } = useShop();
 
-const activeTab = ref('theme'); // 'theme', 'frame'
+const activeTab = ref('theme'); // 'theme', 'frame', 'card_style', 'background'
+const tabs = ['theme', 'frame', 'card_style', 'background'];
 
 const filteredItems = computed(() => {
     return SHOP_ITEMS.filter(item => item.type === activeTab.value);
@@ -25,16 +26,47 @@ const currentEquippedId = computed(() => {
 
 const handleAction = (item) => {
     if (isOwned(item.id)) {
-        // Equip
         equipItem(item.id);
     } else {
-        // Buy
         if (balance.value >= item.price) {
            const res = buyItem(item.id);
-           if (res.success && item.type === 'theme') {
-               // Auto equip theme on purchase for instant gratification?
-               // Let's ask user. For now, manual equip.
-           }
+        }
+    }
+};
+
+// Swipe Logic
+const touchStartX = ref(0);
+const touchStartY = ref(0);
+
+const handleTouchStart = (e) => {
+    touchStartX.value = e.changedTouches[0].screenX;
+    touchStartY.value = e.changedTouches[0].screenY;
+};
+
+const handleTouchEnd = (e) => {
+    const touchEndX = e.changedTouches[0].screenX;
+    const touchEndY = e.changedTouches[0].screenY;
+    
+    const diffX = touchStartX.value - touchEndX;
+    const diffY = touchStartY.value - touchEndY;
+
+    // Ignore if vertical scroll was dominant (to prevent triggering while scrolling down)
+    if (Math.abs(diffY) > Math.abs(diffX)) return;
+
+    // Threshold for swipe (e.g., 50px)
+    if (Math.abs(diffX) < 50) return;
+
+    const currentIndex = tabs.indexOf(activeTab.value);
+    
+    if (diffX > 0) {
+        // Swipe Left -> Next Tab
+        if (currentIndex < tabs.length - 1) {
+            activeTab.value = tabs[currentIndex + 1];
+        }
+    } else {
+        // Swipe Right -> Prev Tab
+        if (currentIndex > 0) {
+            activeTab.value = tabs[currentIndex - 1];
         }
     }
 };
@@ -45,8 +77,12 @@ const handleAction = (item) => {
     <!-- Backdrop -->
     <div class="absolute inset-0 bg-black/95 backdrop-blur-md" @click="$emit('close')"></div>
 
-    <!-- Modal -->
-    <div class="relative w-full max-w-2xl h-[70vh] bg-gray-900 border border-gray-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200">
+    <!-- Modal with Swipe Handlers -->
+    <div 
+        @touchstart="handleTouchStart"
+        @touchend="handleTouchEnd"
+        class="relative w-full max-w-2xl h-[70vh] bg-gray-900 border border-gray-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200"
+    >
       
       <!-- Header -->
       <div class="p-6 border-b border-gray-800 flex justify-between items-center bg-gray-900/50 backdrop-blur z-20 sticky top-0">
@@ -74,31 +110,31 @@ const handleAction = (item) => {
       </div>
 
       <!-- Navigation tabs -->
-      <div class="flex p-2 gap-2 bg-gray-800/50 mx-6 mt-6 rounded-xl">
+      <div class="flex p-2 gap-2 bg-gray-800/50 mx-6 mt-6 rounded-xl overflow-x-auto no-scrollbar">
           <button 
             @click="activeTab = 'theme'"
-            class="flex-1 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all"
+            class="flex-1 min-w-[80px] py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all whitespace-nowrap"
             :class="activeTab === 'theme' ? 'bg-primary text-white shadow' : 'text-gray-400 hover:text-white'"
           >
               <Palette class="w-4 h-4" /> Themes
           </button>
           <button 
             @click="activeTab = 'frame'"
-            class="flex-1 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all"
+            class="flex-1 min-w-[80px] py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all whitespace-nowrap"
             :class="activeTab === 'frame' ? 'bg-primary text-white shadow' : 'text-gray-400 hover:text-white'"
           >
               <UserCircle class="w-4 h-4" /> Frames
           </button>
           <button 
             @click="activeTab = 'card_style'"
-            class="flex-1 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all"
+            class="flex-1 min-w-[80px] py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all whitespace-nowrap"
             :class="activeTab === 'card_style' ? 'bg-primary text-white shadow' : 'text-gray-400 hover:text-white'"
           >
               <Sparkles class="w-4 h-4" /> Effects
           </button>
           <button 
             @click="activeTab = 'background'"
-            class="flex-1 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all"
+            class="flex-1 min-w-[80px] py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all whitespace-nowrap"
             :class="activeTab === 'background' ? 'bg-primary text-white shadow' : 'text-gray-400 hover:text-white'"
           >
               <Image class="w-4 h-4" /> BGs
@@ -258,5 +294,12 @@ const handleAction = (item) => {
 }
 .animate-holo {
     animation: holo 3s ease infinite;
+}
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
 </style>
