@@ -36,9 +36,9 @@ const modalStyles = computed(() => {
     if (s === 'spotlight') return classes + 'border-white/40 shadow-[0_0_80px_rgba(255,255,255,0.2)] relative overflow-hidden';
 
     // NEW STYLE WITH ANIMATED BORDERS
-    // We use Transparent border for Prism to show simple color, but the animation is handled in Template via Overlays
-    if (s === 'prism') return 'border-transparent bg-gray-900 shadow-[0_0_40px_rgba(255,255,255,0.2)] relative overflow-hidden ring-4 ring-transparent'; 
-    if (s === 'glitch') return 'border-cyan-500 border-dashed shadow-[0_0_40px_rgba(6,182,212,0.4)] relative overflow-hidden';
+    // Use border-transparent for Prism so it doesn't override the outer glow visually, but maintains spacing
+    if (s === 'prism') return 'border-2 border-transparent bg-gray-900 shadow-[0_0_40px_rgba(255,255,255,0.2)] relative overflow-hidden'; 
+    if (s === 'glitch') return 'border-2 border-cyan-500 border-dashed shadow-[0_0_40px_rgba(6,182,212,0.4)] relative overflow-hidden';
 
     return 'bg-gray-900 border-gray-700';
 });

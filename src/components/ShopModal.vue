@@ -200,7 +200,10 @@ const handleTouchEnd = (e) => {
                          <div v-if="item.value === 'glitter'" class="absolute inset-0 bg-[radial-gradient(white,transparent_1px)] bg-[size:10px_10px] opacity-40 animate-pulse"></div>
                          <div v-if="item.value === 'spotlight'" class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent w-[200%] animate-shine"></div>
                          
-                         <div v-if="item.value === 'prism'" class="absolute inset-0 border-2 border-transparent bg-gradient-to-tr from-red-500 via-green-500 to-blue-500 opacity-80 animate-spin-slow" style="mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; padding: 2px;"></div>
+                         <!-- Simplified Prism Preview -->
+                         <div v-if="item.value === 'prism'" class="absolute inset-0 bg-gradient-to-tr from-red-500 via-green-500 to-blue-500 p-[2px] animate-spin-slow">
+                             <div class="w-full h-full bg-gray-900"></div>
+                         </div>
                          <div v-if="item.value === 'glitch'" class="absolute inset-0 border-2 border-cyan-500 border-dashed opacity-70"></div>
 
                      </div>
