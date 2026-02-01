@@ -1,31 +1,77 @@
 # 🧠 AI Development Guide: GameQuestLog
 
-## 🏗️ Project Architecture
+## 🛠️ Tech Stack & Key Libraries
+-   **Framework**: Vue 3 (Composition API, `<script setup>`)
+-   **Build Tool**: Vite (Fast HMR)
+-   **Styling**: Tailwind CSS (v3 with custom animations)
+-   **Icons**: `lucide-vue-next` (Consistent SVG icons)
+-   **PWA**: `vite-plugin-pwa` (Offline support, Service Worker caching)
+-   **State Management**: Native Vue `ref`/`reactive` inside Composables (No Pinia/Vuex needed).
+-   **Deployment**: GitHub Pages / Vercel compatible.
 
-### Core Structure
-This Vue 3 project uses a **Composable-based Architecture** to separate Logic from UI.
+---
 
--   **Root**: `App.vue` handles the main layout (Header, Nav, Game Grid, FAB). It delegates complex logic to composables.
--   **Modals**: `TheModals.vue` is the **Single Source of Truth** for all popups.
-    -   *Rule*: Never import individual modals in `App.vue`. Use `TheModals`.
-    -   *State*: Managed by `useModals.js`.
--   **Data**: `useGames.js` is the central store for Game Data (CRUD, Status, Persistence).
+## 🏗️ Project Architecture & File Structure
 
-### 📂 Key Composables
--   `useModals.js`: Controls `activeModal` & `modalProps`. Handles `history.pushState`.
--   `useGameFilters.js`: Handles Search, Sort, and Tab Filtering logic.
--   `useShop.js`: Manages Coins, Inventory (Themes, Frames), and Purchases.
--   `useSettings.js`: Persists user preferences (Sort order, Theme).
--   `useSwipe.js`: Handles touch gestures for mobile navigation.
+### 📂 `src/composables/` (The Brain)
+All business logic lives here. **Do not put complex logic in components.**
+-   **`useGames.js`**: The main Facade. It wraps `useGameData`, `useSettings`, `useGamification` to provide a single import for components (`const { games, addGame } = useGames()`).
+-   **`useModals.js`**: Controls global modal state (`activeModal`). Integrates with browser history (back button closes modal).
+-   **`useGameFilters.js`**: Handles Search, Sort, and Tab Filtering (Playing/Backlog/Completed).
+-   **`useShop.js`**: Manages the Economy (Coins), Inventory (Frames, Backgrounds, Themes), and Purchases.
+-   **`useSettings.js`**: Persists `apiKey`, `theme`, `avatar` to `localStorage`.
+-   **`useSwipe.js`**: Handles touch gestures (swipe left/right) for mobile navigation.
 
-## 🎨 Design System (The "Vibe")
--   **Framework**: Tailwind CSS.
--   **Aesthetics**: Dark Mode, Neon Accents, Glassmorphism (`backdrop-blur`).
--   **Icons**: Lucide-Vue-Next.
--   **Animations**: Custom keyframes (`animate-blob`, `animate-shine`).
+### 📂 `src/components/` (The UI)
+-   **`TheModals.vue`**: **CRITICAL**. This is the single entry point for all popup windows.
+    -   *How to use*: To add a new modal, import it here and add a `<MyNewModal v-if="activeModal === 'myModal'" />` block.
+    -   *Trigger*: Call `openModal('myModal')` from anywhere.
+-   **`GameDetailModal.vue`**: The main game view. Contains logic for "Edit Mode" and "Status Updates".
+    -   *Note*: Uses `GameCardInnerEffects.vue` for Holo/Prism visual effects.
+-   **`ShopModal.vue`**: The store UI. Uses real-time previews for Backgrounds and Frames.
+-   **`BackgroundAurora.vue`**: The complex animated background. *Do not inline this code in App.vue*.
 
-## ⚠️ Golden Rules for AI
-1.  **Keep App.vue Clean**: Don't add logic here if it fits in a Composable.
-2.  **Modal Management**: To add a new popup, register it in `TheModals.vue` and trigger it via `openModal('name', props)`.
-3.  **Persistence**: Always verify `localStorage` logic when adding new state.
-4.  **Mobile First**: Always check `touch` interactions (FAB menu, Swipe).
+### 📱 `src/App.vue` (The Skeleton)
+-   Contains the **Global Layout**:
+    -   `<BackgroundAurora />` (Conditional)
+    -   `Header` (User Level, XP)
+    -   `SmartBar` (Search/Sort)
+    -   `GameList` (Grid of Cards)
+    -   `TheModals` (Overlay)
+    -   `FAB Menu` (Bottom Right Floating Action Button - Mobile optimized with `@touchstart.stop`).
+-   *Rule*: Keep this file clean. Logic goes to Composables.
+
+---
+
+## 🎨 design System (The "Vibe")
+-   **Aesthetics**: "Cyber-Glass" / Neon.
+    -   Dark backgrounds (`bg-gray-900`, `bg-black/90`).
+    -   Vibrant accents (`text-primary`, `border-blue-500`).
+    -   Glassmorphism: `backdrop-blur-md`, `bg-white/10`.
+-   **Card Effects**:
+    -   **Holo**: Rainbow gradients + opacity shifts.
+    -   **Prism**: Rotating borders.
+    -   **Glitch**: CSS clip-path animations.
+    -   *Implementation*: See `useCardStyles.js` and `GameCardInnerEffects.vue`.
+
+---
+
+## ⚠️ "Golden Rules" for AI Developers
+1.  **Don't Break Mobile**:
+    -   Always consider small screens.
+    -   The FAB Menu must have `@touchstart.stop` to avoid conflict with `useSwipe`.
+2.  **Modal Management**:
+    -   **Never** import a modal directly into `App.vue` (except `TheModals`).
+    -   Always use `useModals` to control visibility.
+3.  **Persistence**:
+    -   State is saved to `localStorage` via `watch` effects in Composables.
+    -   When adding new state, ensure it's added to the `exportData`/`importData` logic in `useGames.js`.
+4.  **Performance**:
+    -   Use `computed` properties for filtering lists.
+    -   Use `loading="lazy"` on images.
+
+---
+
+## 🚀 Deployment Checklist
+-   **Git**: Ensure all changes are committed (especially `isMenuOpen` fixes).
+-   **Service Worker**: Update `CACHE_NAME` in `sw.js` if shipping major updates to force client refresh.
