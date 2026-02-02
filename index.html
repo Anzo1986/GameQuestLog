@@ -14,6 +14,26 @@
 </head>
 
 <body>
+  <style>
+    #splash-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background-color: #111827;
+      background-image: url('/splash-bg.png');
+      background-size: cover;
+      background-position: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: opacity 0.5s ease-out;
+    }
+    #splash-screen.loaded {
+      opacity: 0;
+      pointer-events: none;
+    }
+  </style>
+  <div id="splash-screen"></div>
   <div id="app"></div>
   <script type="module" src="/src/main.js"></script>
 </body>
