@@ -333,7 +333,7 @@ useSwipe(mainContainer, {
           >
             <GameCard 
               :game="game" 
-              class="opacity-75 hover:opacity-100 transition-opacity hover:ring-2 hover:ring-green-500 shadow-sm"
+              class="hover:ring-2 hover:ring-green-500 shadow-sm transition-all"
               @update-status="updateStatus"
               @delete="removeGame"
             />
