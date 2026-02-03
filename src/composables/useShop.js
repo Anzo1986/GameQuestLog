@@ -74,7 +74,8 @@ const shopState = ref({
     ownedItems: ['theme_default', 'frame_default', 'style_default'], // IDs of owned items
     equippedTheme: 'theme_default',
     equippedFrame: 'frame_default',
-    equippedCardStyle: 'style_default'
+    equippedCardStyle: 'style_default',
+    bonusCoins: 0
 });
 
 // Load State
@@ -103,7 +104,7 @@ export function useShop() {
     });
 
     const balance = computed(() => {
-        return totalQuestScore.value - totalSpent.value;
+        return (totalQuestScore.value + (shopState.value.bonusCoins || 0)) - totalSpent.value;
     });
 
     const isOwned = (id) => {
@@ -130,6 +131,13 @@ export function useShop() {
 
         saveState();
         return { success: true, message: `Purchased ${item.name}!` };
+    };
+
+    const addCoins = (amount) => {
+        if (!shopState.value.bonusCoins) shopState.value.bonusCoins = 0;
+        shopState.value.bonusCoins += amount;
+        saveState();
+        return shopState.value.bonusCoins;
     };
 
     const equipItem = (itemId) => {
@@ -177,6 +185,7 @@ export function useShop() {
         shopState,
         balance,
         totalSpent,
+        addCoins,
         buyItem,
         equipItem,
         isOwned,

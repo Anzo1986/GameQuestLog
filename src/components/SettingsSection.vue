@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import { Download, Upload, Key, Save, User, Check, X } from 'lucide-vue-next';
+import { Download, Upload, Key, Save, User, Check, X, RefreshCw } from 'lucide-vue-next';
 import { useGames } from '../composables/useGames';
 import { useAchievements } from '../composables/useAchievements';
 
@@ -97,6 +97,29 @@ const handleFileChange = async (event) => {
     }
   }
   event.target.value = ''; // Reset
+};
+
+const forceUpdate = async () => {
+    if (!confirm('This will reload the app to force an update. Your data is safe.')) return;
+    
+    // 1. Unregister Service Workers
+    if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (const registration of registrations) {
+            await registration.unregister();
+        }
+    }
+
+    // 2. Clear Caches (nuclear option)
+    if ('caches' in window) {
+        const keys = await caches.keys();
+        for (const key of keys) {
+            await caches.delete(key);
+        }
+    }
+
+    // 3. Force Reload
+    window.location.reload(true);
 };
 </script>
 
@@ -224,12 +247,21 @@ const handleFileChange = async (event) => {
             <input ref="fileInput" type="file" accept=".json" class="hidden" @change="handleFileChange" />
           </div>
           <p v-if="importStatus" class="mt-2 text-sm text-green-400 text-center">{{ importStatus }}</p>
+        
+          <!-- Troubleshooting -->
+          <div class="mt-4 pt-4 border-t border-gray-800">
+             <h3 class="text-sm font-medium text-gray-300 mb-2">Troubleshooting</h3>
+             <button @click="forceUpdate" class="w-full bg-red-900/30 hover:bg-red-900/50 text-red-200 py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors border border-red-800/50 text-sm">
+                <RefreshCw class="w-4 h-4" /> Force Update / Reset Cache
+             </button>
+             <p class="text-xs text-gray-500 mt-2 text-center">Use this if the app version seems stuck.</p>
+          </div>
         </div>
 
       </div>
 
       <div class="text-center pb-4">
-           <p class="text-xs text-gray-500 font-mono">v0.8.2</p>
+           <p class="text-xs text-gray-500 font-mono">v0.8.5</p>
       </div>
     </div>
   </div>

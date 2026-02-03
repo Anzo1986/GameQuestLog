@@ -263,6 +263,7 @@ export function useGames() {
                 achievements: JSON.parse(localStorage.getItem('game-tracker-achievements') || '{}'),
                 achievementStats: JSON.parse(localStorage.getItem('game-tracker-achievements_stats') || '{}'),
                 shop: JSON.parse(localStorage.getItem('game-tracker-shop-v2') || '{}'),
+                dailyLogin: JSON.parse(localStorage.getItem('game-tracker-daily-login') || '{}'),
                 settings: {
                     theme: localStorage.getItem('game-tracker-theme'),
                     apiKey: localStorage.getItem('game-tracker-api-key'),
@@ -307,6 +308,7 @@ export function useGames() {
                             if (data.achievements) localStorage.setItem('game-tracker-achievements', JSON.stringify(data.achievements));
                             if (data.achievementStats) localStorage.setItem('game-tracker-achievements_stats', JSON.stringify(data.achievementStats));
                             if (data.shop) localStorage.setItem('game-tracker-shop-v2', JSON.stringify(data.shop));
+                            if (data.dailyLogin) localStorage.setItem('game-tracker-daily-login', JSON.stringify(data.dailyLogin));
 
                             if (data.settings) {
                                 if (data.settings.theme) localStorage.setItem('game-tracker-theme', data.settings.theme);

@@ -230,7 +230,7 @@ const handleTouchEnd = (e) => {
                                  </svg>
                              </div>
                              
-                             <div v-if="item.value === 'hex'" class="w-full h-full bg-gray-800" style="background-image: url('data:image/svg+xml,%3Csvg width=\'12\' height=\'12\' viewBox=\'0 0 28 49\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5z\' fill=\'%23ffffff\' fill-opacity=\'0.2\'/%3E%3C/svg%3E')"></div>
+                             <div v-if="item.value === 'hex'" class="w-full h-full bg-gray-800" style="background-image: url('data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='49' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg id='hexagons' fill='%2364748b' fill-opacity='0.15' fill-rule='nonzero'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L10.98 40v6.35L0 42.7v-2.3zm25.5-18.5l2.5-2.3-10.99-6.35V0h-2v7.5L25.5 15zm0 18.5l2.5 2.3-10.99 6.35V49h-2v-7.5L25.5 33.5z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')"></div>
                              
                              <div v-if="item.value === 'aurora'" class="w-full h-full bg-slate-900 relative overflow-hidden">
                                  <div class="absolute top-[-10%] left-[-10%] w-10 h-10 bg-teal-400 rounded-full blur-md opacity-60"></div>

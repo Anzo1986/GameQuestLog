@@ -11,11 +11,12 @@ import SmartBar from './components/SmartBar.vue';
 
 import { useGames } from './composables/useGames';
 import { useAchievements } from './composables/useAchievements';
+import { useDailyLogin } from './composables/useDailyLogin';
 import { useGameFilters } from './composables/useGameFilters';
 import { useSettings } from './composables/useSettings';
 import { useShop } from './composables/useShop';
 import { useModals } from './composables/useModals';
-import { Settings, Plus, Gamepad2, Layers, CheckCircle2, LayoutDashboard, Ban, Timer, Bell, Dices, Trophy, Menu, X, ShoppingBag } from 'lucide-vue-next';
+import { Settings, Plus, Gamepad2, Layers, CheckCircle2, LayoutDashboard, Ban, Timer, Bell, Dices, Trophy, Menu, X, ShoppingBag, Calendar } from 'lucide-vue-next';
 
 const { playingGames, backlogGames, completedGames, droppedGames, updateStatus, removeGame, games, userXP, userLevel, userTitle } = useGames();
 const { checkAchievements } = useAchievements();
@@ -123,8 +124,20 @@ onMounted(() => {
     });
 
     // Check achievements on mount
+    // Check achievements on mount
     checkAchievements({ games, playingGames, backlogGames, completedGames, droppedGames, userXP });
+
+    // Check Daily Login
+    const { checkLogin } = useDailyLogin();
+    const status = checkLogin();
+    if (!status.claimed) {
+        // Delay slightly for effect
+        setTimeout(() => {
+            openModal('dailyLogin');
+        }, 1000);
+    }
 });
+
 
 // Watch games and trigger achievement check
 watch([games, userXP], () => {
@@ -232,9 +245,11 @@ useSwipe(mainContainer, {
 
     <!-- Settings Section (Modal) -->
     <!-- Centralized Modals -->
+    <!-- Centralized Modals -->
+    <AchievementToast />
     <TheModals />
     
-    <!-- Smart Bar (Search & Sort) -->
+    <!-- SmartBar (Search & Sort) -->
     <SmartBar 
         v-model:searchQuery="localSearchQuery"
         v-model:sortOption="currentSort"
@@ -410,6 +425,15 @@ useSwipe(mainContainer, {
             >
                 <div class="bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 absolute right-16 transition-opacity whitespace-nowrap pointer-events-none">Loot Shop</div>
                 <ShoppingBag class="w-6 h-6" />
+            </button>
+
+            <!-- Daily Bonus -->
+            <button 
+               @click="openModal('dailyLogin'); isMenuOpen = false"
+               class="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white p-3 rounded-full shadow-lg border-2 border-gray-900 group transition-all"
+            >
+                <div class="bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 absolute right-16 transition-opacity whitespace-nowrap pointer-events-none">Daily Bonus</div>
+                <Calendar class="w-6 h-6" />
             </button>
 
             <!-- Achievements -->

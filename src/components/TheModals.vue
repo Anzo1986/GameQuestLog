@@ -14,6 +14,7 @@ import GamerCardModal from './GamerCardModal.vue';
 import LevelUpOverlay from './LevelUpOverlay.vue';
 import VictoryOverlay from './VictoryOverlay.vue';
 import ShopModal from './ShopModal.vue';
+import DailyLoginModal from './DailyLoginModal.vue';
 
 const { activeModal, modalProps, openModal } = useModals(); // Added openModal
 const { updateStatus, removeGame, userLevel, userTitle } = useGames();
@@ -58,6 +59,7 @@ const handleClose = () => {
     <GamerCardModal v-if="activeModal === 'gamerCard'" :is-open="true" @close="handleClose" />
     
     <ShopModal v-if="activeModal === 'shop'" :is-open="true" @close="handleClose" />
+    <DailyLoginModal v-if="activeModal === 'dailyLogin'" :is-open="true" @close="handleClose" />
 
     <!-- Overlays -->
     <LevelUpOverlay v-if="activeModal === 'levelUp'" :level="userLevel" :title="userTitle" @close="handleClose" />

@@ -16,6 +16,7 @@ export default defineConfig({
         short_name: 'GameTracker',
         description: 'Track your video game collection and progress.',
         theme_color: '#111827',
+        background_color: '#000000',
         icons: [
           {
             src: 'pwa-192x192.png',

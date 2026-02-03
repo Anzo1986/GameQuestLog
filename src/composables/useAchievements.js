@@ -34,7 +34,7 @@ const achievementsList = [
 
     // 5. Diversity
     { id: 'platforms_3', title: 'Platform Hopper', description: 'Own games on 3 different platforms.', icon: 'Gamepad2', tier: 'bronze' },
-    { id: 'platforms_5', title: 'Console Museum', description: 'Own games on 5 different platforms.', icon: 'Server', tier: 'silver' },
+    { id: 'full_house', title: 'Full House', description: 'Own a game on PC, PlayStation, Xbox, Nintendo, and Mobile.', icon: 'Server', tier: 'gold' },
     { id: 'genres_5', title: 'Genre Explorer', description: 'Have games from 5 different genres.', icon: 'Map', tier: 'silver' },
 
     // 6. Ratings
@@ -43,6 +43,7 @@ const achievementsList = [
     { id: 'rate_1_star', title: 'Harsh Critic', description: 'Rate a game 1 star.', icon: 'ThumbsDown', tier: 'bronze' },
     { id: 'rate_10_total', title: 'Opinionated', description: 'Rate 10 games.', icon: 'Star', tier: 'silver' },
     { id: 'critics_darling', title: 'Critic\'s Darling', description: 'Rate 5 games with 5 stars.', icon: 'Heart', tier: 'silver' },
+    { id: 'the_critic', title: 'The Critic', description: 'Rate all completed games (min 5).', icon: 'MessagesSquare', tier: 'silver' },
 
     // 7. Quest Giver
     { id: 'quest_1', title: 'Quest Accepted', description: 'Use the Quest Giver once.', icon: 'Dices', tier: 'bronze' },
@@ -55,20 +56,19 @@ const achievementsList = [
     { id: 'streak_30', title: 'Unstoppable', description: 'Open the app 30 days in a row.', icon: 'Flame', tier: 'gold' },
 
     // 9. Completion Rate
-    { id: 'rate_50_percent', title: 'Halfway There', description: 'Reach 50% completion rate.', icon: 'PieChart', tier: 'bronze' },
     { id: 'rate_100_percent', title: 'Perfectionist', description: 'Reach 100% completion rate (min 5 games).', icon: 'PieChart', tier: 'gold' },
 
     // 10. Social / App
     { id: 'safety_first', title: 'Safety First', description: 'Export your data backup.', icon: 'Server', tier: 'bronze' },
-    { id: 'share_card', title: 'Show Off', description: 'Share your Gamer Card.', icon: 'Share2', tier: 'bronze' },
     { id: 'download_card', title: 'Digital Souvenir', description: 'Download your Gamer Card.', icon: 'Download', tier: 'bronze' },
-    { id: 'show_off', title: 'Card Collector', description: 'Download your gamer card.', icon: 'Crown', tier: 'bronze' },
 
     // 11. Genre Specialist
     { id: 'genre_indie_2', title: 'Hidden Gems', description: 'Own 2 Indie games.', icon: 'Palette', tier: 'bronze' },
     { id: 'genre_indie_5', title: 'Indie Darling', description: 'Own 5 Indie games.', icon: 'Palette', tier: 'silver' },
     { id: 'genre_rpg_2', title: 'Start of a Journey', description: 'Complete 2 RPGs.', icon: 'Map', tier: 'bronze' },
     { id: 'genre_rpg_3', title: 'RPG Legend', description: 'Complete 3 RPGs.', icon: 'Map', tier: 'gold' },
+    { id: 'strategy_master', title: 'Master Strategist', description: 'Complete 3 Strategy games.', icon: 'Swords', tier: 'silver' },
+    { id: 'adventure_time', title: 'Adventure Time', description: 'Complete 3 Adventure games.', icon: 'Compass', tier: 'silver' },
     { id: 'genre_action_2', title: 'Double Tap', description: 'Own 2 Action or Shooter games.', icon: 'Zap', tier: 'bronze' },
     { id: 'genre_action_5', title: 'Adrenalin Junkie', description: 'Own 5 Action or Shooter games.', icon: 'Zap', tier: 'silver' },
 
@@ -89,6 +89,13 @@ const achievementsList = [
     { id: 'slow_burn', title: 'Slow Burn', description: 'Complete a game more than 1 year after starting it.', icon: 'Timer', tier: 'gold' },
     { id: 'old_school', title: 'Blast from the Past', description: 'Own a game released before 2000.', icon: 'Rewind', tier: 'bronze' },
     { id: 'future_proof', title: 'Future Proof', description: 'Own a game with a release date in the future.', icon: 'FastForward', tier: 'bronze' },
+
+    // 14. New Challenges
+    { id: 'patient_gamer', title: 'Patient Gamer', description: 'Complete a game released over 5 years ago.', icon: 'Hourglass', tier: 'silver' },
+    { id: 'speedrunner', title: 'Speedrunner', description: 'Complete a game within 48 hours of starting.', icon: 'Timer', tier: 'silver' },
+    { id: 'monthly_binge', title: 'Monthly Binge', description: 'Complete 3 games in a single month.', icon: 'CalendarDays', tier: 'silver' },
+    { id: 'quality_control', title: 'Quality Control', description: 'Drop a game you rated 1 star.', icon: 'Trash2', tier: 'bronze' },
+    { id: 'year_of_gaming', title: 'Year of Gaming', description: 'Complete 12 games in the last 365 days.', icon: 'Trophy', tier: 'platinum' },
 ];
 
 // Persistent State (Shared across components)
@@ -180,10 +187,7 @@ export function useAchievements() {
         if (action === 'download_card') {
             achievementStats.value.gamerCardDownloaded = true;
             saveStats();
-            unlock('show_off');
-        }
-        if (action === 'share_card') {
-            unlock('share_card');
+            unlock('download_card');
         }
 
         // Quest usage tracking handled in QuestGiver component via localStorage
@@ -252,6 +256,7 @@ export function useAchievements() {
         check('rate_1_star', allGames.some(g => g.rating === 1));
         check('rate_10_total', allGames.filter(g => g.rating > 0).length >= 10);
         check('critics_darling', allGames.filter(g => g.rating === 5).length >= 5);
+        check('the_critic', completedGames.value.length >= 5 && completedGames.value.every(g => g.rating > 0));
 
         // 5. Completion Count
         check('complete_1', completedGames.value.length >= 1);
@@ -271,7 +276,18 @@ export function useAchievements() {
         // 8. Diversity (Platforms/Genres)
         const platforms = new Set(allGames.map(g => g.platform));
         check('platforms_3', platforms.size >= 3);
-        check('platforms_5', platforms.size >= 5);
+
+        // Full House: Check Ecosystems
+        const ecosystems = new Set();
+        allGames.forEach(g => {
+            const p = (g.platform || '').toLowerCase();
+            if (p.includes('pc') || p.includes('windows') || p.includes('mac') || p.includes('linux')) ecosystems.add('PC');
+            if (p.includes('playstation') || p.includes('ps')) ecosystems.add('PlayStation');
+            if (p.includes('xbox')) ecosystems.add('Xbox');
+            if (p.includes('nintendo') || p.includes('switch') || p.includes('wii')) ecosystems.add('Nintendo');
+            if (p.includes('mobile') || p.includes('android') || p.includes('ios')) ecosystems.add('Mobile');
+        });
+        check('full_house', ecosystems.size >= 5);
 
         const genres = new Set();
         allGames.forEach(g => {
@@ -341,7 +357,50 @@ export function useAchievements() {
 
         // 15. Stats
         check('safety_first', achievementStats.value.exported);
-        check('show_off', achievementStats.value.gamerCardDownloaded);
+        check('show_off', achievementStats.value.gamerCardDownloaded); // Still needed? show_off was removed.
+        check('download_card', achievementStats.value.gamerCardDownloaded);
+
+        // 16. New Challenges Logic
+
+        // Patient Gamer: Release Date vs Completion
+        const fiveYearsMs = 5 * 365 * 24 * 60 * 60 * 1000;
+        check('patient_gamer', completedGames.value.some(g => {
+            if (!g.completedAt || !g.released) return false;
+            return (new Date(g.completedAt) - new Date(g.released)) > fiveYearsMs;
+        }));
+
+        // Speedrunner: < 48h
+        const twoDaysMs = 48 * 60 * 60 * 1000;
+        check('speedrunner', completedGames.value.some(g => {
+            if (!g.completedAt || !g.startedAt) return false;
+            return (new Date(g.completedAt) - new Date(g.startedAt)) < twoDaysMs;
+        }));
+
+        // Master Strategist
+        const strategyCount = completedGames.value.filter(g => g.genres && g.genres.some(gen => gen.name === 'Strategy')).length;
+        check('strategy_master', strategyCount >= 3);
+
+        // Adventure Time
+        const adventureCount = completedGames.value.filter(g => g.genres && g.genres.some(gen => gen.name === 'Adventure')).length;
+        check('adventure_time', adventureCount >= 3);
+
+        // Monthly Binge
+        const monthCounts = {};
+        completedGames.value.forEach(g => {
+            if (!g.completedAt) return;
+            const key = g.completedAt.slice(0, 7); // YYYY-MM
+            monthCounts[key] = (monthCounts[key] || 0) + 1;
+        });
+        check('monthly_binge', Object.values(monthCounts).some(count => count >= 3));
+
+        // Quality Control
+        check('quality_control', droppedGames.value.some(g => g.rating === 1));
+
+        // Year of Gaming
+        const oneYearAgo = new Date();
+        oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+        const recentCompletions = completedGames.value.filter(g => g.completedAt && new Date(g.completedAt) > oneYearAgo).length;
+        check('year_of_gaming', recentCompletions >= 12);
     };
 
     const totalQuestScore = computed(() => {
