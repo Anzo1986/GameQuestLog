@@ -76,7 +76,6 @@ const achievementsList = [
     { id: 'level_5', title: 'Rising Star', description: 'Reach User Level 5.', icon: 'Sparkles', tier: 'bronze' },
     { id: 'level_10', title: 'Seasoned Pro', description: 'Reach User Level 10.', icon: 'Star', tier: 'silver' },
     { id: 'level_20', title: 'Epic Hero', description: 'Reach User Level 20.', icon: 'Crown', tier: 'platinum' },
-    { id: 'epic_hero', title: 'Epic Hero', description: 'Reach User Level 20.', icon: 'Crown', tier: 'platinum' },
     { id: 'level_50', title: 'Living Legend', description: 'Reach User Level 50.', icon: 'Zap', tier: 'platinum' },
     { id: 'level_100', title: 'Ascended', description: 'Reach User Level 100.', icon: 'Sun', tier: 'platinum', secret: true },
 
@@ -218,6 +217,10 @@ export function useAchievements() {
         const { games, playingGames, backlogGames, completedGames, droppedGames, userXP } = context;
         const allGames = games.value;
 
+        // Load specific states for checks
+        const dailyLoginState = JSON.parse(localStorage.getItem('game-tracker-daily-login') || '{}');
+        const currentStreak = dailyLoginState.currentStreak || 0;
+
         // HELPER: Validate condition. If false, revoke achievement!
         // This ensures strict consistency (e.g. completed 5 games -> unlock; remove one -> lock again).
         const check = (id, condition) => {
@@ -316,7 +319,7 @@ export function useAchievements() {
         const level = Math.floor(Math.pow(userXP.value / 500, 1 / 1.2)) + 1;
         check('level_5', level >= 5);
         check('level_10', level >= 10);
-        check('epic_hero', level >= 20); // Mapped
+        check('level_20', level >= 20);
         check('level_50', level >= 50);
         check('level_100', level >= 100);
 
@@ -357,7 +360,6 @@ export function useAchievements() {
 
         // 15. Stats
         check('safety_first', achievementStats.value.exported);
-        check('show_off', achievementStats.value.gamerCardDownloaded); // Still needed? show_off was removed.
         check('download_card', achievementStats.value.gamerCardDownloaded);
 
         // 16. New Challenges Logic
@@ -401,6 +403,23 @@ export function useAchievements() {
         oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
         const recentCompletions = completedGames.value.filter(g => g.completedAt && new Date(g.completedAt) > oneYearAgo).length;
         check('year_of_gaming', recentCompletions >= 12);
+
+        // 17. Missing Logic Implementation
+        // Streaks
+        check('streak_3', currentStreak >= 3);
+        check('streak_7', currentStreak >= 7);
+        check('streak_30', currentStreak >= 30);
+
+        // Perfectionist (100% completion rate, min 5 total games)
+        // Rate = Completed / (Total - Dropped) or just Completed / Total?
+        // Usually "Completion Rate" excludes Backlog? Or implies Backlog must be empty?
+        // Let's assume: All non-dropped games are completed.
+        // Or: If you have games, percentage of "active" games that are completed.
+        // Let's use: (Completed / (Total - Dropped)) * 100 === 100
+        const validGamesCount = allGames.length - droppedGames.value.length;
+        if (validGamesCount >= 5) {
+            check('rate_100_percent', completedGames.value.length === validGamesCount);
+        }
     };
 
     const totalQuestScore = computed(() => {
