@@ -49,10 +49,7 @@ const emit = defineEmits(['click-game', 'update-status', 'delete-game']);
                     }"
                 />
 
-                <!-- Completed Badge -->
-                <div v-if="game.status === 'completed' && game.rating" class="absolute bottom-16 right-2 flex bg-yellow-500 text-black text-xs font-bold px-2 py-0.5 rounded shadow pointer-events-none items-center gap-1 z-10">
-                    <span class="text-[10px]">★</span> {{ game.rating }}
-                </div>
+
 
                 <!-- Dropped Badge -->
                 <div v-if="game.status === 'dropped'" class="absolute top-2 right-2 bg-gray-600/80 backdrop-blur text-white text-xs font-bold px-2 py-1 rounded shadow pointer-events-none z-10">
