@@ -51,10 +51,7 @@ const emit = defineEmits(['click-game', 'update-status', 'delete-game']);
 
 
 
-                <!-- Dropped Badge -->
-                <div v-if="game.status === 'dropped'" class="absolute top-2 right-2 bg-gray-600/80 backdrop-blur text-white text-xs font-bold px-2 py-1 rounded shadow pointer-events-none z-10">
-                    DROPPED
-                </div>
+
             </div>
 
             <!-- Empty State -->
