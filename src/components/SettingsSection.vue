@@ -121,6 +121,7 @@ const forceUpdate = async () => {
     // 3. Force Reload
     window.location.reload(true);
 };
+const version = __APP_VERSION__;
 </script>
 
 <template>
@@ -261,7 +262,7 @@ const forceUpdate = async () => {
       </div>
 
       <div class="text-center pb-4">
-           <p class="text-xs text-gray-500 font-mono">v0.8.5</p>
+           <p class="text-xs text-gray-500 font-mono">v{{ version }}</p>
       </div>
     </div>
   </div>

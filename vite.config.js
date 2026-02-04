@@ -3,9 +3,13 @@ import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
 
 import { fileURLToPath, URL } from 'node:url'
+import packageJson from './package.json'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  define: {
+    '__APP_VERSION__': JSON.stringify(packageJson.version)
+  },
   plugins: [
     vue(),
     VitePWA({
