@@ -38,7 +38,7 @@ export default defineConfig({
       }
     })
   ],
-  base: '/GameQuestLog/', // Base path for GitHub Pages
+  base: process.env.NODE_ENV === 'production' ? '/GameQuestLog/' : '/', // Base path for GitHub Pages only in prod
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))

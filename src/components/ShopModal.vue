@@ -80,11 +80,25 @@ const handleTouchEnd = (e) => {
     <div 
         @touchstart="handleTouchStart"
         @touchend="handleTouchEnd"
-        class="relative w-full max-w-2xl h-[70vh] bg-gray-900 border border-gray-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200"
+        class="relative w-full max-w-2xl h-[70vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200 isolation-auto"
+        :class="getCardClasses(getEquippedItem('card_style')?.value)"
     >
+      <!-- NOTE: For Shop, we should probably stick to the equipped style OR preview style? 
+           Let's just use equipped style for the modal border. 
+           Wait, user might want to see the effect applied to the modal when PREVIEWING? 
+           Implementation plan said "Shop Window itself". Let's stick to equipped style for consistency across apps.
+      -->
+      <!-- Re-doing class binding to just use equipped style -->
+       <div v-if="getEquippedItem('card_style')?.value === 'prism'" class="absolute -inset-[3px] rounded-3xl bg-gradient-to-tr from-red-500 via-green-500 to-blue-500 z-0 animate-spin-slow opacity-80 blur-sm pointer-events-none"></div>
+       <div v-if="getEquippedItem('card_style')?.value === 'prism'" class="absolute -inset-[3px] rounded-3xl bg-gradient-to-tr from-red-500 via-green-500 to-blue-500 z-0 animate-spin-slow pointer-events-none"></div>
+       
+       <GameCardInnerEffects :style-name="getEquippedItem('card_style')?.value" />
+
+       <!-- Content Wrapper -->
+       <div class="relative z-10 w-full h-full flex flex-col bg-gray-900/0">
       
       <!-- Header -->
-      <div class="p-6 border-b border-gray-800 flex justify-between items-center bg-gray-900/50 backdrop-blur z-20 sticky top-0">
+      <div class="p-6 border-b border-gray-800 bg-gray-900/95 backdrop-blur z-20 sticky top-0 flex justify-between items-center">
          <div class="flex items-center gap-3">
              <div class="bg-yellow-500/20 p-2 rounded-xl text-yellow-500">
                  <ShoppingBag class="w-6 h-6" />
@@ -283,6 +297,7 @@ const handleTouchEnd = (e) => {
               </div>
           </div>
       </div>
+      </div> <!-- End Content Wrapper -->
     </div>
   </div>
 </template>

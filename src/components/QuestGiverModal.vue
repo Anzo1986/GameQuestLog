@@ -2,6 +2,9 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { X, Dices, Swords, RotateCw, CheckCircle2 } from 'lucide-vue-next';
 import { useGames } from '../composables/useGames';
+import { useShop } from '../composables/useShop';
+import { useCardStyles } from '../composables/useCardStyles';
+import GameCardInnerEffects from './GameCardInnerEffects.vue';
 import confetti from 'canvas-confetti';
 
 const props = defineProps({
@@ -10,7 +13,12 @@ const props = defineProps({
 
 const emit = defineEmits(['close']);
 
+
+
 const { games, updateStatus, awardXP, incrementQuestUsage } = useGames();
+const { getEquippedItem } = useShop();
+const { getCardClasses } = useCardStyles();
+const equippedStyle = computed(() => getEquippedItem('card_style'));
 
 // Filter only backlog games
 const backlogGames = computed(() => games.value.filter(g => g.status === 'backlog'));
@@ -102,7 +110,17 @@ onUnmounted(() => {
     <div class="absolute inset-0 bg-black/95 backdrop-blur-md" @click="!isRolling && $emit('close')"></div>
 
     <!-- Modal Content -->
-    <div class="relative w-full max-w-md bg-gray-900 border border-purple-500/30 rounded-3xl shadow-2xl overflow-hidden flex flex-col items-center p-6 text-center animate-in fade-in zoom-in duration-300">
+    <div class="relative w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col items-center p-6 text-center animate-in fade-in zoom-in duration-300 isolation-auto"
+         :class="getCardClasses(equippedStyle?.value)"
+    >
+        <!-- PRISM BORDER ANIMATION (Behind) -->
+        <div v-if="equippedStyle?.value === 'prism'" class="absolute -inset-[3px] rounded-3xl bg-gradient-to-tr from-red-500 via-green-500 to-blue-500 z-0 animate-spin-slow opacity-80 blur-sm pointer-events-none"></div>
+        <div v-if="equippedStyle?.value === 'prism'" class="absolute -inset-[3px] rounded-3xl bg-gradient-to-tr from-red-500 via-green-500 to-blue-500 z-0 animate-spin-slow pointer-events-none"></div>
+        
+        <GameCardInnerEffects :style-name="equippedStyle?.value" />
+
+        <!-- Content Wrapper -->
+        <div class="relative z-10 w-full h-full flex flex-col items-center bg-gray-900/0">
       
       <!-- Close Button -->
       <button 
@@ -177,6 +195,7 @@ onUnmounted(() => {
           ROLLING FATE...
       </div>
 
+      </div> <!-- End Content Wrapper -->
     </div>
   </div>
 </template>

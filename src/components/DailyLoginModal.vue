@@ -1,6 +1,9 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useDailyLogin } from '../composables/useDailyLogin';
+import { useShop } from '../composables/useShop';
+import { useCardStyles } from '../composables/useCardStyles';
+import GameCardInnerEffects from './GameCardInnerEffects.vue';
 import { X, Coins, Check, Zap } from 'lucide-vue-next';
 
 const props = defineProps({
@@ -10,6 +13,10 @@ const props = defineProps({
 const emit = defineEmits(['close']);
 
 const { checkLogin, claimBonus } = useDailyLogin();
+const { getEquippedItem } = useShop();
+const { getCardClasses } = useCardStyles();
+const equippedStyle = computed(() => getEquippedItem('card_style'));
+
 const currentStatus = ref({ streak: 1 });
 const justClaimed = ref(false);
 const rewardAmount = ref(0);
@@ -100,7 +107,17 @@ const getDayClass = (day) => {
   <div v-if="isOpen" class="fixed inset-0 z-[80] flex items-center justify-center p-4">
     <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="$emit('close')"></div>
 
-    <div class="relative w-full max-w-lg bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in duration-300">
+    <div class="relative w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in duration-300 isolation-auto"
+         :class="getCardClasses(equippedStyle?.value)"
+    >
+        <!-- PRISM BORDER ANIMATION (Behind) -->
+        <div v-if="equippedStyle?.value === 'prism'" class="absolute -inset-[3px] rounded-2xl bg-gradient-to-tr from-red-500 via-green-500 to-blue-500 z-0 animate-spin-slow opacity-80 blur-sm pointer-events-none"></div>
+        <div v-if="equippedStyle?.value === 'prism'" class="absolute -inset-[3px] rounded-2xl bg-gradient-to-tr from-red-500 via-green-500 to-blue-500 z-0 animate-spin-slow pointer-events-none"></div>
+        
+        <GameCardInnerEffects :style-name="equippedStyle?.value" />
+
+        <!-- Content Wrapper -->
+        <div class="relative z-10 w-full h-full flex flex-col bg-gray-900/0">
         
         <!-- Header -->
         <div class="p-6 bg-gray-800/50 border-b border-gray-700 flex justify-between items-center">
@@ -165,6 +182,7 @@ const getDayClass = (day) => {
             </div>
         </div>
 
+        </div> <!-- End Content Wrapper -->
     </div>
       <!-- Particles Layer -->
       <div v-if="particles.length > 0" class="absolute inset-0 pointer-events-none overflow-hidden z-[100]">

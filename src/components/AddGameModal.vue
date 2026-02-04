@@ -96,15 +96,15 @@ const handleAdd = (game) => {
 </script>
 
 <template>
-  <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div v-if="isOpen" class="fixed inset-0 z-50 flex items-start justify-center p-4 pt-12">
     <!-- Backdrop -->
     <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="$emit('close')"></div>
 
     <!-- Modal Content -->
-    <div class="relative bg-gray-900 w-full max-w-lg rounded-2xl shadow-2xl border border-gray-700 flex flex-col max-h-[85vh] overflow-hidden animate-in fade-in zoom-in duration-200">
+    <div class="relative bg-gray-900 w-full max-w-lg rounded-2xl shadow-2xl border border-gray-700 flex flex-col max-h-[85vh] overflow-hidden animate-in fade-in zoom-in duration-200 mt-4">
       
       <!-- Header -->
-      <div class="p-4 border-b border-gray-700 flex items-center gap-3">
+      <div class="p-4 border-b border-gray-700 flex items-center gap-3 bg-gray-900 z-10">
         <template v-if="!showManualForm">
             <Search class="w-5 h-5 text-gray-400" />
             <input 

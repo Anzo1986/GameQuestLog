@@ -3,7 +3,10 @@ import { computed, ref } from 'vue';
 import { useAchievements } from '../composables/useAchievements';
 import { X, Trophy, Lock, Filter, Coins } from 'lucide-vue-next';
 import * as LucideIcons from 'lucide-vue-next';
+import { useShop } from '../composables/useShop';
+import { useCardStyles } from '../composables/useCardStyles';
 import AchievementClaimOverlay from './AchievementClaimOverlay.vue';
+import GameCardInnerEffects from './GameCardInnerEffects.vue';
 
 const props = defineProps({
   isOpen: Boolean
@@ -12,6 +15,10 @@ const props = defineProps({
 const emit = defineEmits(['close']);
 
 const { achievementsList, unlockedAchievements, totalQuestScore, claim } = useAchievements();
+const { getEquippedItem } = useShop();
+const { getCardClasses } = useCardStyles();
+
+const equippedStyle = computed(() => getEquippedItem('card_style'));
 
 const getIcon = (name) => {
   return LucideIcons[name] || Trophy;
@@ -178,13 +185,26 @@ useSwipe(modalContainer, {
   <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
     <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="$emit('close')"></div>
     
-    <div ref="modalContainer" class="relative bg-gray-900 w-full max-w-4xl rounded-2xl shadow-xl border border-gray-700 max-h-[85vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200 touch-pan-y">
+    <div ref="modalContainer" 
+         class="relative w-full max-w-4xl rounded-2xl shadow-xl border border-gray-700 max-h-[85vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200 touch-pan-y isolation-auto"
+         :class="getCardClasses(equippedStyle?.value)"
+    >
       
+      <!-- PRISM BORDER ANIMATION (Behind) -->
+      <div v-if="equippedStyle?.value === 'prism'" class="absolute -inset-[3px] rounded-2xl bg-gradient-to-tr from-red-500 via-green-500 to-blue-500 z-0 animate-spin-slow opacity-80 blur-sm pointer-events-none"></div>
+      <div v-if="equippedStyle?.value === 'prism'" class="absolute -inset-[3px] rounded-2xl bg-gradient-to-tr from-red-500 via-green-500 to-blue-500 z-0 animate-spin-slow pointer-events-none"></div>
+
+      <!-- Inner Effects -->
+      <GameCardInnerEffects :style-name="equippedStyle?.value" />
+      
+      <!-- Content Wrapper (z-10 to stay above effects) -->
+      <div class="relative z-10 w-full h-full flex flex-col bg-gray-900/0"> <!-- Transparent bg to let effects show -->
+
       <!-- Header -->
       <div class="p-6 border-b border-gray-800 bg-gray-900/95 sticky top-0 z-10 space-y-4">
          
-         <!-- Top Row: Title & Close -->
-         <div class="flex justify-between items-start">
+      <!-- Top Row: Title & Close -->
+          <div class="flex justify-between items-start">
              <div>
                  <h2 class="text-2xl font-black text-white flex items-center gap-3">
                     <Trophy class="w-8 h-8 text-yellow-500" />
@@ -239,7 +259,7 @@ useSwipe(modalContainer, {
       </div>
 
       <!-- List -->
-      <div class="flex-1 overflow-y-auto p-6">
+      <div class="flex-1 overflow-y-auto p-6 relative z-10">
          <!-- Empty State -->
          <div v-if="filteredAchievements.length === 0" class="text-center py-12 text-gray-500">
              <Filter class="w-12 h-12 mx-auto mb-3 opacity-20" />
@@ -320,6 +340,7 @@ useSwipe(modalContainer, {
          </div>
       </div>
       
+      </div> <!-- End Content Wrapper -->
     </div>
 
     <!-- Claim Overlay -->
