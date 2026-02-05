@@ -198,7 +198,7 @@ useSwipe(modalContainer, {
       <GameCardInnerEffects :style-name="equippedStyle?.value" />
       
       <!-- Content Wrapper (z-10 to stay above effects) -->
-      <div class="relative z-10 w-full h-full flex flex-col bg-gray-900/0"> <!-- Transparent bg to let effects show -->
+      <div class="relative z-10 w-full h-full flex flex-col min-h-0 bg-gray-900/0"> <!-- Transparent bg to let effects show -->
 
       <!-- Header -->
       <div class="p-6 border-b border-gray-800 bg-gray-900/95 sticky top-0 z-10 space-y-4">
@@ -259,7 +259,7 @@ useSwipe(modalContainer, {
       </div>
 
       <!-- List -->
-      <div class="flex-1 overflow-y-auto p-6 relative z-10">
+      <div class="flex-1 min-h-0 overflow-y-auto p-6 relative z-10">
          <!-- Empty State -->
          <div v-if="filteredAchievements.length === 0" class="text-center py-12 text-gray-500">
              <Filter class="w-12 h-12 mx-auto mb-3 opacity-20" />
