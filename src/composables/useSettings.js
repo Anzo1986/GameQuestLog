@@ -4,11 +4,13 @@ const API_KEY_STORAGE_KEY = 'game-tracker-api-key';
 const USER_STORAGE_KEY = 'game-tracker-user';
 const THEME_STORAGE_KEY = 'game-tracker-theme';
 const SORT_STORAGE_KEY = 'game-tracker-sort';
+const VIEW_MODE_STORAGE_KEY = 'game-tracker-view-mode';
 
 // Shared State
 const apiKey = ref(localStorage.getItem(API_KEY_STORAGE_KEY) || '');
 const themeColor = ref(localStorage.getItem(THEME_STORAGE_KEY) || 'blue');
 const sortOption = ref(localStorage.getItem(SORT_STORAGE_KEY) || 'dateDesc');
+const viewMode = ref(localStorage.getItem(VIEW_MODE_STORAGE_KEY) || 'grid');
 const userName = ref('Guest');
 const userAvatar = ref(null);
 const selectedTitle = ref(null);
@@ -95,11 +97,16 @@ watch(sortOption, (newVal) => {
     localStorage.setItem(SORT_STORAGE_KEY, newVal);
 });
 
+watch(viewMode, (newVal) => {
+    localStorage.setItem(VIEW_MODE_STORAGE_KEY, newVal);
+});
+
 export function useSettings() {
     return {
         apiKey,
         themeColor,
         sortOption,
+        viewMode,
         userName,
         userAvatar,
         selectedTitle,

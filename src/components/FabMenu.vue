@@ -17,10 +17,10 @@ const openModal = (modalName) => {
 </script>
 
 <template>
-    <div class="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3" @touchstart.stop>
+    <div class="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3 pointer-events-none" @touchstart.stop>
 
         <!-- Initial Actions (Hidden by default, slide up when menu open) -->
-        <div class="flex flex-col gap-3 transition-all duration-300 origin-bottom" :class="isMenuOpen ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-10 scale-0 pointer-events-none'">
+        <div class="flex flex-col gap-3 transition-all duration-300 origin-bottom pointer-events-auto" :class="isMenuOpen ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-10 scale-0 pointer-events-none'">
              
              <!-- Add Game -->
             <button 
@@ -71,7 +71,7 @@ const openModal = (modalName) => {
         <!-- Main Menu Button -->
         <button 
             @click="toggleMenu"
-            class="bg-primary hover:bg-primary/90 text-white p-4 rounded-full shadow-2xl transition-all active:scale-90 border-4 border-gray-900 z-50 group"
+            class="bg-primary hover:bg-primary/90 text-white p-4 rounded-full shadow-2xl transition-all active:scale-90 border-4 border-gray-900 z-50 group pointer-events-auto"
         >
             <Menu class="w-8 h-8 transition-transform duration-300 scale-100 rotate-0" v-if="!isMenuOpen" />
             <X class="w-8 h-8 transition-transform duration-300 scale-100 rotate-90" v-else />

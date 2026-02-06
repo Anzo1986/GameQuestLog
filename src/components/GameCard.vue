@@ -11,7 +11,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['update-status', 'delete']);
+const emit = defineEmits(['update-status', 'delete', 'open-details']);
 const { rateGame } = useGames();
 const { getEquippedItem } = useShop();
 
@@ -52,14 +52,18 @@ const isNew = computed(() => {
 </script>
 
 <template>
-  <div 
-    class="group relative bg-gray-800 rounded-xl overflow-hidden shadow-md transition-transform active:scale-95 touch-manipulation min-w-0 backface-hidden will-change-transform flex flex-col h-full"
-    :class="{
-        'border-2 border-yellow-500/50 shadow-[0_0_15px_rgba(234,179,8,0.2)]': equippedStyle?.value === 'gold',
-        'border-2 border-transparent relative after:absolute after:inset-0 after:rounded-xl after:border-2 after:border-white/20 after:pointer-events-none': equippedStyle?.value === 'holo'
-    }"
-    @click="showOverlay = false"
-  >
+  <div class="group relative h-full w-full touch-manipulation min-w-0">
+    
+    <!-- Main Card Content (Clickable) -->
+    <div 
+        class="relative bg-gray-800 rounded-xl overflow-hidden shadow-md transition-transform active:scale-95 touch-manipulation min-w-0 backface-hidden will-change-transform flex flex-col h-full z-0 cursor-pointer"
+        :class="{
+            'border-2 border-yellow-500/50 shadow-[0_0_15px_rgba(234,179,8,0.2)]': equippedStyle?.value === 'gold',
+            'border-2 border-transparent relative after:absolute after:inset-0 after:rounded-xl after:border-2 after:border-white/20 after:pointer-events-none': equippedStyle?.value === 'holo'
+        }"
+
+        @click="$emit('open-details')"
+    >
     
     <!-- Holo Static Sheen (Subtle) -->
     <div v-if="equippedStyle?.value === 'holo'" class="absolute inset-0 z-20 pointer-events-none bg-gradient-to-tr from-transparent via-white/5 to-transparent mix-blend-overlay"></div>
@@ -76,10 +80,7 @@ const isNew = computed(() => {
       <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent opacity-90"></div>
     </div>
 
-    <!-- Quick Actions Button (Top Right) -->
-    <button @click.stop="toggleOverlay" class="absolute top-2 right-2 p-1.5 bg-gray-900/80 text-white rounded-full hover:bg-black z-20">
-        <MoreVertical class="w-5 h-5" />
-    </button>
+
 
     <!-- NEW Badge (Top Left) -->
     <div v-if="isNew" class="absolute top-2 left-2 bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-lg z-20 animate-pulse border border-blue-400">
@@ -98,42 +99,54 @@ const isNew = computed(() => {
           <div v-if="game.rating > 0" class="flex text-yellow-400 text-[9px] items-center gap-0.5"><Star class="w-2.5 h-2.5 fill-yellow-400" /> {{ game.rating }}</div>
       </div>
     </div>
+    
+    </div>
+
+    <!-- Quick Actions Button (NOW OUTSIDE Clickable Container) -->
+    <button 
+        @pointerdown.stop.prevent="toggleOverlay" 
+        @click.stop 
+        class="absolute top-2 right-2 p-2 sm:p-1.5 bg-gray-900/80 text-white rounded-full hover:bg-black z-20 pointer-events-auto shadow-md"
+    >
+        <MoreVertical class="w-5 h-5" />
+    </button>
 
     <!-- Quick Action Overlay -->
-    <div v-if="showOverlay" class="absolute inset-0 bg-gray-900/95 z-30 flex flex-col items-center justify-center gap-3 p-4 animate-in fade-in zoom-in duration-200" @click.stop>
+    <div v-if="showOverlay" class="absolute inset-0 bg-gray-900/95 z-30 flex flex-col items-center justify-center gap-1.5 p-2 animate-in fade-in zoom-in duration-200" @click.stop>
         
-        <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Update Status</h4>
+        <h4 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-0.5">Update Status</h4>
         
-        <div class="grid grid-cols-2 gap-2 w-full">
-            <button @click="updateAndClose('playing')" :class="['p-2 rounded text-xs font-bold flex items-center justify-center gap-1', game.status === 'playing' ? 'bg-primary text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700']">
-                <Play class="w-3 h-3" /> Play
+        <div class="grid grid-cols-2 gap-1.5 w-full">
+            <button @click="updateAndClose('playing')" :class="['p-1.5 rounded text-[10px] font-bold flex items-center justify-center gap-1', game.status === 'playing' ? 'bg-primary text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700']">
+                <Play class="w-2.5 h-2.5" /> Play
             </button>
-            <button @click="updateAndClose('completed')" :class="['p-2 rounded text-xs font-bold flex items-center justify-center gap-1', game.status === 'completed' ? 'bg-green-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700']">
-                <Check class="w-3 h-3" /> Done
+            <button @click="updateAndClose('completed')" :class="['p-1.5 rounded text-[10px] font-bold flex items-center justify-center gap-1', game.status === 'completed' ? 'bg-green-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700']">
+                <Check class="w-2.5 h-2.5" /> Done
             </button>
-            <button @click="updateAndClose('backlog')" :class="['p-2 rounded text-xs font-bold flex items-center justify-center gap-1', game.status === 'backlog' ? 'bg-yellow-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700']">
-                <Layers class="w-3 h-3" /> Backlog
+            <button @click="updateAndClose('backlog')" :class="['p-1.5 rounded text-[10px] font-bold flex items-center justify-center gap-1', game.status === 'backlog' ? 'bg-yellow-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700']">
+                <Layers class="w-2.5 h-2.5" /> Backlog
             </button>
-            <button @click="updateAndClose('dropped')" :class="['p-2 rounded text-xs font-bold flex items-center justify-center gap-1', game.status === 'dropped' ? 'bg-gray-500 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700']">
-                <Ban class="w-3 h-3" /> Drop
+            <button @click="updateAndClose('dropped')" :class="['p-1.5 rounded text-[10px] font-bold flex items-center justify-center gap-1', game.status === 'dropped' ? 'bg-gray-500 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700']">
+                <Ban class="w-2.5 h-2.5" /> Drop
             </button>
         </div>
 
         <!-- Quick Rate -->
-        <div class="flex gap-1 mt-1">
+        <div class="flex gap-0.5 mt-0.5">
             <button v-for="star in 5" :key="star" @click.stop="rateAndClose(star)">
-               <Star class="w-5 h-5" :class="star <= (game.rating || 0) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-600'" />
+               <Star class="w-4 h-4" :class="star <= (game.rating || 0) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-600'" />
             </button>
         </div>
 
-        <button @click.stop="$emit('delete', game.id)" class="mt-2 text-red-400 text-xs hover:text-white flex items-center gap-1">
-            <Trash2 class="w-3 h-3" /> Delete Game
+        <button @click.stop="$emit('delete', game.id)" class="mt-1 text-red-400 text-[10px] hover:text-white flex items-center gap-1">
+            <Trash2 class="w-2.5 h-2.5" /> Delete
         </button>
 
-        <button @click.stop="showOverlay = false" class="absolute top-2 right-2 text-gray-500 hover:text-white">
-            <X class="w-5 h-5" />
+        <button @click.stop="showOverlay = false" class="absolute top-1 right-1 p-1 text-gray-500 hover:text-white">
+            <X class="w-4 h-4" />
         </button>
     </div>
+
 
   </div>
 </template>

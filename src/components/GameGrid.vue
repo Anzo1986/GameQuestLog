@@ -1,5 +1,7 @@
 <script setup>
 import GameCard from './GameCard.vue';
+import GameListCard from './GameListCard.vue';
+import { useSettings } from '../composables/useSettings';
 
 defineProps({
     games: {
@@ -21,6 +23,8 @@ defineProps({
 });
 
 const emit = defineEmits(['click-game', 'update-status', 'delete-game']);
+
+const { viewMode } = useSettings();
 </script>
 
 <template>
@@ -29,17 +33,18 @@ const emit = defineEmits(['click-game', 'update-status', 'delete-game']);
             {{ title }}
         </h2>
         
-        <div class="grid grid-cols-[1fr_1fr] sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-1.5 sm:gap-2">
+        <div :class="viewMode === 'grid' ? 'grid grid-cols-[1fr_1fr] sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-1.5 sm:gap-2' : 'flex flex-col gap-2'">
             
             <div 
                 v-for="(game, index) in games" 
                 :key="game.id" 
-                class="relative group animate-stagger-enter w-full" 
+                class="relative group animate-stagger-enter w-full hover:z-20 min-w-0" 
                 :style="{ animationDelay: `${index * 50}ms` }"
             >
                  <GameCard 
+                    v-if="viewMode === 'grid'"
                     :game="game" 
-                    @click="$emit('click-game', game.id)"
+                    @open-details="$emit('click-game', game.id)"
                     @update-status="(id, status) => $emit('update-status', id, status)"
                     @delete="(id) => $emit('delete-game', id)"
                     class="cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all shadow-sm w-full"
@@ -47,6 +52,11 @@ const emit = defineEmits(['click-game', 'update-status', 'delete-game']);
                         'grayscale hover:grayscale-0': game.status === 'dropped',
                         'hover:ring-green-500': game.status === 'completed'
                     }"
+                />
+                <GameListCard 
+                    v-else
+                    :game="game"
+                    @open-details="$emit('click-game', game.id)"
                 />
 
 
