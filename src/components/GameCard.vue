@@ -105,8 +105,8 @@ const isNew = computed(() => {
     <!-- Quick Actions Button (NOW OUTSIDE Clickable Container) -->
     <button 
         @pointerdown.stop.prevent="toggleOverlay" 
-        @click.stop 
-        class="absolute top-2 right-2 p-2 sm:p-1.5 bg-gray-900/80 text-white rounded-full hover:bg-black z-20 pointer-events-auto shadow-md"
+        @click.stop.prevent 
+        class="absolute top-2 right-2 p-2 sm:p-1.5 bg-gray-900/80 text-white rounded-full hover:bg-black z-40 pointer-events-auto shadow-md"
     >
         <MoreVertical class="w-5 h-5" />
     </button>
