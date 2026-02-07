@@ -71,7 +71,7 @@ const backgroundImage = computed(() => props.game.background_image || null);
     <button 
         @pointerdown.stop.prevent="showOverlay = !showOverlay" 
         @click.stop
-        class="absolute right-1 top-1/2 -translate-y-1/2 z-50 p-3 text-gray-400 bg-gray-800/80 rounded-full hover:bg-gray-700 hover:text-white transition-all backdrop-blur-sm shadow-sm border border-gray-700/50 active:scale-90"
+        class="absolute right-1 top-1/2 -translate-y-1/2 z-50 p-3 text-gray-400 rounded-full hover:bg-gray-700 hover:text-white transition-all active:scale-90"
         style="touch-action: manipulation;"
     >
         <MoreVertical class="w-5 h-5" />
