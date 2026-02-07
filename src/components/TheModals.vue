@@ -15,6 +15,7 @@ import LevelUpOverlay from './LevelUpOverlay.vue';
 import VictoryOverlay from './VictoryOverlay.vue';
 import ShopModal from './ShopModal.vue';
 import DailyLoginModal from './DailyLoginModal.vue';
+import ConfirmModal from './ConfirmModal.vue';
 
 const { activeModal, modalProps, openModal } = useModals(); // Added openModal
 const { updateStatus, removeGame, userLevel, userTitle } = useGames();
@@ -69,6 +70,18 @@ const handleClose = () => {
         :game="modalProps.game" 
         :xp-gained="modalProps.xpGained" 
         @close="handleClose" 
+        @close="handleClose" 
+    />
+
+    <ConfirmModal 
+        v-if="activeModal === 'confirm'"
+        :is-open="true"
+        :title="modalProps.title"
+        :message="modalProps.message"
+        :confirm-text="modalProps.confirmText"
+        :confirm-color="modalProps.confirmColor"
+        @close="handleClose"
+        @confirm="() => { modalProps.onConfirm?.(); handleClose(); }"
     />
   </div>
 </template>

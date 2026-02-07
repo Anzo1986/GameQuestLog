@@ -98,9 +98,22 @@ const displayGames = computed(() => {
     }
 });
 
-// Open Game Details (Used in GameCard click)
 const openGameDetails = (gameId) => {
     openModal('gameDetail', { gameId, onUpdateStatus: handleUpdateStatus });
+};
+
+// Confirm Delete Handler
+const confirmDelete = (gameId) => {
+    const game = games.value.find(g => g.id === gameId);
+    if (!game) return;
+    
+    openModal('confirm', {
+        title: 'Delete Game?',
+        message: `Are you sure you want to delete "${game.title}"? This action cannot be undone and will remove all associated XP and progress.`,
+        confirmText: 'Delete',
+        confirmColor: 'bg-red-500 hover:bg-red-600',
+        onConfirm: () => removeGame(gameId)
+    });
 };
 
 onMounted(() => {
@@ -244,7 +257,7 @@ useSwipe(mainContainer, {
           :search-query="localSearchQuery"
           @click-game="openGameDetails"
           @update-status="handleUpdateStatus"
-          @delete-game="removeGame"
+          @delete-game="confirmDelete"
       />
 
       <!-- Backlog -->
@@ -256,7 +269,7 @@ useSwipe(mainContainer, {
           :search-query="localSearchQuery"
           @click-game="openGameDetails"
           @update-status="updateStatus"
-          @delete-game="removeGame"
+          @delete-game="confirmDelete"
       />
 
       <!-- Completed -->
@@ -268,7 +281,7 @@ useSwipe(mainContainer, {
           :search-query="localSearchQuery"
           @click-game="openGameDetails"
           @update-status="updateStatus"
-          @delete-game="removeGame"
+          @delete-game="confirmDelete"
       />
 
       <!-- Dropped -->
