@@ -12,6 +12,7 @@ import SmartBar from './components/SmartBar.vue';
 import AppNavigation from './components/AppNavigation.vue';
 import GameGrid from './components/GameGrid.vue';
 import FabMenu from './components/FabMenu.vue';
+import ToastNotification from './components/ToastNotification.vue';
 
 import { useGames } from './composables/useGames';
 import { useAchievements } from './composables/useAchievements';
@@ -20,12 +21,14 @@ import { useGameFilters } from './composables/useGameFilters';
 import { useSettings } from './composables/useSettings';
 import { useShop } from './composables/useShop';
 import { useModals } from './composables/useModals';
+import { useToast } from './composables/useToast';
 import { Settings, Bell } from 'lucide-vue-next';
 
 const { playingGames, backlogGames, completedGames, droppedGames, updateStatus, removeGame, games, userXP, userLevel } = useGames();
 const { checkAchievements } = useAchievements();
 const { getEquippedItem } = useShop();
-const { getEquippedTheme } = useSettings();
+const { getEquippedTheme, lastBackup } = useSettings();
+const { showToast } = useToast();
 
 const equippedBackground = computed(() => getEquippedItem('background'));
 
@@ -230,6 +233,8 @@ useSwipe(mainContainer, {
     <UserProfile @open-stats="openModal('stats')" @open-gamer-card="openModal('gamerCard')" />
 
     <AchievementToast />
+    <AchievementToast />
+    <ToastNotification />
     <TheModals />
     
     <SmartBar 

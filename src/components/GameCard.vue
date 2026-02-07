@@ -61,7 +61,8 @@ const isNew = computed(() => {
             'border-2 border-yellow-500/50 shadow-[0_0_15px_rgba(234,179,8,0.2)]': equippedStyle?.value === 'gold',
             'border-2 border-transparent relative after:absolute after:inset-0 after:rounded-xl after:border-2 after:border-white/20 after:pointer-events-none': equippedStyle?.value === 'holo'
         }"
-
+        tabindex="0"
+        @keydown.enter="$emit('open-details')"
         @click="$emit('open-details')"
     >
     

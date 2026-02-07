@@ -1,8 +1,9 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { Download, Upload, Key, Save, User, Check, X, RefreshCw } from 'lucide-vue-next';
 import { useGames } from '../composables/useGames';
 import { useAchievements } from '../composables/useAchievements';
+import { useSettings } from '../composables/useSettings';
 
 const emit = defineEmits(['close']);
 
@@ -15,6 +16,18 @@ const {
 } = useGames();
 
 const { trackAction } = useAchievements();
+const { lastBackup } = useSettings();
+
+const lastBackupDisplay = computed(() => {
+    if (!lastBackup.value) return 'No backup recorded yet';
+    const date = new Date(lastBackup.value);
+    const now = new Date();
+    const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) return 'Last backup: Today';
+    if (diffDays === 1) return 'Last backup: Yesterday';
+    return `Last backup: ${diffDays} days ago (${date.toLocaleDateString()})`;
+});
 
 const exportData = () => {
     exportDataRaw();
@@ -239,8 +252,11 @@ const version = __APP_VERSION__;
         <div>
           <h3 class="text-sm font-medium text-gray-300 mb-3">Data Management</h3>
           <div class="flex gap-3">
-            <button @click="exportData" class="flex-1 bg-gray-800 hover:bg-gray-700 text-white py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors border border-gray-700">
-              <Download class="w-4 h-4" /> Export JSON
+            <button @click="exportData" class="flex-1 bg-gray-800 hover:bg-gray-700 text-white py-3 px-4 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors border border-gray-700">
+              <div class="flex items-center gap-2">
+                  <Download class="w-4 h-4" /> Export JSON
+              </div>
+              <span class="text-[10px] text-gray-400 font-mono">{{ lastBackupDisplay }}</span>
             </button>
             <button @click="triggerImport" class="flex-1 bg-gray-800 hover:bg-gray-700 text-white py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors border border-gray-700">
               <Upload class="w-4 h-4" /> Import JSON

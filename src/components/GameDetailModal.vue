@@ -79,10 +79,7 @@ const isRefreshing = ref(false);
 
 const handleAction = async (action, val) => {
     if (action === 'delete') {
-        if(confirm('Are you sure you want to delete this game?')) {
-            emit('delete', props.gameId);
-            emit('close');
-        }
+        emit('delete', props.gameId);
     } else {
         emit('update-status', props.gameId, val);
         emit('close');

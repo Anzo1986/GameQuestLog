@@ -18,18 +18,53 @@ import DailyLoginModal from './DailyLoginModal.vue';
 import ConfirmModal from './ConfirmModal.vue';
 
 const { activeModal, modalProps, openModal } = useModals(); // Added openModal
-const { updateStatus, removeGame, userLevel, userTitle } = useGames();
+const { updateStatus, removeGame, userLevel, userTitle, games } = useGames();
+
+// Confirm Delete from Modals
+const confirmDelete = (gameId) => {
+    const game = games.value.find(g => g.id === gameId);
+    if (!game) return;
+    
+    openModal('confirm', {
+        title: 'Delete Game?',
+        message: `Are you sure you want to delete "${game.title}"? This action cannot be undone.`,
+        confirmText: 'Delete',
+        confirmColor: 'bg-red-500 hover:bg-red-600',
+        onConfirm: () => {
+            removeGame(gameId);
+            // Close detail modal too if open? 
+            // openModal replaces current modal, so detail is already closed/hidden.
+            // But if we want to go back? 
+            // Actually openModal pushes to stack? No, useModals is simple state replacement in current impl?
+            // Let's check useModals.js later. Assuming simple replacement for now.
+        }
+    });
+};
 
 
 // Bridge events from modals to useGames or other logic
 const handleClose = () => {
-    // Usually handled by popstate which calls resetModal, but some modals emit 'close'
-    // We should triggering history.back() if they emit close?
-    // Or if the user clicked "X", they expect it to close.
-    // openModal pushed state. So we need history.back().
-    // We can use the exported closeModal from useModals in the template? No, cycle?
-    history.back(); 
+    // If detail modal is open, maybe just close it?
+    // Actually close any modal
+    history.back(); // Standard close
 };
+
+// Global Keyboard Shortcuts (Esc to close)
+import { onMounted, onUnmounted } from 'vue';
+
+const handleKeydown = (e) => {
+    if (e.key === 'Escape' && activeModal.value) {
+        handleClose();
+    }
+};
+
+onMounted(() => {
+    window.addEventListener('keydown', handleKeydown);
+});
+
+onUnmounted(() => {
+    window.removeEventListener('keydown', handleKeydown);
+});
 
 // Special Handlers
 </script>
@@ -44,7 +79,7 @@ const handleClose = () => {
       :game-id="modalProps.gameId" 
       @close="handleClose"
       @update-status="modalProps.onUpdateStatus" 
-      @delete="removeGame"
+      @delete="confirmDelete"
     />
 
     <SettingsSection v-if="activeModal === 'settings'" @close="handleClose" />
@@ -69,7 +104,6 @@ const handleClose = () => {
         v-if="activeModal === 'victory'" 
         :game="modalProps.game" 
         :xp-gained="modalProps.xpGained" 
-        @close="handleClose" 
         @close="handleClose" 
     />
 

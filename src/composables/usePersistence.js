@@ -1,5 +1,7 @@
+import { useSettings } from './useSettings';
 
 export function usePersistence() {
+    const settings = useSettings();
 
     const exportData = () => {
         const backup = {
@@ -23,11 +25,14 @@ export function usePersistence() {
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `gametracker_complete_${new Date().toISOString().slice(0, 10)}.json`;
+        link.download = `game-quest-log-backup-${new Date().toISOString().split('T')[0]}.json`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
+
+        // Update Last Backup Time
+        settings.updateLastBackup();
     };
 
     const importData = (file) => {

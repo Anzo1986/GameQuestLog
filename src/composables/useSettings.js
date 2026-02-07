@@ -11,6 +11,7 @@ const apiKey = ref(localStorage.getItem(API_KEY_STORAGE_KEY) || '');
 const themeColor = ref(localStorage.getItem(THEME_STORAGE_KEY) || 'blue');
 const sortOption = ref(localStorage.getItem(SORT_STORAGE_KEY) || 'dateDesc');
 const viewMode = ref(localStorage.getItem(VIEW_MODE_STORAGE_KEY) || 'grid');
+const lastBackup = ref(localStorage.getItem('game-tracker-last-backup') || null);
 const userName = ref('Guest');
 const userAvatar = ref(null);
 const selectedTitle = ref(null);
@@ -86,6 +87,12 @@ const setUserTitle = (title) => {
     selectedTitle.value = title;
 };
 
+const updateLastBackup = () => {
+    const now = new Date().toISOString();
+    lastBackup.value = now;
+    localStorage.setItem('game-tracker-last-backup', now);
+};
+
 // Watchers (for isolated parts)
 // Theme is isolated.
 watch(themeColor, (newColor) => {
@@ -116,6 +123,8 @@ export function useSettings() {
         setUserName,
         setUserAvatar,
         setUserTitle,
+        updateLastBackup,
+        lastBackup,
         applyTheme
     };
 }
