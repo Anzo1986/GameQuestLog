@@ -29,12 +29,18 @@ const currentEquippedId = computed(() => {
     return item ? item.id : null;
 });
 
+const justPurchasedId = ref(null);
+
 const handleAction = (item) => {
     if (isOwned(item.id)) {
         equipItem(item.id);
     } else {
         if (balance.value >= item.price) {
            const res = buyItem(item.id);
+           if (res) {
+               justPurchasedId.value = item.id;
+               setTimeout(() => justPurchasedId.value = null, 800);
+           }
         }
     }
 };
@@ -263,7 +269,12 @@ const handleTouchEnd = (e) => {
                          <div class="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
                              <div class="w-12 h-16 bg-gray-800 rounded shadow-lg border border-gray-600"></div>
                          </div>
-                     </div>
+                      </div>
+                      <!-- Purchase Flash Overlay -->
+                      <div v-if="justPurchasedId === item.id" class="absolute inset-0 z-30 flex items-center justify-center bg-white/40 animate-ping duration-1000 pointer-events-none rounded-xl"></div>
+                      <div v-if="justPurchasedId === item.id" class="absolute inset-0 z-40 flex items-center justify-center pointer-events-none">
+                           <Check class="w-12 h-12 text-green-500 drop-shadow-2xl animate-bounce" />
+                      </div>
                  </div>
 
                  <!-- Info -->

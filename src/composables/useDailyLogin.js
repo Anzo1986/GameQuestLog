@@ -68,8 +68,8 @@ export function useDailyLogin() {
             }
         }
 
-        // Cap at 30 (Loop)
-        if (potentialStreak > 30) potentialStreak = 1;
+        // Cap logic removed: Infinite Streak
+        // if (potentialStreak > 30) potentialStreak = 1;
 
         return {
             today,
@@ -84,18 +84,21 @@ export function useDailyLogin() {
 
         if (claimed) return { success: false, message: 'Already claimed' };
 
-        // Determine Reward Type based on Streak
+        // Determine Reward Type based on Cycle
+        // Cycle is 1-30. Streak increases indefinitely.
+        const cycleDay = (streak - 1) % 30 + 1;
+
         let coinReward = 0;
         let xpReward = 0;
 
-        if (streak % 5 === 0 && streak !== 30) {
+        if (cycleDay % 5 === 0 && cycleDay !== 30) {
             // Milestone Days (5, 10, 15, 20, 25) -> XP Only
-            if (streak === 5) xpReward = 50;
-            if (streak === 10) xpReward = 100;
-            if (streak === 15) xpReward = 150;
-            if (streak === 20) xpReward = 200;
-            if (streak === 25) xpReward = 250;
-        } else if (streak === 30) {
+            if (cycleDay === 5) xpReward = 50;
+            if (cycleDay === 10) xpReward = 100;
+            if (cycleDay === 15) xpReward = 150;
+            if (cycleDay === 20) xpReward = 200;
+            if (cycleDay === 25) xpReward = 250;
+        } else if (cycleDay === 30) {
             // Big Reward Day -> Coins
             coinReward = 100;
         } else {

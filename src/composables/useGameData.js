@@ -108,13 +108,20 @@ export function useGameData() {
 
         const completionRate = totalGames > 0 ? Math.round((statusCounts.completed / totalGames) * 100) : 0;
 
+        // NEW: Average Rating
+        const ratedGames = games.value.filter(g => g.rating && g.rating > 0);
+        const averageRating = ratedGames.length > 0
+            ? (ratedGames.reduce((acc, g) => acc + g.rating, 0) / ratedGames.length).toFixed(1)
+            : 'N/A';
+
         return {
             totalGames,
             statusCounts,
             genreCounts,
             platformCounts,
             totalDurationDays,
-            completionRate
+            completionRate,
+            averageRating
         };
     });
 

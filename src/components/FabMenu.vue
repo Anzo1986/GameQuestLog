@@ -14,57 +14,61 @@ const openModal = (modalName) => {
     emit('open-modal', modalName);
     isMenuOpen.value = false;
 };
+
+const menuButtons = [
+    { id: 'addGame', label: 'Add Game', icon: Plus },
+    { id: 'quest', label: 'Quest Giver', icon: Dices },
+    { id: 'shop', label: 'Loot Shop', icon: ShoppingBag },
+    { id: 'dailyLogin', label: 'Daily Bonus', icon: Calendar },
+    { id: 'achievements', label: 'Achievements', icon: Trophy }
+];
+
+const getButtonStyle = (index) => {
+    if (!isMenuOpen.value) {
+        return {
+            transform: `translateY(0) scale(0)`,
+            opacity: 0,
+            transitionDelay: '0ms'
+        };
+    }
+    
+    // Vertical Stack with Staggered Entrance
+    // Gap: 7px (0.43rem) + 48px height = 55px step (tight)
+    const step = 55; 
+    const bottomOffset = 0; // Start AT bottom of wrapper (just above main button)
+
+    
+    const y = -1 * (bottomOffset + (index * step));
+
+    return {
+        transform: `translateY(${y}px) scale(1)`,
+        opacity: 1,
+        transitionDelay: `${index * 50}ms`
+    };
+};
 </script>
 
 <template>
+    <!-- Backdrop to close when clicking outside -->
+    <div v-if="isMenuOpen" @click="toggleMenu" class="fixed inset-0 z-30 bg-black/50 transition-opacity duration-300"></div>
+
     <div class="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3 pointer-events-none" @touchstart.stop>
 
-        <!-- Initial Actions (Hidden by default, slide up when menu open) -->
-        <div class="flex flex-col gap-3 transition-all duration-300 origin-bottom pointer-events-auto" :class="isMenuOpen ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-10 scale-0 pointer-events-none'">
-             
-             <!-- Add Game -->
-            <button 
-                @click="openModal('addGame')"
-                class="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white p-3 rounded-full shadow-lg border-2 border-gray-900 group transition-all"
+        <!-- Fan-Out Menu Items (Now Vertical Stack) -->
+        <div class="relative w-14 h-14"> <!-- Anchor for absolute positioning -->
+             <button 
+                v-for="(btn, index) in menuButtons" 
+                :key="btn.id"
+                @click="openModal(btn.id)"
+                class="absolute bottom-0 right-0 bg-primary hover:bg-primary/90 text-white w-12 h-12 rounded-full shadow-lg border-2 border-gray-900 group transition-all duration-300 pointer-events-auto flex items-center justify-center z-40"
+                :style="getButtonStyle(index)"
+                :title="btn.label"
             >
-                <div class="bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 absolute right-16 transition-opacity whitespace-nowrap pointer-events-none">Add Game</div>
-                <Plus class="w-6 h-6" />
-            </button>
-
-            <!-- Quest Giver -->
-            <button 
-               @click="openModal('quest')"
-               class="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white p-3 rounded-full shadow-lg border-2 border-gray-900 group transition-all"
-            >
-                <div class="bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 absolute right-16 transition-opacity whitespace-nowrap pointer-events-none">Quest Giver</div>
-                <Dices class="w-6 h-6" />
-            </button>
-
-            <!-- Shop -->
-            <button 
-               @click="openModal('shop')"
-               class="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white p-3 rounded-full shadow-lg border-2 border-gray-900 group transition-all"
-            >
-                <div class="bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 absolute right-16 transition-opacity whitespace-nowrap pointer-events-none">Loot Shop</div>
-                <ShoppingBag class="w-6 h-6" />
-            </button>
-
-            <!-- Daily Bonus -->
-            <button 
-               @click="openModal('dailyLogin')"
-               class="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white p-3 rounded-full shadow-lg border-2 border-gray-900 group transition-all"
-            >
-                <div class="bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 absolute right-16 transition-opacity whitespace-nowrap pointer-events-none">Daily Bonus</div>
-                <Calendar class="w-6 h-6" />
-            </button>
-
-            <!-- Achievements -->
-            <button 
-               @click="openModal('achievements')"
-               class="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white p-3 rounded-full shadow-lg border-2 border-gray-900 group transition-all"
-            >
-                <div class="bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 absolute right-16 transition-opacity whitespace-nowrap pointer-events-none">Achievements</div>
-                <Trophy class="w-6 h-6" />
+                <!-- Tooltip on Left -->
+                <div class="absolute right-14 bg-gray-900 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-md border border-gray-700">
+                    {{ btn.label }}
+                </div>
+                <component :is="btn.icon" class="w-5 h-5" />
             </button>
         </div>
 

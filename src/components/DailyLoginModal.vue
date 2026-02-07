@@ -23,27 +23,35 @@ const rewardAmount = ref(0);
 const xpAmount = ref(0);
 const particles = ref([]);
 
+const cycleDay = computed(() => {
+    return (currentStatus.value.streak - 1) % 30 + 1;
+});
+
 onMounted(() => {
     const status = checkLogin();
     currentStatus.value = status;
+    
+    // Check pending reward based on CYCLE
+    const s = status.streak;
+    const dayInCycle = (s - 1) % 30 + 1;
+
     if (status.claimed) {
         justClaimed.value = true;
-        
-        // Correctly init display values based on streak
-        const s = status.streak;
-        if (s % 5 === 0 && s !== 30) {
-            // XP Day
-            rewardAmount.value = 0;
-            xpAmount.value = s * 10;
-        } else if (s === 30) {
-            // Big Coin Day
-            rewardAmount.value = 100;
-            xpAmount.value = 0;
-        } else {
-            // Normal Coin Day
-            rewardAmount.value = 5;
-            xpAmount.value = 0;
-        }
+    }
+    
+    // Init expected reward display
+    if (dayInCycle % 5 === 0 && dayInCycle !== 30) {
+        // XP Day
+        rewardAmount.value = 0;
+        xpAmount.value = dayInCycle * 10;
+    } else if (dayInCycle === 30) {
+        // Big Coin Day
+        rewardAmount.value = 100;
+        xpAmount.value = 0;
+    } else {
+        // Normal Coin Day
+        rewardAmount.value = 5;
+        xpAmount.value = 0;
     }
 });
 
@@ -102,10 +110,7 @@ const handleClaim = () => {
 };
 
 const getDayClass = (day) => {
-    const current = currentStatus.value.streak;
-    
-    // If we just claimed, we want "current" to show as claimed.
-    // If not claimed yet (justClaimed false), "current" is the active target.
+    const current = cycleDay.value; // Use 1-30 cycle
     
     if (justClaimed.value) {
         if (day <= current) return 'bg-yellow-500/20 border-yellow-500 text-yellow-500'; // Past & Current (Claimed)
@@ -137,10 +142,11 @@ const getDayClass = (day) => {
         <!-- Header -->
         <div class="p-6 bg-gray-800/50 border-b border-gray-700 flex justify-between items-center">
             <div>
-                <h2 class="text-2xl font-black text-white flex items-center gap-2">
-                    <Coins class="w-6 h-6 text-yellow-400" /> Daily Bonus
+                <h2 class="text-xl font-black text-white flex items-center gap-2">
+                    <Coins class="w-5 h-5 text-yellow-400" /> Daily Bonus
+                    <span class="ml-2 px-2 py-0.5 bg-yellow-500/20 text-yellow-400 text-xs rounded-full border border-yellow-500/50">Streak: {{ currentStatus.streak }}</span>
                 </h2>
-                <p class="text-gray-400 text-sm">Login daily to build your streak!</p>
+                <p class="text-gray-400 text-xs">Login daily to keep your streak alive!</p>
             </div>
             <button @click="$emit('close')" class="p-2 hover:bg-gray-700 rounded-full text-gray-400">
                 <X class="w-6 h-6" />
@@ -159,21 +165,21 @@ const getDayClass = (day) => {
                     <span class="text-xs font-bold mb-1">Day {{ day }}</span>
                     
                     <div v-if="day === 30" class="flex flex-col items-center">
-                         <Coins class="w-6 h-6 sm:w-8 sm:h-8 mb-1" :class="day <= currentStatus.streak ? 'text-yellow-400' : 'text-gray-600'" />
+                         <Coins class="w-6 h-6 sm:w-8 sm:h-8 mb-1" :class="day <= cycleDay ? 'text-yellow-400' : 'text-gray-600'" />
                          <span class="text-[10px] font-black">100</span>
                     </div>
                      <!-- XP Milestones -->
                     <div v-else-if="[5, 10, 15, 20, 25].includes(day)" class="flex flex-col items-center">
-                         <Zap class="w-4 h-4 sm:w-5 sm:h-5 mb-1" :class="day <= currentStatus.streak ? 'text-blue-400' : 'text-gray-600'" />
+                         <Zap class="w-4 h-4 sm:w-5 sm:h-5 mb-1" :class="day <= cycleDay ? 'text-blue-400' : 'text-gray-600'" />
                          <span class="text-[10px] font-black">{{ day * 10 }} XP</span>
                     </div>
                     <div v-else class="flex flex-col items-center">
-                         <Coins class="w-4 h-4 sm:w-5 sm:h-5 mb-1" :class="day <= currentStatus.streak ? 'text-yellow-400' : 'text-gray-600'" />
+                         <Coins class="w-4 h-4 sm:w-5 sm:h-5 mb-1" :class="day <= cycleDay ? 'text-yellow-400' : 'text-gray-600'" />
                          <span class="text-[10px] font-bold">5</span>
                     </div>
 
                     <!-- Checkmark for past days -->
-                    <div v-if="day < currentStatus.streak || (justClaimed && day === currentStatus.streak)" class="absolute inset-0 bg-black/40 flex items-center justify-center rounded-lg">
+                    <div v-if="day < cycleDay || (justClaimed && day === cycleDay)" class="absolute inset-0 bg-black/40 flex items-center justify-center rounded-lg">
                         <Check class="w-6 h-6 text-green-400 drop-shadow-md" />
                     </div>
                 </div>

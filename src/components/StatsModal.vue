@@ -1,8 +1,9 @@
 <script setup>
-import { computed } from 'vue';
-import { X, Trophy, Clock, AlertCircle, Crown } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
+import { X, Trophy, Clock, AlertCircle, Crown, Gamepad2, Monitor, Star, Flame } from 'lucide-vue-next';
 import { useGames } from '../composables/useGames';
 import { useSettings } from '../composables/useSettings';
+import { useDailyLogin } from '../composables/useDailyLogin';
 import { GENRES } from '../constants/genres';
 import {
   Chart as ChartJS,
@@ -40,6 +41,23 @@ defineEmits(['close', 'open-timeline']);
 
 const { gameStats, userLevel, userTitle } = useGames();
 const { themeColor, THEMES } = useSettings();
+const { loginState } = useDailyLogin();
+
+const activeChart = ref(null);
+
+const topGenre = computed(() => {
+    if (!gameStats.value) return 'N/A';
+    const g = gameStats.value.genreCounts;
+    const sorted = Object.entries(g).sort((a,b) => b[1] - a[1]);
+    return sorted.length > 0 ? sorted[0][0] : 'None';
+});
+
+const topPlatform = computed(() => {
+    if (!gameStats.value) return 'N/A';
+    const p = gameStats.value.platformCounts;
+    const sorted = Object.entries(p).sort((a,b) => b[1] - a[1]);
+    return sorted.length > 0 ? sorted[0][0] : 'None';
+});
 
 // Helper to get current theme RGB
 const primaryColorRgb = computed(() => {
@@ -242,7 +260,7 @@ const platformChartOptions = {
       <div class="overflow-y-auto p-6 flex-1 space-y-8 custom-scrollbar">
         
         <!-- 1. Hero Cards Grid -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4" v-if="gameStats">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4" v-if="gameStats && !activeChart">
             
             <!-- XP Level -->
             <div class="bg-gray-800/50 rounded-2xl p-4 border border-gray-700/50 flex flex-col items-center justify-center text-center relative overflow-hidden group">
@@ -250,14 +268,51 @@ const platformChartOptions = {
                 <Crown class="w-8 h-8 text-yellow-500 mb-2 drop-shadow-md" />
                 <h3 class="text-3xl font-black text-white">{{ userLevel }}</h3>
                 <p class="text-xs text-yellow-400 uppercase tracking-wider font-bold">{{ userTitle }}</p>
+                <!-- Remove View Journey text as requested -->
             </div>
 
-            <!-- Completion Rate -->
-            <div class="bg-gray-800/50 rounded-2xl p-4 border border-gray-700/50 flex flex-col items-center justify-center text-center relative overflow-hidden group">
+            <!-- LIBRARY STATUS (Opens Chart) -->
+            <div 
+                @click="activeChart = 'status'"
+                class="bg-gray-800/50 rounded-2xl p-4 border border-gray-700/50 flex flex-col items-center justify-center text-center relative overflow-hidden group hover:border-blue-500/50 transition-all cursor-pointer hover:scale-[1.02]"
+            >
+                <div class="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent group-hover:from-blue-500/20 transition-colors"></div>
+                <div class="bg-blue-500/20 p-2 rounded-full mb-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pie-chart"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+                </div>
+                <h3 class="text-xl font-black text-white">Library</h3>
+                <p class="text-xs text-blue-400 uppercase tracking-wider font-bold">Status</p>
+            </div>
+
+             <!-- NEW: Average Rating -->
+            <div 
+                class="bg-gray-800/50 rounded-2xl p-4 border border-gray-700/50 flex flex-col items-center justify-center text-center relative overflow-hidden group"
+            >
+                <div class="absolute inset-0 bg-gradient-to-br from-yellow-500/10 to-transparent group-hover:from-yellow-500/20 transition-colors"></div>
+                <Star class="w-8 h-8 text-yellow-500 mb-2 drop-shadow-md" />
+                <h3 class="text-3xl font-black text-white">{{ gameStats.averageRating }}</h3>
+                <p class="text-xs text-yellow-400 uppercase tracking-wider font-bold">Ø Rating</p>
+            </div>
+
+             <!-- NEW: Daily Streak -->
+            <div 
+                class="bg-gray-800/50 rounded-2xl p-4 border border-gray-700/50 flex flex-col items-center justify-center text-center relative overflow-hidden group"
+            >
+                <div class="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-transparent group-hover:from-orange-500/20 transition-colors"></div>
+                <Flame class="w-8 h-8 text-orange-500 mb-2 drop-shadow-md" />
+                <h3 class="text-3xl font-black text-white">{{ loginState.currentStreak }}</h3>
+                <p class="text-xs text-orange-400 uppercase tracking-wider font-bold">Daily Streak</p>
+            </div>
+
+            <!-- Completion Rate (Static) -->
+            <div 
+                class="bg-gray-800/50 rounded-2xl p-4 border border-gray-700/50 flex flex-col items-center justify-center text-center relative overflow-hidden group"
+            >
                 <div class="absolute inset-0 bg-gradient-to-br from-green-500/10 to-transparent group-hover:from-green-500/20 transition-colors"></div>
                 <Trophy class="w-8 h-8 text-green-500 mb-2 drop-shadow-md" />
                 <h3 class="text-3xl font-black text-white">{{ gameStats.completionRate }}%</h3>
                 <p class="text-xs text-green-400 uppercase tracking-wider font-bold">Completion</p>
+                <!-- Removed 'Tap for details' -->
             </div>
 
              <!-- Total Playtime -->
@@ -268,20 +323,51 @@ const platformChartOptions = {
                 <p class="text-xs text-blue-400 uppercase tracking-wider font-bold">Total Duration</p>
             </div>
 
-             <!-- Pile of Shame -->
-            <div class="bg-gray-800/50 rounded-2xl p-4 border border-gray-700/50 flex flex-col items-center justify-center text-center relative overflow-hidden group">
+            <!-- Pile of Shame (Non-Clickable) -->
+            <div 
+                class="bg-gray-800/50 rounded-2xl p-4 border border-gray-700/50 flex flex-col items-center justify-center text-center relative overflow-hidden group"
+            >
                 <div class="absolute inset-0 bg-gradient-to-br from-red-500/10 to-transparent group-hover:from-red-500/20 transition-colors"></div>
                 <AlertCircle class="w-8 h-8 text-red-500 mb-2 drop-shadow-md" />
                 <h3 class="text-3xl font-black text-white">{{ gameStats.statusCounts.backlog }}</h3>
                 <p class="text-xs text-red-400 uppercase tracking-wider font-bold">Backlog Size</p>
             </div>
+
+            <!-- TOP GENRE (NEW) -->
+             <div 
+                @click="activeChart = 'genre'"
+                class="bg-gray-800/50 rounded-2xl p-4 border border-gray-700/50 flex flex-col items-center justify-center text-center relative overflow-hidden group hover:border-purple-500/50 transition-all cursor-pointer hover:scale-[1.02]"
+            >
+                <div class="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent group-hover:from-purple-500/20 transition-colors"></div>
+                <Gamepad2 class="w-8 h-8 text-purple-500 mb-2 drop-shadow-md" />
+                <h3 class="text-xl font-black text-white truncate max-w-full px-2">{{ topGenre }}</h3>
+                <p class="text-xs text-purple-400 uppercase tracking-wider font-bold mt-1">Top Genre</p>
+                <!-- Removed 'Tap for DNA' -->
+            </div>
+
+             <!-- TOP PLATFORM (NEW) -->
+             <div 
+                @click="activeChart = 'platform'"
+                class="bg-gray-800/50 rounded-2xl p-4 border border-gray-700/50 flex flex-col items-center justify-center text-center relative overflow-hidden group hover:border-[rgb(var(--primary-rgb))]/50 transition-all cursor-pointer hover:scale-[1.02]"
+            >
+                <div class="absolute inset-0 bg-gradient-to-br from-[rgb(var(--primary-rgb))]/10 to-transparent group-hover:from-[rgb(var(--primary-rgb))]/20 transition-colors"></div>
+                <Monitor class="w-8 h-8 text-[rgb(var(--primary-rgb))] mb-2 drop-shadow-md" style="color: rgb(var(--primary-rgb))" />
+                <h3 class="text-xl font-black text-white truncate max-w-full px-2">{{ topPlatform }}</h3>
+                <p class="text-xs text-[rgb(var(--primary-rgb))] uppercase tracking-wider font-bold mt-1">Main Platform</p>
+                <!-- Removed 'Tap for Wars' -->
+            </div>
         </div>
 
-        <!-- 2. Charts Section -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" v-if="gameStats">
-            
-            <!-- Doughnut: Status -->
-            <div class="bg-gray-800/40 rounded-3xl p-6 border border-gray-700/50 flex flex-col">
+        <!-- Dedicated Library Status Button Removed -->
+
+        <!-- 2. Charts Details (Conditional) -->
+        <div v-if="gameStats && activeChart" class="flex-1 flex flex-col animate-in slide-in-from-bottom-5 fade-in duration-300">
+            <button @click="activeChart = null" class="self-start mb-4 text-sm flex items-center gap-2 text-gray-400 hover:text-white bg-gray-800 px-3 py-1.5 rounded-lg border border-gray-700">
+                ← Back to Overview
+            </button>
+
+            <!-- Status Chart -->
+            <div v-if="activeChart === 'status'" class="bg-gray-800/40 rounded-3xl p-6 border border-gray-700/50 flex flex-col h-full max-h-[400px]">
                 <h4 class="text-lg font-bold text-gray-200 mb-4 border-l-4 border-blue-500 pl-3">Library Status</h4>
                 <div class="flex-1 min-h-[250px] relative">
                     <Doughnut :data="statusChartData" :options="statusChartOptions" />
@@ -295,26 +381,25 @@ const platformChartOptions = {
                 </div>
             </div>
 
-            <!-- Radar: Genres -->
-            <div class="bg-gray-800/40 rounded-3xl p-6 border border-gray-700/50 flex flex-col">
+            <!-- Genre Chart -->
+            <div v-if="activeChart === 'genre'" class="bg-gray-800/40 rounded-3xl p-6 border border-gray-700/50 flex flex-col h-full max-h-[500px]">
                 <h4 class="text-lg font-bold text-gray-200 mb-4 border-l-4 border-purple-500 pl-3">Genre DNA</h4>
-                <div class="flex-1 min-h-[400px] relative">
+                <div class="flex-1 min-h-[300px] relative">
                     <Radar :data="genreChartData" :options="genreChartOptions" />
                 </div>
             </div>
 
-            <!-- Bar: Platforms -->
-            <div class="bg-gray-800/40 rounded-3xl p-6 border border-gray-700/50 flex flex-col md:col-span-2 lg:col-span-1">
+            <!-- Platform Chart -->
+            <div v-if="activeChart === 'platform'" class="bg-gray-800/40 rounded-3xl p-6 border border-gray-700/50 flex flex-col h-full max-h-[400px]">
                 <h4 class="text-lg font-bold text-gray-200 mb-4 border-l-4 border-[rgb(var(--primary-rgb))] pl-3" style="border-color: rgb(var(--primary-rgb))">Platform Wars</h4>
-                <div class="flex-1 min-h-[250px] relative">
+                <div class="flex-1 min-h-[300px] relative">
                     <Bar :data="platformChartData" :options="platformChartOptions" />
                 </div>
             </div>
-
         </div>
 
          <!-- Empty State -->
-        <div v-else class="h-64 flex flex-col items-center justify-center text-gray-500">
+        <div v-if="!gameStats" class="h-64 flex flex-col items-center justify-center text-gray-500">
             <p>No game data available yet.</p>
             <p class="text-sm">Start adding games to generate your stats!</p>
         </div>
