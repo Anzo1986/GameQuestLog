@@ -84,21 +84,28 @@ export function useDailyLogin() {
 
         if (claimed) return { success: false, message: 'Already claimed' };
 
-        // Award Coins
-        const coinReward = streak === 30 ? 100 : 5;
-        addCoins(coinReward);
-
-        // Award XP (Milestones: 5, 10, 15, 20, 25)
+        // Determine Reward Type based on Streak
+        let coinReward = 0;
         let xpReward = 0;
-        if (streak === 5) xpReward = 50;
-        if (streak === 10) xpReward = 100;
-        if (streak === 15) xpReward = 150;
-        if (streak === 20) xpReward = 200;
-        if (streak === 25) xpReward = 250;
 
-        if (xpReward > 0) {
-            awardXP(xpReward);
+        if (streak % 5 === 0 && streak !== 30) {
+            // Milestone Days (5, 10, 15, 20, 25) -> XP Only
+            if (streak === 5) xpReward = 50;
+            if (streak === 10) xpReward = 100;
+            if (streak === 15) xpReward = 150;
+            if (streak === 20) xpReward = 200;
+            if (streak === 25) xpReward = 250;
+        } else if (streak === 30) {
+            // Big Reward Day -> Coins
+            coinReward = 100;
+        } else {
+            // Normal Days -> Coins
+            coinReward = 5;
         }
+
+        // Apply Rewards
+        if (coinReward > 0) addCoins(coinReward);
+        if (xpReward > 0) awardXP(xpReward);
 
         // Update State
         state.value.lastLoginDate = today;

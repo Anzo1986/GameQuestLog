@@ -28,7 +28,22 @@ onMounted(() => {
     currentStatus.value = status;
     if (status.claimed) {
         justClaimed.value = true;
-        rewardAmount.value = status.streak === 30 ? 100 : 5; // Approximate display
+        
+        // Correctly init display values based on streak
+        const s = status.streak;
+        if (s % 5 === 0 && s !== 30) {
+            // XP Day
+            rewardAmount.value = 0;
+            xpAmount.value = s * 10;
+        } else if (s === 30) {
+            // Big Coin Day
+            rewardAmount.value = 100;
+            xpAmount.value = 0;
+        } else {
+            // Normal Coin Day
+            rewardAmount.value = 5;
+            xpAmount.value = 0;
+        }
     }
 });
 
@@ -176,8 +191,8 @@ const getDayClass = (day) => {
             </button>
             <div v-else class="w-full py-4 text-center">
                 <p class="text-xl font-bold text-green-400 animate-bounce flex flex-col items-center">
-                    <span>+{{ rewardAmount }} Coins!</span>
-                    <span v-if="xpAmount" class="text-blue-400 text-sm mt-1">+{{ xpAmount }} XP!</span>
+                    <span v-if="rewardAmount > 0">+{{ rewardAmount }} Coins!</span>
+                    <span v-if="xpAmount > 0" class="text-blue-400 text-sm mt-1">+{{ xpAmount }} XP!</span>
                 </p>
             </div>
         </div>

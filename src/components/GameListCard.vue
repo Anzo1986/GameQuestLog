@@ -8,6 +8,10 @@ const props = defineProps({
   game: {
     type: Object,
     required: true
+  },
+  compact: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -33,33 +37,33 @@ const backgroundImage = computed(() => props.game.background_image || null);
     
     <!-- Main Card Content (Clickable) -->
     <div 
-        class="absolute inset-0 flex items-center bg-gray-800 rounded-xl shadow-sm hover:ring-2 hover:ring-blue-500 transition-all cursor-pointer overflow-hidden z-0"
+        class="absolute inset-0 flex items-center bg-gray-800 rounded-xl shadow-sm hover:ring-2 hover:ring-primary transition-all cursor-pointer overflow-hidden z-0"
         @click="$emit('open-details')"
     >
         <!-- Image -->
-        <div class="relative w-24 h-full flex-shrink-0 bg-gray-700">
+        <div class="relative h-full flex-shrink-0 bg-gray-700" :class="compact ? 'w-14 sm:w-16' : 'w-24'">
             <img v-if="backgroundImage" :src="backgroundImage" :alt="game.title" class="w-full h-full object-cover" loading="lazy">
             <div v-else class="w-full h-full flex items-center justify-center text-gray-500">
-                <Gamepad2 class="w-6 h-6" />
+                <Gamepad2 :class="compact ? 'w-4 h-4' : 'w-6 h-6'" />
             </div>
         </div>
 
         <!-- Info -->
-        <div class="flex-1 min-w-0 flex flex-col justify-center px-3 py-1 pr-12">
-            <h3 class="text-sm font-bold text-white truncate leading-tight">{{ game.title }}</h3>
+        <div class="flex-1 min-w-0 flex flex-col justify-center py-1 pr-8" :class="compact ? 'pl-2' : 'px-3 pr-12'">
+            <h3 class="font-bold text-white truncate leading-tight transition-all" :class="compact ? 'text-xs' : 'text-sm'">{{ game.title }}</h3>
             
-            <div class="flex items-center gap-2 mt-1">
+            <div class="flex items-center gap-1.5 mt-0.5" :class="compact ? 'flex-wrap' : ''">
                 <!-- Status -->
-                <span v-if="game.status === 'playing'" class="text-[10px] sm:text-xs uppercase font-bold text-primary bg-primary/20 px-1.5 py-0.5 rounded flex items-center gap-1"><Play class="w-3 h-3"/> Play</span>
-                <span v-else-if="game.status === 'completed'" class="text-[10px] sm:text-xs uppercase font-bold text-green-400 bg-green-500/20 px-1.5 py-0.5 rounded flex items-center gap-1"><Check class="w-3 h-3"/> Done</span>
-                <span v-else-if="game.status === 'dropped'" class="text-[10px] sm:text-xs uppercase font-bold text-gray-400 bg-gray-700/50 px-1.5 py-0.5 rounded flex items-center gap-1"><Ban class="w-3 h-3"/> Drop</span>
-                <span v-else class="text-[10px] sm:text-xs uppercase font-bold text-yellow-500 bg-yellow-500/20 px-1.5 py-0.5 rounded flex items-center gap-1"><Layers class="w-3 h-3"/> Backlog</span>
+                <span v-if="game.status === 'playing'" class="uppercase font-bold text-primary bg-primary/20 rounded flex items-center gap-1" :class="compact ? 'text-[9px] px-1 py-0.5' : 'text-[10px] sm:text-xs px-1.5 py-0.5'"><Play :class="compact ? 'w-2.5 h-2.5' : 'w-3 h-3'"/> <span v-if="!compact">Play</span></span>
+                <span v-else-if="game.status === 'completed'" class="uppercase font-bold text-green-400 bg-green-500/20 rounded flex items-center gap-1" :class="compact ? 'text-[9px] px-1 py-0.5' : 'text-[10px] sm:text-xs px-1.5 py-0.5'"><Check :class="compact ? 'w-2.5 h-2.5' : 'w-3 h-3'"/> <span v-if="!compact">Done</span></span>
+                <span v-else-if="game.status === 'dropped'" class="uppercase font-bold text-gray-400 bg-gray-700/50 rounded flex items-center gap-1" :class="compact ? 'text-[9px] px-1 py-0.5' : 'text-[10px] sm:text-xs px-1.5 py-0.5'"><Ban :class="compact ? 'w-2.5 h-2.5' : 'w-3 h-3'"/> <span v-if="!compact">Drop</span></span>
+                <span v-else class="uppercase font-bold text-yellow-500 bg-yellow-500/20 rounded flex items-center gap-1" :class="compact ? 'text-[9px] px-1 py-0.5' : 'text-[10px] sm:text-xs px-1.5 py-0.5'"><Layers :class="compact ? 'w-2.5 h-2.5' : 'w-3 h-3'"/> <span v-if="!compact">Backlog</span></span>
 
                 <!-- Separator -->
-                <span class="text-gray-700 mx-1">|</span>
+                <span class="text-gray-700 mx-0.5" v-if="!compact">|</span>
 
                 <!-- Rating -->
-                <div class="flex items-center gap-0.5">
+                <div class="flex items-center gap-0.5" v-if="game.rating && !compact">
                     <Star class="w-3 h-3" :class="game.rating >= 1 ? 'fill-yellow-400 text-yellow-400' : 'text-gray-600'" />
                     <span class="text-xs font-bold text-gray-300">{{ game.rating || 0 }}</span>
                 </div>

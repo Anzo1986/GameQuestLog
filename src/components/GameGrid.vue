@@ -33,7 +33,11 @@ const { viewMode } = useSettings();
             {{ title }}
         </h2>
         
-        <div :class="viewMode === 'grid' ? 'grid grid-cols-[1fr_1fr] sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-1.5 sm:gap-2' : 'flex flex-col gap-2'">
+        <div :class="{
+            'grid grid-cols-[1fr_1fr] sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-1.5 sm:gap-2': viewMode === 'grid',
+            'flex flex-col gap-2': viewMode === 'list',
+            'grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-1.5 sm:gap-2': viewMode === 'compact'
+        }">
             
             <div 
                 v-for="(game, index) in games" 
@@ -47,7 +51,7 @@ const { viewMode } = useSettings();
                     @open-details="$emit('click-game', game.id)"
                     @update-status="(id, status) => $emit('update-status', id, status)"
                     @delete="(id) => $emit('delete-game', id)"
-                    class="cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all shadow-sm w-full"
+                    class="cursor-pointer transition-all shadow-sm w-full"
                     :class="{ 
                         'grayscale hover:grayscale-0': game.status === 'dropped',
                         'hover:ring-green-500': game.status === 'completed'
@@ -56,6 +60,7 @@ const { viewMode } = useSettings();
                 <GameListCard 
                     v-else
                     :game="game"
+                    :compact="viewMode === 'compact'"
                     @open-details="$emit('click-game', game.id)"
                 />
 
