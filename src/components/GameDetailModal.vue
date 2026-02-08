@@ -6,6 +6,7 @@ import { useShop } from '../composables/useShop';
 import { useCardStyles } from '../composables/useCardStyles';
 import EditGameModal from './EditGameModal.vue';
 import GameCardInnerEffects from './GameCardInnerEffects.vue';
+import BaseModal from './BaseModal.vue';
 
 const props = defineProps({
   gameId: {
@@ -30,8 +31,6 @@ const gameDetails = computed(() => {
 
 const showEditModal = ref(false);
 
-
-
 const formatDate = (dateString) => {
   if (!dateString) return 'N/A';
   return new Date(dateString).toLocaleDateString();
@@ -55,27 +54,8 @@ const isOwnedPlatform = (platformName) => {
     if (owned === 'switch' && current === 'nintendo') return true;
     if (owned.includes('xbox') && current === 'xbox') return true;
     
-    return false;};
-
-const isEditingPlaytime = ref(false);
-const tempPlaytime = ref(0);
-const playtimeInput = ref(null);
-
-const startEditingPlaytime = () => {
-    if (gameDetails.value.startedAt) return; 
-    tempPlaytime.value = gameDetails.value.playtime || 0;
-    isEditingPlaytime.value = true;
-    setTimeout(() => playtimeInput.value?.focus(), 50);
+    return false;
 };
-
-const savePlaytime = () => {
-    if (tempPlaytime.value >= 0) {
-        updateGame(props.gameId, { playtime: tempPlaytime.value });
-    }
-    isEditingPlaytime.value = false;
-};
-
-const isRefreshing = ref(false);
 
 const handleAction = async (action, val) => {
     if (action === 'delete') {
@@ -88,44 +68,37 @@ const handleAction = async (action, val) => {
 </script>
 
 <template>
-  <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-    <!-- Backdrop -->
-    <div class="absolute inset-0 bg-black/90 backdrop-blur-sm" @click="$emit('close')"></div>
-
-    <!-- Modal Content (Wrapper for Animation) -->
-    <div class="relative w-full max-w-2xl rounded-2xl flex flex-col max-h-[90vh] animate-in fade-in zoom-in duration-200 isolation-auto">
-        
+  <BaseModal 
+    :is-open="isOpen" 
+    @close="$emit('close')" 
+    max-width="max-w-2xl"
+  >
+      <template v-if="gameDetails">
         <!-- PRISM BORDER ANIMATION (Behind) -->
-        <div v-if="equippedStyle?.value === 'prism'" class="absolute -inset-[3px] rounded-2xl bg-gradient-to-tr from-red-500 via-green-500 to-blue-500 z-0 animate-spin-slow opacity-80 blur-sm"></div>
-        <div v-if="equippedStyle?.value === 'prism'" class="absolute -inset-[3px] rounded-2xl bg-gradient-to-tr from-red-500 via-green-500 to-blue-500 z-0 animate-spin-slow"></div>
+        <div v-if="equippedStyle?.value === 'prism'" class="absolute -inset-[3px] rounded-2xl bg-gradient-to-tr from-red-500 via-green-500 to-blue-500 z-0 animate-spin-slow opacity-80 blur-sm pointer-events-none"></div>
+        <div v-if="equippedStyle?.value === 'prism'" class="absolute -inset-[3px] rounded-2xl bg-gradient-to-tr from-red-500 via-green-500 to-blue-500 z-0 animate-spin-slow pointer-events-none"></div>
 
-        <!-- GLITCH BORDER ANIMATION -->
-        <!-- Handled via border-dashed in class, maybe add scanline overlay behind? -->
-
-        <!-- Main Card -->
         <div 
-            class="relative w-full h-full rounded-2xl overflow-hidden flex flex-col bg-gray-900 z-10" 
-            :class="getCardClasses(equippedStyle?.value)"
+            class="relative w-full h-full flex flex-col bg-gray-900/40 backdrop-blur-2xl border border-white/20 shadow-[0_0_40px_rgba(0,0,0,0.6)] z-10 overflow-hidden" 
+            :class="getCardClasses(equippedStyle?.value, true)"
         >
           <!-- REFACTORED INNER EFFECTS -->
           <GameCardInnerEffects :style-name="equippedStyle?.value" />
 
 
-          <!-- Content -->
-          <template v-if="gameDetails">
-            <!-- Controls -->
-            <div class="absolute top-4 right-4 z-10 flex items-center gap-2">
-                <button @click="showEditModal = true" class="bg-black/50 p-2 rounded-full hover:bg-black/70 text-white transition-colors" title="Edit Game Details">
+          <!-- Content Box -->
+          <div class="relative z-10 flex flex-col h-full">
+
+            <!-- Controls (Custom placement inside card) -->
+            <div class="absolute top-4 right-14 z-50 flex items-center gap-2">
+                <button @click="showEditModal = true" class="bg-black/50 p-2 rounded-full hover:bg-black/70 text-white transition-colors active:scale-95" title="Edit Game Details">
                     <PenLine class="w-5 h-5" />
-                </button>
-                <button @click="$emit('close')" class="bg-black/50 p-2 rounded-full hover:bg-black/70 text-white transition-colors">
-                    <X class="w-5 h-5" />
                 </button>
             </div>
 
             <!-- Header Image & Title & Rating -->
-            <div class="relative h-64 flex-shrink-0 bg-gray-800">
-              <img v-if="gameDetails.background_image" :src="gameDetails.background_image" class="w-full h-full object-cover" :alt="gameDetails.name">
+            <div class="relative h-64 flex-shrink-0 bg-transparent group overflow-hidden">
+              <img v-if="gameDetails.background_image" :src="gameDetails.background_image" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" :alt="gameDetails.name" :style="{ viewTransitionName: `game-image-${gameDetails.id}` }">
               <div v-else class="absolute inset-0 flex items-center justify-center">
                   <Gamepad2 class="w-24 h-24 text-gray-700" />
               </div>
@@ -140,10 +113,10 @@ const handleAction = async (action, val) => {
                         v-for="star in 5" 
                         :key="star" 
                         @click.stop="rateGame(gameId, star)"
-                        class="transition-transform active:scale-110 focus:outline-none"
+                        class="transition-transform active:scale-110 focus:outline-none hover:scale-110"
                        >
                            <Star 
-                            class="w-6 h-6 drop-shadow-md" 
+                            class="w-6 h-6 drop-shadow-md transition-colors" 
                             :class="star <= (gameDetails.rating || 0) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-500/50'" 
                            />
                        </button>
@@ -153,7 +126,7 @@ const handleAction = async (action, val) => {
             </div>
 
             <!-- Meta Bar (Consolidated Info) -->
-            <div class="flex items-center justify-between gap-3 px-6 py-4 bg-gray-800/50 border-b border-gray-800 overflow-x-auto">
+            <div class="flex items-center justify-between gap-3 px-6 py-4 bg-gray-900/30 border-b border-white/10 overflow-x-auto custom-scrollbar">
                 
                 <!-- Status Badge -->
                 <div class="flex items-center gap-2 flex-shrink-0">
@@ -186,7 +159,7 @@ const handleAction = async (action, val) => {
             </div>
 
             <!-- Scrollable Content -->
-            <div class="overflow-y-auto p-6 space-y-6">
+            <div class="overflow-y-auto p-6 space-y-6 custom-scrollbar flex-1">
                
                <!-- Description -->
                <div class="prose prose-invert prose-sm max-w-none text-gray-300">
@@ -200,7 +173,7 @@ const handleAction = async (action, val) => {
 
                <!-- Platforms & Genres & Web -->
                <!-- Platforms & Genres & Web Stacked -->
-               <div class="space-y-4 pt-4 border-t border-gray-800">
+               <div class="space-y-4 pt-4 border-t border-white/10">
                   
                   <!-- Row 1: Platforms -->
                   <div v-if="gameDetails.parent_platforms && gameDetails.parent_platforms.length > 0">
@@ -210,7 +183,7 @@ const handleAction = async (action, val) => {
                               class="px-2 py-1 rounded text-xs border transition-colors duration-300"
                               :class="isOwnedPlatform(p.platform.name) 
                                 ? 'bg-primary/20 text-primary border-primary/50 font-bold shadow-[0_0_10px_rgba(var(--primary-rgb),0.3)] scale-105' 
-                                : 'bg-gray-800 text-gray-500 border-gray-700 opacity-60'"
+                                : 'bg-white/5 text-gray-500 border-white/10 opacity-60'"
                           >
                               {{ p.platform.name }}
                           </span>
@@ -221,7 +194,7 @@ const handleAction = async (action, val) => {
                   <div v-if="gameDetails.genres && gameDetails.genres.length > 0">
                       <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Genres</h4>
                       <div class="flex flex-wrap gap-2">
-                           <span v-for="g in gameDetails.genres" :key="g.id" class="px-2 py-1 bg-gray-800 rounded text-xs text-gray-300 border border-gray-700">
+                           <span v-for="g in gameDetails.genres" :key="g.id" class="px-2 py-1 bg-white/5 rounded text-xs text-gray-300 border border-white/10">
                               {{ g.name }}
                           </span>
                       </div>
@@ -229,7 +202,7 @@ const handleAction = async (action, val) => {
 
                   <!-- Row 3: Website -->
                   <div v-if="gameDetails.website">
-                       <a :href="gameDetails.website" target="_blank" class="inline-flex items-center gap-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm text-primary border border-gray-700 transition-colors">
+                       <a :href="gameDetails.website" target="_blank" class="inline-flex items-center gap-2 px-3 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-sm text-primary border border-white/10 transition-colors active:scale-95">
                           <Globe class="w-4 h-4" /> 
                           <span class="font-medium">Official Website</span>
                       </a>
@@ -240,19 +213,19 @@ const handleAction = async (action, val) => {
             </div>
 
             <!-- Footer Actions -->
-            <div class="p-4 border-t border-gray-800 bg-gray-900/95 backdrop-blur flex items-center gap-3">
-                 <button @click="handleAction('update-status', 'playing')" class="flex-1 bg-primary hover:bg-primary/90 text-white py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-transform active:scale-95">
+            <div class="p-4 border-t border-white/10 bg-gray-900/60 backdrop-blur flex items-center gap-3">
+                 <button @click="handleAction('update-status', 'playing')" class="flex-1 bg-primary hover:bg-primary/90 text-white py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-transform active:scale-95 shadow-lg border border-white/10">
                     <Play class="w-5 h-5" /> Playing
                 </button>
-                <button @click="handleAction('update-status', 'completed')" class="flex-1 bg-green-600 hover:bg-green-500 text-white py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-transform active:scale-95">
+                <button @click="handleAction('update-status', 'completed')" class="flex-1 bg-green-600 hover:bg-green-500 text-white py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-transform active:scale-95 shadow-lg border border-white/10">
                     <Check class="w-5 h-5" /> Finish
                 </button>
                 
-                <button @click="handleAction('update-status', 'dropped')" class="bg-gray-800 hover:bg-gray-700 text-white py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-transform active:scale-95" title="Drop Game">
+                <button @click="handleAction('update-status', 'dropped')" class="bg-gray-800/80 hover:bg-gray-700 text-white py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-transform active:scale-95 border border-white/10" title="Drop Game">
                     <Ban class="w-5 h-5 text-gray-400" />
                 </button>
 
-                 <button @click="handleAction('delete')" class="p-3 bg-red-900/20 text-red-400 hover:bg-red-900/40 rounded-xl transition-transform active:scale-95" title="Delete Game">
+                 <button @click="handleAction('delete')" class="p-3 bg-red-900/40 text-red-400 hover:bg-red-900/60 rounded-xl transition-transform active:scale-95 border border-red-500/30" title="Delete Game">
                     <Trash2 class="w-5 h-5" />
                 </button>
             </div>
@@ -262,10 +235,10 @@ const handleAction = async (action, val) => {
                 :game="gameDetails" 
                 @close="showEditModal = false" 
             />
-          </template>
+          </div>
         </div>
-    </div>
-  </div>
+      </template>
+  </BaseModal>
 </template>
 
 <style scoped>
@@ -275,13 +248,6 @@ const handleAction = async (action, val) => {
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: rgba(255,255,255,0.1);
   border-radius: 3px;
-}
-@keyframes shine {
-    from { transform: translateX(-100%) rotate(-45deg); }
-    to { transform: translateX(100%) rotate(-45deg); }
-}
-.animate-shine {
-    animation: shine 8s ease-in-out infinite;
 }
 .animate-spin-slow-reverse {
     animation: spin 10s linear infinite reverse;

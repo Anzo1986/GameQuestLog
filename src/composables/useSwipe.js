@@ -9,6 +9,11 @@ export function useSwipe(elementRef, options = {}) {
     const maxSlope = options.maxSlope || 0.5; // New: Accept diagonal swipes up to this slope (dy/dx)
 
     const handleTouchStart = (e) => {
+        // Optional: Ignore swipes starting on specific elements
+        if (options.ignoreClass && e.target.closest(`.${options.ignoreClass}`)) {
+            return;
+        }
+
         touchEnd.value = { x: 0, y: 0 }; // Reset
         touchStart.value = {
             x: e.targetTouches[0].clientX,

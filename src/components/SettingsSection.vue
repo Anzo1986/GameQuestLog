@@ -5,6 +5,7 @@ import { useGames } from '../composables/useGames';
 import { useAchievements } from '../composables/useAchievements';
 import { useSettings } from '../composables/useSettings';
 
+
 const emit = defineEmits(['close']);
 
 const { 
@@ -17,6 +18,7 @@ const {
 
 const { trackAction } = useAchievements();
 const { lastBackup } = useSettings();
+
 
 const lastBackupDisplay = computed(() => {
     if (!lastBackup.value) return 'No backup recorded yet';
@@ -46,6 +48,24 @@ const tabs = [
     { id: 'general', label: 'General', icon: Key },
     { id: 'data', label: 'System', icon: Save }
 ];
+
+// Swipe Logic (Refactored to useSwipe)
+const modalRef = ref(null);
+
+import { useSwipe } from '../composables/useSwipe';
+
+useSwipe(modalRef, {
+    onSwipeLeft: () => {
+        // Next Tab
+        const currentIndex = tabs.findIndex(t => t.id === activeTab.value);
+        if (currentIndex < tabs.length - 1) activeTab.value = tabs[currentIndex + 1].id;
+    },
+    onSwipeRight: () => {
+        // Prev Tab
+        const currentIndex = tabs.findIndex(t => t.id === activeTab.value);
+        if (currentIndex > 0) activeTab.value = tabs[currentIndex - 1].id;
+    }
+});
 
 const saveKey = () => {
   setApiKey(newKey.value);
@@ -150,20 +170,23 @@ const version = __APP_VERSION__;
     <div class="absolute inset-0 bg-black/90 backdrop-blur-sm" @click="$emit('close')"></div>
 
     <!-- Modal Content -->
-    <div class="relative bg-gray-900 w-full max-w-lg rounded-2xl shadow-2xl border border-gray-700 max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in duration-200">
+    <div 
+        ref="modalRef"
+        class="relative bg-gray-900/60 backdrop-blur-2xl w-full max-w-lg rounded-2xl shadow-[0_0_40px_rgba(0,0,0,0.6)] border border-white/20 max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in duration-200"
+    >
       
       <!-- Header -->
-      <div class="sticky top-0 bg-gray-900/95 backdrop-blur z-10 p-4 border-b border-gray-800 flex items-center justify-between">
+      <div class="sticky top-0 bg-gray-900/60 backdrop-blur-md z-10 p-4 border-b border-white/10 flex items-center justify-between">
         <h2 class="text-xl font-bold text-white flex items-center gap-2">
           Settings
         </h2>
-        <button @click="$emit('close')" class="p-2 -mr-2 text-gray-400 hover:text-white rounded-full hover:bg-gray-800 transition-colors">
+        <button @click="$emit('close')" class="p-2 -mr-2 text-gray-400 hover:text-white rounded-full hover:bg-white/10 transition-colors">
             <X class="w-6 h-6" />
         </button>
       </div>
 
       <!-- TABS HEADER -->
-      <div class="px-4 pt-0 border-b border-gray-800 flex items-center gap-4 bg-gray-900/95 backdrop-blur z-10 sticky top-[60px]">
+      <div class="px-4 pt-0 border-b border-white/10 flex items-center gap-4 bg-gray-900/60 backdrop-blur-md z-10 sticky top-[60px]">
           <button 
             v-for="tab in tabs" 
             :key="tab.id"
@@ -180,6 +203,9 @@ const version = __APP_VERSION__;
         
         <!-- ================== GENERAL TAB (API) ================== -->
         <div v-if="activeTab === 'general'" class="space-y-6 animate-in fade-in slide-in-from-left-4 duration-300">
+          
+
+
           <div class="space-y-4">
             <div class="flex items-center justify-between">
                 <h3 class="text-sm font-medium text-gray-300">API Configuration</h3>
@@ -261,15 +287,7 @@ const version = __APP_VERSION__;
                 </div>
             </div>
 
-            <!-- THEMES MOVED TO LOOT SHOP ONLY -->
-            <div>
-                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Display</h3>
-                <div class="bg-gray-800 p-3 rounded-lg border border-gray-700">
-                    <p class="text-xs text-gray-400">
-                        Themes are managed in the <span class="text-yellow-400 font-bold">Loot Shop</span>.
-                    </p>
-                </div>
-            </div>
+
         </div>
 
         <!-- ================== SYSTEM TAB (DATA) ================== -->

@@ -1,14 +1,22 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, onUnmounted } from 'vue';
 import { Play, Check, Trash2, Calendar, MoreVertical, X, Star, Ban, Layers, Gamepad2 } from 'lucide-vue-next';
 import { useGames } from '../composables/useGames';
 import { useShop } from '../composables/useShop';
+import { useModals } from '../composables/useModals';
 
 const props = defineProps({
   game: {
     type: Object,
     required: true
   }
+});
+
+const { activeModal, modalProps } = useModals();
+
+// Check if this card is currently being opened in modal
+const isSelected = computed(() => {
+    return activeModal.value === 'gameDetail' && modalProps.value.gameId === props.game.id;
 });
 
 const emit = defineEmits(['update-status', 'delete', 'open-details']);
@@ -49,21 +57,73 @@ const isNew = computed(() => {
     const diffHours = (now - added) / (1000 * 60 * 60);
     return diffHours < 48; // New if added within 48 hours
 });
+
+// --- Long Press Logic ---
+const longPressTimer = ref(null);
+const isLongPress = ref(false);
+
+const handleTouchStart = (e) => {
+    isLongPress.value = false;
+    // Don't start timer if more than one finger (pinch)
+    if (e.touches.length > 1) return;
+
+    longPressTimer.value = setTimeout(() => {
+        isLongPress.value = true;
+        showOverlay.value = true;
+        // Haptic Feedback
+        if (navigator.vibrate) navigator.vibrate(50);
+    }, 500); // 500ms
+};
+
+const handleTouchMove = (e) => {
+    // If moved significantly, cancel logic
+    if (longPressTimer.value) {
+        clearTimeout(longPressTimer.value);
+        longPressTimer.value = null;
+    }
+};
+
+const handleTouchEnd = () => {
+    if (longPressTimer.value) {
+        clearTimeout(longPressTimer.value);
+        longPressTimer.value = null;
+    }
+};
+
+const handleContextMenu = () => {
+    showOverlay.value = true;
+};
+
+const handleCardClick = () => {
+    if (isLongPress.value) {
+        isLongPress.value = false;
+        return;
+    }
+    emit('open-details');
+};
+
+onUnmounted(() => {
+    if (longPressTimer.value) clearTimeout(longPressTimer.value);
+});
 </script>
 
 <template>
   <div class="group relative h-full w-full touch-manipulation min-w-0">
     
-    <!-- Main Card Content (Clickable) -->
+    <!-- Main Card Content (Clickable & Long Pressable) -->
     <div 
-        class="relative bg-gray-800 rounded-xl overflow-hidden shadow-md transition-all duration-300 active:scale-95 touch-manipulation min-w-0 backface-hidden will-change-transform flex flex-col h-full z-0 cursor-pointer hover:ring-2 hover:ring-primary group-hover:shadow-lg"
+        class="relative bg-gray-800 rounded-xl overflow-hidden shadow-md transition-all duration-300 active:scale-95 touch-manipulation min-w-0 flex flex-col h-full z-0 cursor-pointer hover:ring-2 hover:ring-primary group-hover:shadow-lg select-none"
         :class="{
             'border-2 border-yellow-500/50 shadow-[0_0_15px_rgba(234,179,8,0.2)]': equippedStyle?.value === 'gold',
             'border-2 border-transparent relative after:absolute after:inset-0 after:rounded-xl after:border-2 after:border-white/20 after:pointer-events-none': equippedStyle?.value === 'holo'
         }"
         tabindex="0"
         @keydown.enter="$emit('open-details')"
-        @click="$emit('open-details')"
+        @touchstart="handleTouchStart"
+        @touchmove="handleTouchMove"
+        @touchend="handleTouchEnd"
+        @contextmenu.prevent="handleContextMenu"
+        @click="handleCardClick"
     >
     
     <!-- Holo Static Sheen (Subtle) -->
@@ -71,7 +131,13 @@ const isNew = computed(() => {
 
     <!-- Image Background -->
     <div class="aspect-video w-full overflow-hidden bg-gray-700 relative">
-      <img v-if="backgroundImage" :src="backgroundImage" :alt="game.title" class="w-full h-full object-cover transition-opacity duration-300" loading="lazy">
+      <img 
+        v-if="backgroundImage" 
+        :src="backgroundImage" 
+        :alt="game.title" 
+        class="w-full h-full object-cover transition-opacity duration-300" 
+        loading="lazy"
+      >
       
       <!-- Fallback for No Image -->
       <div v-else class="absolute inset-0 flex items-center justify-center bg-gray-800">
@@ -103,16 +169,10 @@ const isNew = computed(() => {
     
     </div>
 
-    <!-- Quick Actions Button (NOW OUTSIDE Clickable Container) -->
-    <button 
-        @pointerdown.stop.prevent="toggleOverlay" 
-        @click.stop.prevent 
-        class="absolute top-2 right-2 p-2 sm:p-1.5 bg-gray-900/80 text-white rounded-full hover:bg-black z-40 pointer-events-auto shadow-md"
-    >
-        <MoreVertical class="w-5 h-5" />
-    </button>
+    <!-- Details Overlay (Replaces Quick Actions Button) -->
+    <!-- Triggered via Long Press or Context Menu -->
 
-    <!-- Quick Action Overlay -->
+    <!-- Overlay -->
     <div v-if="showOverlay" class="absolute inset-0 bg-gray-900/95 z-30 flex flex-col items-center justify-center gap-1 p-2 animate-in fade-in zoom-in duration-200" @click.stop>
         
         <div class="grid grid-cols-2 gap-1 w-full mt-1">
@@ -143,6 +203,7 @@ const isNew = computed(() => {
             </button>
         </div>
 
+        <!-- Close Button -->
         <button @click.stop="showOverlay = false" class="absolute top-1 right-1 p-1 text-gray-500 hover:text-white">
             <X class="w-4 h-4" />
         </button>

@@ -7,7 +7,7 @@ import AvatarFrame from './AvatarFrame.vue';
 
 const emit = defineEmits(['open-stats', 'open-gamer-card']);
 
-const { userName, userLevel, userTitle, xpProgress, userAvatar } = useGames();
+const { userName, userLevel, userTitle, xpProgress, userAvatar, userXP, levelStartXP, nextLevelXP } = useGames();
 const { getEquippedItem } = useShop();
 
 const equippedFrame = computed(() => getEquippedItem('frame'));
@@ -61,9 +61,12 @@ const equippedFrame = computed(() => getEquippedItem('frame'));
 
     <!-- XP Bar -->
     <div class="mt-4">
-        <div class="flex justify-between text-xs text-primary/80 mb-1">
-            <span>Progress</span>
-            <span>{{ Math.floor(xpProgress) }}%</span>
+        <div class="flex justify-between text-xs text-primary/80 mb-1 font-mono">
+            <span>Level Progress</span>
+            <div class="flex gap-2">
+                <span class="text-white font-bold">{{ Math.floor(userXP - levelStartXP) }} / {{ Math.floor(nextLevelXP - levelStartXP) }} XP</span>
+                <span class="text-gray-500">({{ Math.floor(xpProgress) }}%)</span>
+            </div>
         </div>
         <div class="h-3 bg-gray-800 rounded-full overflow-hidden border border-gray-700/50">
             <div 

@@ -5,6 +5,7 @@ import { useGames } from '../composables/useGames';
 import { useSettings } from '../composables/useSettings';
 import { useDailyLogin } from '../composables/useDailyLogin';
 import { GENRES } from '../constants/genres';
+import BaseModal from './BaseModal.vue';
 import {
   Chart as ChartJS,
   ArcElement,
@@ -228,36 +229,33 @@ const platformChartOptions = {
 </script>
 
 <template>
-  <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-    <!-- Backdrop -->
-    <div class="absolute inset-0 bg-black/95 backdrop-blur-md" @click="$emit('close')"></div>
-
-    <!-- Modal Container -->
-    <div class="relative w-full max-w-5xl h-[90vh] bg-gray-900 border border-gray-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in duration-300">
-      
-      <!-- Header -->
-      <div class="p-6 border-b border-gray-800 flex justify-between items-center bg-gray-900/50 backdrop-blur z-20 sticky top-0">
-          <div>
-            <h2 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[rgb(var(--primary-rgb))] to-purple-500 uppercase tracking-widest">
-                Career Stats
-            </h2>
-            <p class="text-gray-400 text-sm">Your gaming journey encoded in data.</p>
-          </div>
-          <div class="flex items-center gap-2">
-            <button 
-                @click="$emit('open-timeline')" 
-                class="flex items-center gap-2 bg-gradient-to-r from-[rgb(var(--primary-rgb))] to-purple-600 hover:from-[rgb(var(--primary-rgb))]/80 hover:to-purple-500 text-white px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider shadow-lg transition-all active:scale-95"
-            >
-                <Clock class="w-4 h-4" /> Journey
-            </button>
-            <button @click="$emit('close')" class="p-2 bg-gray-800 rounded-full text-gray-400 hover:text-white hover:bg-gray-700 transition-colors">
-                <X class="w-6 h-6" />
-            </button>
-          </div>
-      </div>
+  <BaseModal 
+    :is-open="isOpen" 
+    @close="$emit('close')" 
+    max-width="max-w-5xl"
+  >
+      <!-- Custom Header -->
+      <template #header>
+        <div class="flex-1 flex justify-between items-center">
+            <div>
+              <h2 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[rgb(var(--primary-rgb))] to-purple-500 uppercase tracking-widest">
+                  Career Stats
+              </h2>
+              <p class="text-gray-400 text-sm">Your gaming journey encoded in data.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button 
+                  @click="$emit('open-timeline')" 
+                  class="flex items-center gap-2 bg-gradient-to-r from-[rgb(var(--primary-rgb))] to-purple-600 hover:from-[rgb(var(--primary-rgb))]/80 hover:to-purple-500 text-white px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider shadow-lg transition-all active:scale-95"
+              >
+                  <Clock class="w-4 h-4" /> Journey
+              </button>
+            </div>
+        </div>
+      </template>
 
       <!-- Scrollable Content -->
-      <div class="overflow-y-auto p-6 flex-1 space-y-8 custom-scrollbar">
+      <div class="p-6 flex-1 space-y-8">
         
         <!-- 1. Hero Cards Grid -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4" v-if="gameStats && !activeChart">
@@ -268,13 +266,12 @@ const platformChartOptions = {
                 <Crown class="w-8 h-8 text-yellow-500 mb-2 drop-shadow-md" />
                 <h3 class="text-3xl font-black text-white">{{ userLevel }}</h3>
                 <p class="text-xs text-yellow-400 uppercase tracking-wider font-bold">{{ userTitle }}</p>
-                <!-- Remove View Journey text as requested -->
             </div>
 
             <!-- LIBRARY STATUS (Opens Chart) -->
             <div 
                 @click="activeChart = 'status'"
-                class="bg-gray-800/50 rounded-2xl p-4 border border-gray-700/50 flex flex-col items-center justify-center text-center relative overflow-hidden group hover:border-blue-500/50 transition-all cursor-pointer hover:scale-[1.02]"
+                class="bg-gray-800/50 rounded-2xl p-4 border border-gray-700/50 flex flex-col items-center justify-center text-center relative overflow-hidden group hover:border-blue-500/50 transition-all cursor-pointer hover:scale-[1.02] active:scale-95"
             >
                 <div class="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent group-hover:from-blue-500/20 transition-colors"></div>
                 <div class="bg-blue-500/20 p-2 rounded-full mb-2">
@@ -336,33 +333,29 @@ const platformChartOptions = {
             <!-- TOP GENRE (NEW) -->
              <div 
                 @click="activeChart = 'genre'"
-                class="bg-gray-800/50 rounded-2xl p-4 border border-gray-700/50 flex flex-col items-center justify-center text-center relative overflow-hidden group hover:border-purple-500/50 transition-all cursor-pointer hover:scale-[1.02]"
+                class="bg-gray-800/50 rounded-2xl p-4 border border-gray-700/50 flex flex-col items-center justify-center text-center relative overflow-hidden group hover:border-purple-500/50 transition-all cursor-pointer hover:scale-[1.02] active:scale-95"
             >
                 <div class="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent group-hover:from-purple-500/20 transition-colors"></div>
                 <Gamepad2 class="w-8 h-8 text-purple-500 mb-2 drop-shadow-md" />
                 <h3 class="text-xl font-black text-white truncate max-w-full px-2">{{ topGenre }}</h3>
                 <p class="text-xs text-purple-400 uppercase tracking-wider font-bold mt-1">Top Genre</p>
-                <!-- Removed 'Tap for DNA' -->
             </div>
 
              <!-- TOP PLATFORM (NEW) -->
              <div 
                 @click="activeChart = 'platform'"
-                class="bg-gray-800/50 rounded-2xl p-4 border border-gray-700/50 flex flex-col items-center justify-center text-center relative overflow-hidden group hover:border-[rgb(var(--primary-rgb))]/50 transition-all cursor-pointer hover:scale-[1.02]"
+                class="bg-gray-800/50 rounded-2xl p-4 border border-gray-700/50 flex flex-col items-center justify-center text-center relative overflow-hidden group hover:border-[rgb(var(--primary-rgb))]/50 transition-all cursor-pointer hover:scale-[1.02] active:scale-95"
             >
                 <div class="absolute inset-0 bg-gradient-to-br from-[rgb(var(--primary-rgb))]/10 to-transparent group-hover:from-[rgb(var(--primary-rgb))]/20 transition-colors"></div>
                 <Monitor class="w-8 h-8 text-[rgb(var(--primary-rgb))] mb-2 drop-shadow-md" style="color: rgb(var(--primary-rgb))" />
                 <h3 class="text-xl font-black text-white truncate max-w-full px-2">{{ topPlatform }}</h3>
                 <p class="text-xs text-[rgb(var(--primary-rgb))] uppercase tracking-wider font-bold mt-1">Main Platform</p>
-                <!-- Removed 'Tap for Wars' -->
             </div>
         </div>
 
-        <!-- Dedicated Library Status Button Removed -->
-
         <!-- 2. Charts Details (Conditional) -->
         <div v-if="gameStats && activeChart" class="flex-1 flex flex-col animate-in slide-in-from-bottom-5 fade-in duration-300">
-            <button @click="activeChart = null" class="self-start mb-4 text-sm flex items-center gap-2 text-gray-400 hover:text-white bg-gray-800 px-3 py-1.5 rounded-lg border border-gray-700">
+            <button @click="activeChart = null" class="self-start mb-4 text-sm flex items-center gap-2 text-gray-400 hover:text-white bg-gray-800 px-3 py-1.5 rounded-lg border border-gray-700 active:scale-95 transition-transform">
                 ← Back to Overview
             </button>
 
@@ -405,8 +398,7 @@ const platformChartOptions = {
         </div>
 
       </div>
-    </div>
-  </div>
+  </BaseModal>
 </template>
 
 <style scoped>

@@ -6,6 +6,7 @@ import { useSettings } from './useSettings';
 import { useGamification } from './useGamification';
 import { useGameData } from './useGameData';
 import { usePersistence } from './usePersistence';
+import { XP_REWARDS, GAME_STATUS } from '../config/gamification';
 
 // Shared state for Search (keep here or move to useGameSearch if needed)
 const searchQuery = ref('');
@@ -29,7 +30,7 @@ export function useGames() {
             title: newGameData.name,
             background_image: newGameData.background_image,
             released: newGameData.released,
-            status: 'backlog',
+            status: GAME_STATUS.BACKLOG,
             platform: platform, // Use mapping if needed, but UI usually passes string
             playtime: newGameData.playtime || 0,
             rating: 0,
@@ -41,7 +42,7 @@ export function useGames() {
         if (!success) return;
 
         // Award XP
-        gamification.awardXP(10);
+        gamification.awardXP(XP_REWARDS.ADD_GAME);
 
         // Fetch Full Details (Only for API games, skip manual timestamps)
         if (settings.apiKey.value && newGameData.id < 10000000000) {
@@ -54,7 +55,7 @@ export function useGames() {
                     gameData.updateGame(newGameData.id, {
                         ...details,
                         // Preserve local state
-                        status: 'backlog',
+                        status: GAME_STATUS.BACKLOG,
                         platform: platform,
                         rating: 0,
                         addedAt: newGame.addedAt,
@@ -72,11 +73,27 @@ export function useGames() {
         const game = gameData.games.value.find(g => g.id === id);
         if (game) {
             // Calculate XP to remove
-            let deduction = 10;
-            if (game.startedAt) deduction += 50;
-            if (game.completedAt) deduction += 200;
+            let deduction = XP_REWARDS.REMOVE_GAME;
+            if (game.startedAt) deduction += XP_REWARDS.REMOVE_STARTED - XP_REWARDS.REMOVE_GAME; // -60 - (-10) = -50
+            // Actually, my constants for REMOVE are totals.
+            // But here logic builds it up.
+            // Let's use the explicit constants if possible or stick to logic.
+            // Current Config: REMOVE_GAME: -10, REMOVE_STARTED: -60.
 
-            gamification.awardXP(-deduction);
+            // Logic here was: -10 (base), -50 (start), -200 (complete).
+            // So:
+            // if (game.completedAt) deduction = XP_REWARDS.REMOVE_COMPLETED;
+            // else if (game.startedAt) deduction = XP_REWARDS.REMOVE_STARTED;
+            // else deduction = XP_REWARDS.REMOVE_GAME;
+
+            if (game.completedAt) {
+                gamification.awardXP(XP_REWARDS.REMOVE_COMPLETED);
+            } else if (game.startedAt) {
+                gamification.awardXP(XP_REWARDS.REMOVE_STARTED);
+            } else {
+                gamification.awardXP(XP_REWARDS.REMOVE_GAME);
+            }
+
             gameData.removeGameRaw(id);
         }
     };
@@ -89,45 +106,54 @@ export function useGames() {
         const oldStatus = game.status;
         if (oldStatus === newStatus) return;
 
-        const XP_START = 50;
-        const XP_COMPLETE = 200;
+
 
         // 1. Remove Old XP
-        if (oldStatus === 'completed') {
-            gamification.awardXP(-XP_COMPLETE);
+        if (oldStatus === GAME_STATUS.COMPLETED) {
+            gamification.awardXP(XP_REWARDS.UNDO_COMPLETE); // -200
             game.completedAt = null;
         }
-        if (oldStatus === 'playing' && newStatus === 'backlog') {
-            gamification.awardXP(-XP_START);
+        if (oldStatus === GAME_STATUS.PLAYING && newStatus === GAME_STATUS.BACKLOG) {
+            gamification.awardXP(XP_REWARDS.UNDO_START); // -50
             game.startedAt = null;
         }
-        if (oldStatus === 'completed' && newStatus === 'backlog') {
-            gamification.awardXP(-XP_START);
+        if (oldStatus === GAME_STATUS.COMPLETED && newStatus === GAME_STATUS.BACKLOG) {
+            gamification.awardXP(XP_REWARDS.UNDO_START); // -50 (Cleaning up start bonus too? No wait.)
+            // Original logic:
+            // if old=completed (-200) AND new=backlog (-50). 
+            // My constants: UNDO_COMPLETE = -200. UNDO_START = -50.
+
+            // Logic reuse checks:
+            // old=completed -> -200. game object now has startedAt but no completedAt.
+            // new=backlog -> we need to remove startedAt too.
+
+            // If we just removed 200 above, we still have the start bonus active (presumably).
+            // The original code had:
+            // if (oldStatus === 'completed' && newStatus === 'backlog') { gamification.awardXP(-XP_START); game.startedAt = null; }
+
+            // So yes, we need to undo start too.
+            gamification.awardXP(XP_REWARDS.UNDO_START);
             game.startedAt = null;
         }
 
         // 2. Add New XP
-        if (newStatus === 'playing') {
-            if (oldStatus === 'backlog') {
-                gamification.awardXP(XP_START);
+        if (newStatus === GAME_STATUS.PLAYING) {
+            if (oldStatus === GAME_STATUS.BACKLOG) {
+                gamification.awardXP(XP_REWARDS.START_GAME);
                 if (!game.startedAt) game.startedAt = new Date().toISOString();
             }
         }
-        else if (newStatus === 'completed') {
-            if (oldStatus === 'playing') {
-                gamification.awardXP(XP_COMPLETE);
+        else if (newStatus === GAME_STATUS.COMPLETED) {
+            if (oldStatus === GAME_STATUS.PLAYING) {
+                gamification.awardXP(XP_REWARDS.COMPLETE_GAME);
             }
-            else if (oldStatus === 'backlog') {
-                gamification.awardXP(XP_START + XP_COMPLETE);
+            else if (oldStatus === GAME_STATUS.BACKLOG) {
+                gamification.awardXP(XP_REWARDS.COMPLETE_FROM_BACKLOG);
                 if (!game.startedAt) game.startedAt = new Date().toISOString();
             }
-            else if (oldStatus === 'dropped') {
-                let bonus = XP_COMPLETE;
-                if (!game.startedAt) {
-                    bonus += XP_START;
-                    game.startedAt = new Date().toISOString();
-                }
-                gamification.awardXP(bonus);
+            else if (oldStatus === GAME_STATUS.DROPPED) {
+                gamification.awardXP(XP_REWARDS.COMPLETE_FROM_DROPPED);
+                if (!game.startedAt) game.startedAt = new Date().toISOString();
             }
             game.completedAt = new Date().toISOString();
         }
@@ -223,6 +249,8 @@ export function useGames() {
         userLevel: gamification.userLevel,
         awardXP: gamification.awardXP,
         xpProgress: gamification.xpProgress,
+        levelStartXP: gamification.levelStartXP,
+        nextLevelXP: gamification.nextLevelXP,
         availableTitles: gamification.availableTitles,
         incrementQuestUsage: gamification.incrementQuestUsage,
 

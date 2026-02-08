@@ -35,7 +35,6 @@ defineEmits(['update:currentTab']);
       >
         <Layers class="w-4 h-4" />
         <span class="hidden sm:inline">Backlog</span>
-        <span v-if="backlogCount > 0" class="bg-gray-700 text-gray-300 text-[10px] px-1.5 py-0.5 rounded-full ml-1">{{ backlogCount }}</span>
       </button>
 
       <button 
@@ -44,7 +43,6 @@ defineEmits(['update:currentTab']);
       >
         <CheckCircle2 class="w-4 h-4" />
         <span class="hidden sm:inline">Completed</span>
-        <span v-if="completedCount > 0" class="bg-gray-700 text-gray-300 text-[10px] px-1.5 py-0.5 rounded-full ml-1">{{ completedCount }}</span>
       </button>
 
       <button 

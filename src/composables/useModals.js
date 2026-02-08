@@ -6,8 +6,16 @@ const modalProps = ref({});
 export function useModals() {
 
     const openModal = (name, props = {}) => {
+        // View Transitions temporarily disabled for debugging
+        // if (document.startViewTransition) {
+        //     document.startViewTransition(() => {
+        //         activeModal.value = name;
+        //         modalProps.value = props;
+        //     });
+        // } else {
         activeModal.value = name;
         modalProps.value = props;
+        // }
         history.pushState({ modal: name }, '', '');
     };
 

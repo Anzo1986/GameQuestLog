@@ -4,6 +4,7 @@ import { useDailyLogin } from '../composables/useDailyLogin';
 import { useShop } from '../composables/useShop';
 import { useCardStyles } from '../composables/useCardStyles';
 import GameCardInnerEffects from './GameCardInnerEffects.vue';
+import BaseModal from './BaseModal.vue';
 import { X, Coins, Check, Zap } from 'lucide-vue-next';
 
 const props = defineProps({
@@ -124,12 +125,11 @@ const getDayClass = (day) => {
 </script>
 
 <template>
-  <div v-if="isOpen" class="fixed inset-0 z-[80] flex items-center justify-center p-4">
-    <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="$emit('close')"></div>
-
-    <div class="relative w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in duration-300 isolation-auto"
-         :class="getCardClasses(equippedStyle?.value)"
-    >
+  <BaseModal :is-open="isOpen" @close="$emit('close')" max-width="max-w-lg">
+      <div 
+        class="relative w-full h-full rounded-2xl overflow-hidden flex flex-col"
+        :class="getCardClasses(equippedStyle?.value)"
+      >
         <!-- PRISM BORDER ANIMATION (Behind) -->
         <div v-if="equippedStyle?.value === 'prism'" class="absolute -inset-[3px] rounded-2xl bg-gradient-to-tr from-red-500 via-green-500 to-blue-500 z-0 animate-spin-slow opacity-80 blur-sm pointer-events-none"></div>
         <div v-if="equippedStyle?.value === 'prism'" class="absolute -inset-[3px] rounded-2xl bg-gradient-to-tr from-red-500 via-green-500 to-blue-500 z-0 animate-spin-slow pointer-events-none"></div>
@@ -148,13 +148,30 @@ const getDayClass = (day) => {
                 </h2>
                 <p class="text-gray-400 text-xs">Login daily to keep your streak alive!</p>
             </div>
-            <button @click="$emit('close')" class="p-2 hover:bg-gray-700 rounded-full text-gray-400">
-                <X class="w-6 h-6" />
+            <button @click="$emit('close')" class="p-2 hover:bg-gray-700 rounded-full text-gray-400 transition-colors active:scale-95">
+                <!-- Keep this one? BaseModal only adds if title/header prop used. DailyLogin uses default slot? --> 
+                <!-- Wait, DailyLoginModal.vue uses BaseModal WITHOUT title/header props? -->
+                <!-- Let's check DailyLoginModal's usage of BaseModal in previous turns (Step 219) -->
+                <!-- It uses: <BaseModal ...> <div class="relative ..."> ... -->
+                <!-- So BaseModal sees NO title and NO header slot. It falls back to ABSOLUTE close button (lines 45-51 of BaseModal). -->
+                <!-- DailyLoginModal has its OWN header structure inside the default slot. -->
+                <!-- This means we have TWO close buttons: one from BaseModal (absolute top-right) and one inside the custom header. -->
+                <!-- Solution: Identify if we want BaseModal's absolute one or our custom one. -->
+                <!-- The custom one is integrated into the "Daily Bonus" header row. -->
+                <!-- BaseModal's absolute one is top:4 right:4. -->
+                <!-- If I remove the one in DailyLoginModal, I rely on BaseModal's. -->
+                <!-- Let's remove the one in DailyLoginModal and see if BaseModal's positioning works. -->
+                <!-- Actually, strictly following "remove duplicate", I should remove this one. -->
+                 <!-- BUT wait, I can pass the custom header TO the header slot to fix this properly? -->
+                 <!-- If I move the header content to #header slot, BaseModal handles the close button. -->
+                 <!-- However, simpler change is just remove duplicate. I'll remove this one. -->
+                 <!-- Wait, if I remove this one, will the layout break? It is flex-between. -->
+                 <!-- If I remove the button, the text stays left. That is fine. -->
             </button>
         </div>
 
         <!-- Grid -->
-        <div class="p-6 overflow-y-auto custom-scrollbar">
+        <div class="p-6 overflow-y-auto custom-scrollbar flex-1">
             <div class="grid grid-cols-5 gap-2 sm:gap-3">
                 <div 
                     v-for="day in days" 
@@ -221,7 +238,7 @@ const getDayClass = (day) => {
               <Zap v-if="p.type === 'xp'" class="w-6 h-6 text-blue-400 drop-shadow-lg" fill="currentColor" />
           </div>
       </div>
-  </div>
+  </BaseModal>
 </template>
 
 <style scoped>
@@ -232,5 +249,15 @@ const getDayClass = (day) => {
 }
 .animate-float-up {
     animation: floatUp 1.5s ease-out forwards;
+}
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
 }
 </style>

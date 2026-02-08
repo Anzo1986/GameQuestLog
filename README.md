@@ -15,41 +15,26 @@ GameQuestLog is not just a list—it's a **companion for your gaming journey**. 
 
 Earn XP for every game you add, start, or finish. Level up your profile from a "Novice Adventurer" to a "Godlike Entity" as you conquer your library.
 
-### Key Features
-
-*   **🏆 Advanced Achievements**: Unlock over 50 unique achievements with **Bronze, Silver, Gold, and Platinum** tiers. Discover secret challenges and track your milestones.
-*   **🃏 Gamer Card**: Generate a high-quality, shareable image of your profile stats to show off your completion rate and level.
-*   **📱 Gesture Navigation**: Swipe left/right to seamlessly switch between your Dashboard, Backlog, and Completed lists—just like a native app.
-*   **📊 Comprehensive Dashboard**: Visualize your habits with beautiful charts (Playing vs. Completed, Genre DNA, Platform Wars).
-*   **🧙‍♂️ Quest Giver**: Can't decide what to play? Let the "Quest Giver" roll the dice and pick a game from your backlog.
-*   **🎨 Premium Visuals**: Enjoy 3D tilt effects on cards, staggered entrance animations, and a polished glassmorphic UI.
-*   **🪄 AI-Powered Updates**: Integrated with **Google Gemini** to fetch the latest patch notes and content updates for your active games.
-*   **💾 Local & Private**: 100% Client-side. Your data lives in your browser's LocalStorage. Support for JSON Import/Export backups.
+*   **🏆 Advanced Achievements**: Unlock over 50 unique achievements with **Bronze, Silver, Gold, and Platinum** tiers.
+*   **🃏 Gamer Card**: Generate a high-quality, shareable image of your profile stats.
+*   **📱 Gesture Navigation**: Swipe left/right to switch views, with haptic feedback for a tactile feel.
+*   **📊 Comprehensive Dashboard**: Visualize your habits with beautiful charts (Playing vs. Completed, Genre DNA).
+*   **🎨 Premium Visuals**: Enjoy 3D tilt effects, holographic card styles, and a polished glassmorphic UI.
+*   **🪄 Smart Updates**: Fetch game metadata automatically via the RAWG API.
+*   **💾 Local & Private**: 100% Client-side. Your data lives in your browser's LocalStorage.
 
 ---
 
 ## 🛠️ Built With
 
-*   **[Vue 3](https://vuejs.org/)** (Composition API) - The Progressive JavaScript Framework
-*   **[Vite](https://vitejs.dev/)** - Next Generation Frontend Tooling
-*   **[Tailwind CSS](https://tailwindcss.com/)** - Utility-first CSS framework
-*   **[Chart.js](https://www.chartjs.org/)** - For beautiful data visualization
-*   **[html-to-image](https://github.com/bubkoo/html-to-image)** - For generating Gamer Cards
-*   **[Lucide Icons](https://lucide.dev/)** - Beautiful & consistent icons
-*   **[Google Generative AI](https://ai.google.dev/)** - For smart game updates
+*   **[Vue 3](https://vuejs.org/)** (Composition API)
+*   **[Vite](https://vitejs.dev/)**
+*   **[Tailwind CSS](https://tailwindcss.com/)**
+*   **[Lucide Icons](https://lucide.dev/)**
 
 ---
 
 ## 🚀 Getting Started
-
-To get a local copy up and running, follow these simple steps.
-
-### Prerequisites
-
-*   Node.js (v18 or higher)
-*   npm
-
-### Installation
 
 1.  **Clone the repository**
     ```bash
@@ -62,16 +47,12 @@ To get a local copy up and running, follow these simple steps.
     npm install
     ```
 
-3.  **Get a RAWG API Key**
-    *   Sign up at [RAWG.io](https://rawg.io/apidocs) (It's free).
-    *   Enter your API key in the application settings (gear icon) after launching.
-
-4.  **Run Development Server**
+3.  **Run Development Server**
     ```bash
     npm run dev
     ```
 
-5.  **Build for Production**
+4.  **Build by Yourself**
     ```bash
     npm run build
     ```
@@ -103,9 +84,3 @@ Experience the app like a native mobile application:
 ## 📝 License
 
 Distributed under the MIT License. See `LICENSE` for more information.
-
----
-
-<p align="center">
-  Built with ❤️ by Raphael
-</p>

@@ -17,13 +17,13 @@ if (savedUser) {
     }
 }
 
+import { LEVEL_CURVE } from '../config/gamification';
+
 export function useGamification() {
 
     // Math Formulas
-    // New Formula: Level = floor(pow(XP / 500, 1/1.2)) + 1
-    // Inverse: XP = 500 * (Level - 1)^1.2
-    const getLevelFromXP = (xp) => Math.floor(Math.pow(xp / 500, 1 / 1.2)) + 1;
-    const getXPForLevel = (level) => Math.ceil(500 * Math.pow(level - 1, 1.2));
+    const getLevelFromXP = (xp) => Math.floor(Math.pow(xp / LEVEL_CURVE.BASE_XP, 1 / LEVEL_CURVE.EXPONENT)) + 1;
+    const getXPForLevel = (level) => Math.ceil(LEVEL_CURVE.BASE_XP * Math.pow(level - 1, LEVEL_CURVE.EXPONENT));
 
     const userLevel = computed(() => getLevelFromXP(userXP.value));
 
