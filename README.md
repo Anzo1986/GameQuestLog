@@ -100,7 +100,7 @@ Experience the app like a native mobile application:
   <img src="public/screenshots/Screenshot_20260215-182036.png" height="500" alt="App Screenshot 3" />
   <img src="public/screenshots/Screenshot_20260215-182134.png" height="500" alt="App Screenshot 4" />
   <img src="public/screenshots/Screenshot_20260215-182148.png" height="500" alt="App Screenshot 5" />
-  <img src="public/screenshots/Screenshot_20260215-183111.png" height="500" alt="App Screenshot 6" />
+
   <img src="public/screenshots/Screenshot_20260215-182246.png" height="500" alt="App Screenshot 7" />
   <img src="public/screenshots/Screenshot_20260215-182252.png" height="500" alt="App Screenshot 8" />
   <img src="public/screenshots/Screenshot_20260215-182300.png" height="500" alt="App Screenshot 9" />
