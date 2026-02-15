@@ -95,8 +95,13 @@ Experience the app like a native mobile application:
 
 ## 📱 Smartphone Previews
 
-<p align="center">
-  <img src="public/screenshots/dashboard.png" width="28%" alt="Dashboard View" />
-  <img src="public/screenshots/game-detail.png" width="28%" alt="Game Detail View" />
-  <img src="public/screenshots/quest-giver.png" width="28%" alt="Quest Giver Modal" />
-</p>
+## 📱 Smartphone Previews
+
+<div style="display: flex; overflow-x: auto; gap: 10px; padding-bottom: 10px;">
+  <img src="public/screenshots/Screenshot_20260215-182010.png" height="500" alt="App Screenshot 1" />
+  <img src="public/screenshots/Screenshot_20260215-182014.png" height="500" alt="App Screenshot 2" />
+  <img src="public/screenshots/Screenshot_20260215-182036.png" height="500" alt="App Screenshot 3" />
+  <img src="public/screenshots/Screenshot_20260215-182134.png" height="500" alt="App Screenshot 4" />
+  <img src="public/screenshots/Screenshot_20260215-182148.png" height="500" alt="App Screenshot 5" />
+  <img src="public/screenshots/Screenshot_20260215-182232.png" height="500" alt="App Screenshot 6" />
+</div>
