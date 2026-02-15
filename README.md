@@ -20,7 +20,7 @@ Earn XP for every game you add, start, or finish. Level up your profile from a "
 ### 🎮 Gamification & Progression
 *   **XP System**: Earn experience points for every gaming activity.
 *   **Leveling**: Progress through 50+ levels with unique rank titles.
-*   **Achievements**: Unlock over **60 unique achievements** across Bronze, Silver, Gold, and Platinum tiers.
+*   **Achievements**: Unlock **64 unique achievements** across Bronze, Silver, Gold, and Platinum tiers.
 *   **Streaks**: Track your **Daily Login Streak** and beat your all-time **Max Streak**.
 
 ### 🤖 AI Integration ("The Oracle")
@@ -29,10 +29,9 @@ Earn XP for every game you add, start, or finish. Level up your profile from a "
 *   **Sequel Scout**: Find sequels or prequels to your top-rated games.
 *   **Smart Recommendations**: Get game suggestions based on "Vibe", with optional **Hidden Gems Mode** (no AAA) and **Spoiler Shield**.
 
-### ☁️ Cloud & Data
-*   **Google Drive Sync**: Seamlessly save and load your progress across devices.
+### ☁️ Data Privacy
 *   **Local First**: Your data lives in your browser by default for privacy and speed.
-*   **Export/Import**: Manual JSON backup options available.
+*   **Export/Import**: Manual JSON backup options available to safeguard your progress.
 
 ### 📊 Statistics & Insights
 *   **Career Stats**: A comprehensive dashboard of your gaming habits.
@@ -95,13 +94,11 @@ Experience the app like a native mobile application:
 
 ## 📱 Smartphone Previews
 
-## 📱 Smartphone Previews
-
 <div style="display: flex; overflow-x: auto; gap: 10px; padding-bottom: 10px;">
   <img src="public/screenshots/Screenshot_20260215-182010.png" height="500" alt="App Screenshot 1" />
   <img src="public/screenshots/Screenshot_20260215-182014.png" height="500" alt="App Screenshot 2" />
   <img src="public/screenshots/Screenshot_20260215-182036.png" height="500" alt="App Screenshot 3" />
   <img src="public/screenshots/Screenshot_20260215-182134.png" height="500" alt="App Screenshot 4" />
   <img src="public/screenshots/Screenshot_20260215-182148.png" height="500" alt="App Screenshot 5" />
-  <img src="public/screenshots/Screenshot_20260215-182232.png" height="500" alt="App Screenshot 6" />
+  <img src="public/screenshots/Screenshot_20260215-182252.png" height="500" alt="App Screenshot 6" />
 </div>
