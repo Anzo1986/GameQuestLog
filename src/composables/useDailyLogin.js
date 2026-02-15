@@ -7,6 +7,7 @@ const STORAGE_KEY = 'game-tracker-daily-login';
 const state = ref({
     lastLoginDate: null, // "YYYY-MM-DD"
     currentStreak: 0,
+    maxStreak: 0,
     claimedToday: false
 });
 
@@ -14,7 +15,15 @@ const state = ref({
 const saved = localStorage.getItem(STORAGE_KEY);
 if (saved) {
     try {
-        state.value = JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        state.value = {
+            ...state.value, // Ensure defaults
+            ...parsed
+        };
+        // Backward compatibility: if maxStreak is missing, default to current
+        if (state.value.maxStreak === undefined) {
+            state.value.maxStreak = state.value.currentStreak;
+        }
     } catch (e) { console.error('Failed to parse login state', e); }
 }
 
@@ -113,6 +122,10 @@ export function useDailyLogin() {
         // Update State
         state.value.lastLoginDate = today;
         state.value.currentStreak = streak;
+        // Update maxStreak if current streak is higher
+        if (streak > state.value.maxStreak) {
+            state.value.maxStreak = streak;
+        }
         state.value.claimedToday = true;
 
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state.value));

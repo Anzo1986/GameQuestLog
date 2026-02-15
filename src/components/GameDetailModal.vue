@@ -24,7 +24,7 @@ const { getEquippedItem } = useShop();
 const { getCardClasses } = useCardStyles();
 const { shareGame, showShareFeedback } = useShare();
 
-const equippedStyle = computed(() => getEquippedItem('card_style'));
+const equippedStyle = computed(() => getEquippedItem('card_style')?.value);
 
 // Use computed for gameDetails to ensure immediate availability on mount
 const gameDetails = computed(() => {
@@ -74,18 +74,19 @@ const handleAction = async (action, val) => {
     :is-open="isOpen" 
     @close="$emit('close')" 
     max-width="max-w-2xl"
+    transparent
   >
       <template v-if="gameDetails">
         <!-- PRISM BORDER ANIMATION (Behind) -->
-        <div v-if="equippedStyle?.value === 'prism'" class="absolute -inset-[3px] rounded-2xl bg-gradient-to-tr from-red-500 via-green-500 to-blue-500 z-0 animate-spin-slow opacity-80 blur-sm pointer-events-none"></div>
-        <div v-if="equippedStyle?.value === 'prism'" class="absolute -inset-[3px] rounded-2xl bg-gradient-to-tr from-red-500 via-green-500 to-blue-500 z-0 animate-spin-slow pointer-events-none"></div>
+        <div v-if="equippedStyle === 'prism'" class="absolute -inset-[3px] rounded-2xl bg-gradient-to-tr from-red-500 via-green-500 to-blue-500 z-0 animate-spin-slow opacity-80 blur-sm pointer-events-none"></div>
+        <div v-if="equippedStyle === 'prism'" class="absolute -inset-[3px] rounded-2xl bg-gradient-to-tr from-red-500 via-green-500 to-blue-500 z-0 animate-spin-slow pointer-events-none"></div>
 
         <div 
-            class="relative w-full h-full flex flex-col bg-gray-900/40 backdrop-blur-2xl border border-white/20 shadow-[0_0_40px_rgba(0,0,0,0.6)] z-10 overflow-hidden" 
-            :class="getCardClasses(equippedStyle?.value, true)"
+            class="relative w-full h-full flex flex-col backdrop-blur-2xl shadow-[0_0_40px_rgba(0,0,0,0.6)] z-10 overflow-hidden rounded-2xl" 
+            :class="getCardClasses(equippedStyle, true)"
         >
           <!-- REFACTORED INNER EFFECTS -->
-          <GameCardInnerEffects :style-name="equippedStyle?.value" />
+          <GameCardInnerEffects :style-name="equippedStyle" />
 
 
           <!-- Content Box -->

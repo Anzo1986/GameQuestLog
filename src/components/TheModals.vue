@@ -17,6 +17,7 @@ import ShopModal from './ShopModal.vue';
 import DailyLoginModal from './DailyLoginModal.vue';
 import ConfirmModal from './ConfirmModal.vue';
 import AIQuestModal from './AIQuestModal.vue';
+import PromptModal from './PromptModal.vue';
 
 const { activeModal, modalProps, openModal } = useModals(); // Added openModal
 const { updateStatus, removeGame, userLevel, userTitle, games } = useGames();
@@ -99,6 +100,7 @@ onUnmounted(() => {
     
     <ShopModal v-if="activeModal === 'shop'" :is-open="true" @close="handleClose" />
     <DailyLoginModal v-if="activeModal === 'dailyLogin'" :is-open="true" @close="handleClose" />
+    <PromptModal v-if="activeModal === 'prompt'" :is-open="true" @close="handleClose" />
 
     <!-- Overlays -->
     <LevelUpOverlay v-if="activeModal === 'levelUp'" :level="userLevel" :title="userTitle" @close="handleClose" />

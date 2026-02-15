@@ -155,14 +155,11 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
       </div>
       <div class="flex items-center gap-2">
         <button 
-            @click="handleWebCheck([...playingGames, ...backlogGames])" 
+            @click="openModal('prompt')" 
             class="relative p-2 text-gray-400 hover:text-primary transition-colors rounded-full hover:bg-gray-800"
-            title="Check Game Updates on Web"
+            title="Manual AI Prompts"
         >
             <Bell class="w-6 h-6" />
-            <span v-if="showCopyFeedback" class="absolute -bottom-8 right-0 bg-green-500 text-black text-xs font-bold px-2 py-1 rounded shadow animate-bounce whitespace-nowrap z-50">
-                Copied! Paste in Gemini
-            </span>
         </button>
 
         <button @click="openModal('settings')" class="p-2 text-gray-400 hover:text-white transition-colors rounded-full hover:bg-gray-800">

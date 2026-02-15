@@ -14,6 +14,10 @@ defineProps({
     alignTop: {
         type: Boolean,
         default: false
+    },
+    transparent: {
+        type: Boolean,
+        default: false
     }
 });
 
@@ -29,8 +33,11 @@ defineEmits(['close']);
     <!-- Modal Content -->
     <!-- Unified Animation: zoom-in-95, fade-in -->
     <div 
-        class="relative w-full rounded-2xl bg-gray-900 border border-gray-700 shadow-2xl flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-200 isolation-auto"
-        :class="maxWidth"
+        class="relative w-full rounded-2xl shadow-2xl flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-200 isolation-auto"
+        :class="[
+            maxWidth,
+            transparent ? '' : 'bg-gray-900 border border-gray-700'
+        ]"
     >
         <!-- Optional Header Slot or Default Title -->
         <div v-if="title || $slots.header" class="p-4 sm:p-5 border-b border-gray-700/50 flex items-center justify-between bg-gray-800/30 rounded-t-2xl">

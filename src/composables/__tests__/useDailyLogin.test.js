@@ -150,4 +150,45 @@ describe('useDailyLogin', () => {
         vi.useRealTimers();
     });
 
+    it('should correctly track maxStreak', () => {
+        const { claimBonus, loginState } = useDailyLogin();
+
+        // 1. Start with fresh state
+        loginState.value = { lastLoginDate: null, currentStreak: 0, maxStreak: 0, claimedToday: false };
+
+        vi.useFakeTimers();
+
+        // Day 1
+        vi.setSystemTime(new Date('2025-02-01'));
+        claimBonus();
+        expect(loginState.value.currentStreak).toBe(1);
+        expect(loginState.value.maxStreak).toBe(1);
+
+        // Day 2 (Streak 2)
+        vi.setSystemTime(new Date('2025-02-02'));
+        claimBonus();
+        expect(loginState.value.currentStreak).toBe(2);
+        expect(loginState.value.maxStreak).toBe(2);
+
+        // Day 4 (Missed Day 3 -> Reset to 1)
+        vi.setSystemTime(new Date('2025-02-04'));
+        claimBonus();
+        expect(loginState.value.currentStreak).toBe(1);
+        expect(loginState.value.maxStreak).toBe(2); // Should remain 2!
+
+        // Day 5 (Streak 2) - tied with max
+        vi.setSystemTime(new Date('2025-02-05'));
+        claimBonus();
+        expect(loginState.value.currentStreak).toBe(2);
+        expect(loginState.value.maxStreak).toBe(2);
+
+        // Day 6 (Streak 3) - New Record!
+        vi.setSystemTime(new Date('2025-02-06'));
+        claimBonus();
+        expect(loginState.value.currentStreak).toBe(3);
+        expect(loginState.value.maxStreak).toBe(3);
+
+        vi.useRealTimers();
+    });
+
 });

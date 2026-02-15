@@ -1,11 +1,13 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { X, Sparkles, Play, AlertCircle, Bell } from 'lucide-vue-next';
 import { useAI } from '../composables/useAI';
 import { useGames } from '../composables/useGames';
 import { useCardStyles } from '../composables/useCardStyles';
 import { useShop } from '../composables/useShop';
 import { useToast } from '../composables/useToast';
+import { useSettings } from '../composables/useSettings';
+import GameCardInnerEffects from './GameCardInnerEffects.vue';
 
 const props = defineProps({
   isOpen: Boolean
@@ -17,8 +19,10 @@ const { generateGameRecommendation, generateGameUpdates, isGenerating, error: ai
 const { games, addGame } = useGames();
 const { getEquippedItem } = useShop();
 const { getCardClasses } = useCardStyles();
+const { hiddenGemsMode } = useSettings();
 
-const equippedStyle = 'cyber'; // Force Cyber style for AI
+// const equippedStyle = 'cyber'; // Force Cyber style for AI -> REMOVED. Use shop style.
+const equippedStyle = computed(() => getEquippedItem('card_style')?.value);
 
 const mode = ref('menu'); // 'menu', 'oracle', 'updates'
 const language = ref('de'); // Default to German
@@ -27,6 +31,7 @@ const updateResults = ref([]);
 const localError = ref(null);
 const addedGames = ref(new Set()); 
 const selectedVibe = ref(null);
+// const hiddenGemsMode = ref(false); // NOW SHARED
 const selectedGameForUpdate = ref(null);
 const batchProgress = ref(0);
 const batchTotal = ref(0);
@@ -46,7 +51,8 @@ const consultOracle = async () => {
             completed, 
             playing, 
             selectedVibe.value,
-            language.value 
+            language.value,
+            hiddenGemsMode.value
         );
         recommendation.value = results;
     } catch (e) {
@@ -154,10 +160,14 @@ const copyPrompt = async () => {
     <div class="absolute inset-0 bg-black/95 backdrop-blur-md" @click="!isGenerating && $emit('close')"></div>
 
     <!-- Modal Content -->
-    <div class="relative w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden flex flex-col items-center p-6 text-center animate-in fade-in zoom-in duration-300 border-2 border-purple-500/50 bg-gray-900 max-h-[90vh] overflow-y-auto">
+    <div class="relative w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden flex flex-col items-center p-6 text-center animate-in fade-in zoom-in duration-300 max-h-[90vh] overflow-y-auto"
+         :class="getCardClasses(equippedStyle, true)">
         
+        <!-- INNER EFFECTS LAYER -->
+        <GameCardInnerEffects :style-name="equippedStyle" class="z-0 opacity-40 pointer-events-none" />
+
         <!-- Cyber Grid Background -->
-        <div class="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
+        <div class="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none"></div>
         
         <!-- Close Button -->
         <button 
@@ -221,7 +231,7 @@ const copyPrompt = async () => {
                 </p>
 
                 <!-- Vibe Selector -->
-                <div class="mb-6 relative">
+                <div class="mb-4 relative">
                     <select 
                         v-model="selectedVibe"
                         class="w-full bg-gray-800/80 border border-purple-500/30 rounded-xl px-4 py-3 text-purple-200 focus:outline-none focus:border-purple-500 appearance-none cursor-pointer hover:bg-gray-800 transition-colors"
@@ -238,6 +248,18 @@ const copyPrompt = async () => {
                         <option value="Coop">🤝 Co-op Multiplayer</option>
                     </select>
                     <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-purple-400">▼</div>
+                </div>
+
+                <!-- Hidden Gems Toggle -->
+                <div class="mb-6 flex items-center justify-center gap-3 bg-gray-800/50 p-3 rounded-xl border border-purple-500/20 hover:bg-gray-800 transition-colors cursor-pointer group" @click="hiddenGemsMode = !hiddenGemsMode">
+                    <div class="w-10 h-6 rounded-full relative transition-colors duration-300"
+                        :class="hiddenGemsMode ? 'bg-purple-500' : 'bg-gray-600'">
+                        <div class="absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform duration-300"
+                            :class="hiddenGemsMode ? 'translate-x-4' : 'translate-x-0'"></div>
+                    </div>
+                    <span class="text-sm font-bold transition-colors" :class="hiddenGemsMode ? 'text-purple-300' : 'text-gray-400'">
+                        💎 Hidden Gems Only <span class="text-xs font-normal opacity-70">(No AAA)</span>
+                    </span>
                 </div>
 
                 <button 

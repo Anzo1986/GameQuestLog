@@ -16,7 +16,15 @@ export function usePersistence() {
             settings: {
                 theme: localStorage.getItem('game-tracker-theme'),
                 apiKey: localStorage.getItem('game-tracker-api-key'),
-                questUsage: localStorage.getItem('game-tracker-quest-usage')
+                questUsage: localStorage.getItem('game-tracker-quest-usage'),
+                // New Keys
+                language: localStorage.getItem('game-tracker-language'),
+                vibe: localStorage.getItem('game-tracker-vibe'),
+                aiProvider: localStorage.getItem('game-tracker-ai-provider'),
+                geminiKey: localStorage.getItem('game-tracker-gemini-key'),
+                groqKey: localStorage.getItem('game-tracker-groq-key'),
+                tavilyKey: localStorage.getItem('game-tracker-tavily-key'),
+                hiddenGems: localStorage.getItem('game-tracker-hidden-gems')
             }
         };
 
@@ -65,6 +73,15 @@ export function usePersistence() {
                             if (data.settings.theme) localStorage.setItem('game-tracker-theme', data.settings.theme);
                             if (data.settings.apiKey) localStorage.setItem('game-tracker-api-key', data.settings.apiKey);
                             if (data.settings.questUsage) localStorage.setItem('game-tracker-quest-usage', data.settings.questUsage);
+
+                            // Import New Keys
+                            if (data.settings.language) localStorage.setItem('game-tracker-language', data.settings.language);
+                            if (data.settings.vibe) localStorage.setItem('game-tracker-vibe', data.settings.vibe);
+                            if (data.settings.aiProvider) localStorage.setItem('game-tracker-ai-provider', data.settings.aiProvider);
+                            if (data.settings.geminiKey) localStorage.setItem('game-tracker-gemini-key', data.settings.geminiKey);
+                            if (data.settings.groqKey) localStorage.setItem('game-tracker-groq-key', data.settings.groqKey);
+                            if (data.settings.tavilyKey) localStorage.setItem('game-tracker-tavily-key', data.settings.tavilyKey);
+                            if (data.settings.hiddenGems) localStorage.setItem('game-tracker-hidden-gems', data.settings.hiddenGems);
                         }
 
                         window.location.reload(); // Refresh to load changes

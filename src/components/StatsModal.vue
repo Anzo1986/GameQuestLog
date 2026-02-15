@@ -43,8 +43,18 @@ defineEmits(['close', 'open-timeline']);
 const { gameStats, userLevel, userTitle } = useGames();
 const { themeColor, THEMES } = useSettings();
 const { loginState } = useDailyLogin();
+import { useSwipe } from '../composables/useSwipe';
 
 const activeChart = ref(null);
+const chartContainer = ref(null);
+
+useSwipe(chartContainer, {
+    onSwipeRight: () => {
+        if (activeChart.value) {
+            activeChart.value = null;
+        }
+    }
+});
 
 const topGenre = computed(() => {
     if (!gameStats.value) return 'N/A';
@@ -297,8 +307,8 @@ const platformChartOptions = {
             >
                 <div class="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-transparent group-hover:from-orange-500/20 transition-colors"></div>
                 <Flame class="w-8 h-8 text-orange-500 mb-2 drop-shadow-md" />
-                <h3 class="text-3xl font-black text-white">{{ loginState.currentStreak }}</h3>
-                <p class="text-xs text-orange-400 uppercase tracking-wider font-bold">Daily Streak</p>
+                <h3 class="text-3xl font-black text-white">{{ loginState.maxStreak }}</h3>
+                <p class="text-xs text-orange-400 uppercase tracking-wider font-bold">Max Streak</p>
             </div>
 
             <!-- Completion Rate (Static) -->
@@ -354,7 +364,7 @@ const platformChartOptions = {
         </div>
 
         <!-- 2. Charts Details (Conditional) -->
-        <div v-if="gameStats && activeChart" class="flex-1 flex flex-col animate-in slide-in-from-bottom-5 fade-in duration-300">
+        <div v-if="gameStats && activeChart" ref="chartContainer" class="flex-1 flex flex-col animate-in slide-in-from-bottom-5 fade-in duration-300">
             <button @click="activeChart = null" class="self-start mb-4 text-sm flex items-center gap-2 text-gray-400 hover:text-white bg-gray-800 px-3 py-1.5 rounded-lg border border-gray-700 active:scale-95 transition-transform">
                 ← Back to Overview
             </button>

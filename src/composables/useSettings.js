@@ -16,6 +16,10 @@ const userName = ref('Guest');
 const userAvatar = ref(null);
 const selectedTitle = ref(null);
 
+// AI & Prompt Settings
+const language = ref(localStorage.getItem('game-tracker-language') || 'en');
+const vibe = ref(localStorage.getItem('game-tracker-vibe') || null);
+
 const THEMES = {
     blue: { name: 'Blue', rgb: '59 130 246' },   // blue-500
     pink: { name: 'Pink', rgb: '236 72 153' },   // pink-500
@@ -108,6 +112,14 @@ watch(viewMode, (newVal) => {
     localStorage.setItem(VIEW_MODE_STORAGE_KEY, newVal);
 });
 
+watch(language, (newVal) => {
+    localStorage.setItem('game-tracker-language', newVal);
+});
+
+watch(vibe, (newVal) => {
+    localStorage.setItem('game-tracker-vibe', newVal);
+});
+
 const geminiApiKey = ref(localStorage.getItem('game-tracker-gemini-key') || '');
 const groqApiKey = ref(localStorage.getItem('game-tracker-groq-key') || '');
 const tavilyApiKey = ref(localStorage.getItem('game-tracker-tavily-key') || '');
@@ -133,6 +145,12 @@ const setAiProvider = (provider) => {
     localStorage.setItem('game-tracker-ai-provider', provider);
 };
 
+const hiddenGemsMode = ref(localStorage.getItem('game-tracker-hidden-gems') === 'true');
+
+watch(hiddenGemsMode, (newVal) => {
+    localStorage.setItem('game-tracker-hidden-gems', newVal);
+});
+
 export function useSettings() {
     return {
         apiKey,
@@ -146,6 +164,8 @@ export function useSettings() {
         userName,
         userAvatar,
         selectedTitle,
+        language,
+        vibe,
         THEMES,
         applyTheme,
         setApiKey,
@@ -153,6 +173,7 @@ export function useSettings() {
         setGroqKey,
         setTavilyKey,
         setAiProvider,
+        hiddenGemsMode,
         setTheme,
         setUserName,
         setUserAvatar,

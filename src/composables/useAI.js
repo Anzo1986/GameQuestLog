@@ -52,65 +52,89 @@ export function useAI() {
     const { geminiApiKey, groqApiKey, tavilyApiKey, aiProvider } = useSettings();
     const { apiKey: rawgApiKey } = useSettings(); // RAWG requires separate apiKey
 
-    const generateGameRecommendation = async (backlogGames, playedGames, playingGames, preferredVibe = null, language = 'en') => {
-        isGenerating.value = true;
-        error.value = null;
+    const constructOraclePrompt = (backlogGames, playedGames, playingGames, preferredVibe = null, language = 'en', webContext = "", returnJson = true, hiddenGems = false, spoilerShield = false, minMetacriticScore = 0) => {
+        // Format lists
+        const formatGame = (g) => {
+            const ratingInfo = g.rating > 0 ? ` (Rated: ${g.rating}/5 ⭐)` : '';
+            return `${g.title}${ratingInfo}`;
+        };
 
-        const provider = aiProvider.value;
-        const currentApiKey = provider === 'groq' ? groqApiKey.value : geminiApiKey.value;
+        const playedList = (playedGames || []).map(formatGame);
+        const playingList = (playingGames || []).map(g => g.title);
+        const backlogList = (backlogGames || []).map(g => g.title);
 
-        if (!currentApiKey) {
-            error.value = `API Key missing for provider: ${provider.toUpperCase()}`;
-            isGenerating.value = false;
-            return [];
+        const contextString = playedList.join('\n- ');
+
+        // Construct Vibe Instruction
+        let vibeInstruction = "";
+
+        if (preferredVibe && preferredVibe !== 'Surprise Me' && preferredVibe !== 'null') {
+            vibeInstruction = `
+            CURRENT MOOD / PREFERENCE:
+            The user is currently in the mood for a "${preferredVibe}" game.
+            Please PRIORITIZE recommending games that fit this vibe or genre.
+            However, do NOT strictly limit yourself to this if there is a perfect match from another genre that fits the user's high-rated history.
+            `;
         }
 
-        console.log(`[useAI] Generating with Provider: ${provider}`);
+        // Hidden Gems Instruction
+        let hiddenGemsInstruction = "";
+        if (hiddenGems) {
+            hiddenGemsInstruction = `
+            CRITICAL INSTRUCTION: "HIDDEN GEMS MODE" IS ACTIVE.
+            - YOU MUST IGNORE ALL AAA TITLES and popular mainstream franchises (e.g. Call of Duty, Assassin's Creed, Mario, Zelda, God of War, etc.).
+            - Focus ONLY on INDIE, AA, or lesser-known titles that are highly rated (80+) or have cult followings.
+            - Do not recommend games that everyone already knows.
+            `;
+        }
 
-        try {
-            // Format lists
-            const formatGame = (g) => {
-                const ratingInfo = g.rating > 0 ? ` (Rated: ${g.rating}/5 ⭐)` : '';
-                return `${g.title}${ratingInfo}`;
-            };
+        // Metacritic Logic
+        let scoreInstruction = "";
+        if (minMetacriticScore > 0) {
+            scoreInstruction = `
+            QUALITY FILTER:
+            - Only recommend games that have a Metacritic (or equivalent) review score of ${minMetacriticScore} or higher.
+            - Do not recommend poorly rated games.
+            `;
+        }
 
-            const playedList = (playedGames || []).map(formatGame);
-            const playingList = (playingGames || []).map(g => g.title);
-            const backlogList = (backlogGames || []).map(g => g.title);
+        // Spoiler Shield
+        let spoilerInstruction = "";
+        if (spoilerShield) {
+            spoilerInstruction = `
+            SPOILER SHIELD ACTIVE:
+            - ABSOLUTELY NO STORY SPOILERS.
+            - Do not reveal plot twists, endings, or key narrative surprises.
+            - Focus on gameplay loop, atmosphere, and general premise only.
+            `;
+        }
 
-            const contextString = playedList.join('\n- ');
-
-            // Construct Vibe Instruction & Search Query
-            let vibeInstruction = "";
-            let searchQuery = `top rated new video games ${new Date().getFullYear()} ${language === 'de' ? 'germany' : ''}`;
-
-            if (preferredVibe && preferredVibe !== 'Surprise Me') {
-                vibeInstruction = `
-                CURRENT MOOD / PREFERENCE:
-                The user is currently in the mood for a "${preferredVibe}" game.
-                Please PRIORITIZE recommending games that fit this vibe or genre.
-                However, do NOT strictly limit yourself to this if there is a perfect match from another genre that fits the user's high-rated history.
-                `;
-                searchQuery = `best ${preferredVibe} games ${new Date().getFullYear()} reviews`;
-            }
-
-            // --- LIVE WEB CONTEXT ---
-            let webContext = "";
-            if (tavilyApiKey.value && provider !== 'gemini') {
-                console.log(`[useAI] Oracle Searching: ${searchQuery}`);
-                const searchResults = await searchWeb(tavilyApiKey.value, searchQuery);
-                if (searchResults) {
-                    webContext = `
-                    \n=== MARKET RESEARCH (LIVE WEB DATA) ===
-                    The following games are currently popular/trending or highly rated:
-                    ${searchResults}
-                    =======================================
-                    INSTRUCTION: You MAY use this list to find modern games that fit the user's vibe.
-                    `;
+        let outputInstructions = "";
+        if (returnJson) {
+            outputInstructions = `
+            OUTPUT: JSON Array only. No markdown.
+            [
+                {
+                    "gameTitle": "Exact Title",
+                    "reasoning": "A concise bullet-point style summary (max 2 lines). Mention WHY it fits based on history/mood.",
+                    "estimatedHours": 10,
+                    "vibe": "Adjective"
                 }
-            }
+            ]`;
+        } else {
+            outputInstructions = `
+            OUTPUT FORMAT:
+            Please provide a friendly, engaging response in Markdown.
+            For each game, provide:
+            - **Title** (with emoji if appropriate)
+            - **Estimated Playtime**
+            - **Vibe/Genre**
+            - **YouTube**: A search link for the game's trailer or gameplay.
+            - **Why you should play it**: A short explanation based on the user's history.
+            `;
+        }
 
-            const prompt = `
+        return `
             You are "The Oracle", a mythical web-traveling entity that helps gamers discover NEW adventures.
             LANGUAGE INSTRUCTION: Respond in ${language === 'de' ? 'GERMAN (Deutsch)' : 'ENGLISH'}.
             
@@ -127,21 +151,60 @@ export function useAI() {
             ${backlogList.join(', ')}
 
             ${vibeInstruction}
+            
+            ${hiddenGemsInstruction}
+            
+            ${scoreInstruction}
+            
+            ${spoilerInstruction}
 
             CRITICAL INSTRUCTIONS:
             1. **Exclusion**: Do NOT recommend any game the user already owns (listed above).
             2. **Discovery**: Recommend exactly THREE (3) NEW games.
             
-            OUTPUT: JSON Array only. No markdown.
-            [
-                {
-                    "gameTitle": "Exact Title",
-                    "reasoning": "A concise bullet-point style summary (max 2 lines). Mention WHY it fits based on history/mood.",
-                    "estimatedHours": 10,
-                    "vibe": "Adjective"
-                }
-            ]
+            ${outputInstructions}
             `;
+    };
+
+    const generateGameRecommendation = async (backlogGames, playedGames, playingGames, preferredVibe = null, language = 'en') => {
+        isGenerating.value = true;
+        error.value = null;
+
+        const provider = aiProvider.value;
+        const currentApiKey = provider === 'groq' ? groqApiKey.value : geminiApiKey.value;
+
+        if (!currentApiKey) {
+            error.value = `API Key missing for provider: ${provider.toUpperCase()}`;
+            isGenerating.value = false;
+            return [];
+        }
+
+        console.log(`[useAI] Generating with Provider: ${provider}`);
+
+        try {
+            // --- LIVE WEB CONTEXT ---
+            let webContext = "";
+            let searchQuery = `top rated new video games ${new Date().getFullYear()} ${language === 'de' ? 'germany' : ''}`;
+
+            if (preferredVibe && preferredVibe !== 'Surprise Me') {
+                searchQuery = `best ${preferredVibe} games ${new Date().getFullYear()} reviews`;
+            }
+
+            if (tavilyApiKey.value && provider !== 'gemini') {
+                console.log(`[useAI] Oracle Searching: ${searchQuery}`);
+                const searchResults = await searchWeb(tavilyApiKey.value, searchQuery);
+                if (searchResults) {
+                    webContext = `
+                    \n=== MARKET RESEARCH (LIVE WEB DATA) ===
+                    The following games are currently popular/trending or highly rated:
+                    ${searchResults}
+                    =======================================
+                    INSTRUCTION: You MAY use this list to find modern games that fit the user's vibe.
+                    `;
+                }
+            }
+
+            const prompt = constructOraclePrompt(backlogGames, playedGames, playingGames, preferredVibe, language, webContext, true, false);
 
             let textResponse = '';
 
@@ -244,6 +307,72 @@ export function useAI() {
         }
     };
 
+    const constructUpdatePrompt = (gameTitle, platform, language = 'en', searchContext = "", isSequelScout = false, completedTopGames = [], ownedGamesContext = []) => {
+        const now = new Date();
+        const currentMonth = now.toLocaleString('default', { month: 'long' });
+        const currentYear = now.getFullYear();
+
+        if (isSequelScout) {
+            const topGamesList = completedTopGames.map(g => `${g.title} (${g.platform})`).join(', ');
+            const ownedGamesList = ownedGamesContext.map(g => g.title).join(', ');
+
+            return `
+            You are "The Series Scout", an intelligent gaming assistant.
+            CURRENT DATE: ${currentMonth} ${currentYear}.
+
+            CONTEXT:
+            The user loves the following completed games (Rated 4+/5):
+            ${topGamesList}
+
+            ALREADY OWNED GAMES (DO NOT RECOMMEND):
+            ${ownedGamesList}
+
+            TASK:
+            Analyze the franchises of the user's top-rated games.
+            Search for MISSING ENTRIES that the user has NOT played yet.
+            This includes:
+            - **FUTURE**: Upcoming Sequels or DLC.
+            - **PAST**: Highly-rated Prequels, Original entries, or Spin-offs.
+            - **MODERN**: Remakes, Remasters, or Spiritual Successors.
+
+            LANGUAGE: Respond in ${language === 'de' ? 'GERMAN (Deutsch)' : 'ENGLISH'}.
+
+            CRITICAL FILTERS:
+            1. **Exclusion**: Do NOT recommend any game the user already owns (listed above).
+            2. **Quality Control**: Only recommend older games if they are considered "Must Play" classics or essential to understanding the story.
+            3. **Version Logic**: 
+               - If a modern Remake/Remaster exists (e.g. Dead Space Remake), prioritize that over the original.
+               - If no modern version exists, the original is acceptable.
+
+            OUTPUT FORMAT:
+            - Group by Franchise (if multiple).
+            - List the recommended game and its status (e.g. "Released 2010", "Coming 2025").
+            - Explain WHY (e.g. "You played X, but missed the prequel Y which explains the backstory").
+            `;
+        }
+
+        return `
+             You are a dedicated Gaming News Analyst.
+             CURRENT DATE: ${currentMonth} ${currentYear}.
+             TARGET GAME: "${gameTitle}" (Platform: ${platform}).
+
+             ${searchContext || ''}
+
+             INSTRUCTION: ${searchContext ? 'Use the "LIVE WEB SEARCH RESULTS" provided above to answer.' : 'Search for ANY latest updates, news, patches, or DLC for the game.'}
+             
+             TASK:
+             Identify updates, DLCs, or patches if you find ANY.
+             ${searchContext ? 'Summarize the REAL updates found in the search results.' : 'If absolutely nothing is found, just say so. Otherwise summarize found info.'}
+             
+             OUTPUT FORMAT:
+             - 2-3 Bullet points MAX.
+             - **Source Link**: Please provide a direct link to the official patch notes or news article if available.
+             - Cite sources/dates if available in context.
+             
+             LANGUAGE: Respond in ${language === 'de' ? 'GERMAN (Deutsch)' : 'ENGLISH'}.
+             `;
+    };
+
     const generateGameUpdates = async (gameTitle, platform, language = 'en') => {
         isGenerating.value = true;
         error.value = null;
@@ -259,9 +388,7 @@ export function useAI() {
 
         try {
             // Get current date for context
-            const now = new Date();
-            const currentMonth = now.toLocaleString('default', { month: 'long' });
-            const currentYear = now.getFullYear();
+            const currentYear = new Date().getFullYear();
 
             let searchContext = "";
             if (tavilyApiKey.value && provider !== 'gemini') {
@@ -277,25 +404,7 @@ export function useAI() {
                 }
             }
 
-            const prompt = `
-             You are a dedicated Gaming News Analyst.
-             CURRENT DATE: ${currentMonth} ${currentYear}.
-             TARGET GAME: "${gameTitle}" (Platform: ${platform}).
-
-             ${searchContext || ''}
-
-             INSTRUCTION: ${searchContext ? 'Use the "LIVE WEB SEARCH RESULTS" provided above to answer.' : 'Search for ANY latest updates, news, patches, or DLC for the game.'}
-             
-             TASK:
-             Identify updates, DLCs, or patches if you find ANY.
-             ${searchContext ? 'Summarize the REAL updates found in the search results.' : 'If absolutely nothing is found, just say so. Otherwise summarize found info.'}
-             
-             OUTPUT FORMAT:
-             - 2-3 Bullet points MAX.
-             - Cite sources/dates if available in context.
-             
-             LANGUAGE: Respond in ${language === 'de' ? 'GERMAN (Deutsch)' : 'ENGLISH'}.
-             `;
+            const prompt = constructUpdatePrompt(gameTitle, platform, language, searchContext);
 
             let text = '';
             if (provider === 'groq') {
@@ -331,6 +440,8 @@ export function useAI() {
     return {
         generateGameRecommendation,
         generateGameUpdates,
+        constructOraclePrompt,
+        constructUpdatePrompt,
         handleWebCheck,
         showCopyFeedback,
         isGenerating,
