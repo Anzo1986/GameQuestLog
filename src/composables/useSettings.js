@@ -108,9 +108,38 @@ watch(viewMode, (newVal) => {
     localStorage.setItem(VIEW_MODE_STORAGE_KEY, newVal);
 });
 
+const geminiApiKey = ref(localStorage.getItem('game-tracker-gemini-key') || '');
+const groqApiKey = ref(localStorage.getItem('game-tracker-groq-key') || '');
+const tavilyApiKey = ref(localStorage.getItem('game-tracker-tavily-key') || '');
+const aiProvider = ref(localStorage.getItem('game-tracker-ai-provider') || 'gemini'); // 'gemini' or 'groq'
+
+const setGeminiKey = (key) => {
+    geminiApiKey.value = key;
+    localStorage.setItem('game-tracker-gemini-key', key);
+};
+
+const setGroqKey = (key) => {
+    groqApiKey.value = key;
+    localStorage.setItem('game-tracker-groq-key', key);
+};
+
+const setTavilyKey = (key) => {
+    tavilyApiKey.value = key;
+    localStorage.setItem('game-tracker-tavily-key', key);
+};
+
+const setAiProvider = (provider) => {
+    aiProvider.value = provider;
+    localStorage.setItem('game-tracker-ai-provider', provider);
+};
+
 export function useSettings() {
     return {
         apiKey,
+        geminiApiKey,
+        groqApiKey,
+        tavilyApiKey,
+        aiProvider,
         themeColor,
         sortOption,
         viewMode,
@@ -118,7 +147,12 @@ export function useSettings() {
         userAvatar,
         selectedTitle,
         THEMES,
+        applyTheme,
         setApiKey,
+        setGeminiKey,
+        setGroqKey,
+        setTavilyKey,
+        setAiProvider,
         setTheme,
         setUserName,
         setUserAvatar,

@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import { Plus, Dices, ShoppingBag, Calendar, Trophy, Menu, X } from 'lucide-vue-next';
+import { Plus, Dices, ShoppingBag, Calendar, Trophy, Menu, X, BrainCircuit } from 'lucide-vue-next';
 
 const isMenuOpen = ref(false);
 
@@ -18,6 +18,7 @@ const openModal = (modalName) => {
 const menuButtons = [
     { id: 'addGame', label: 'Add Game', icon: Plus },
     { id: 'quest', label: 'Quest Giver', icon: Dices },
+    { id: 'oracle', label: 'The Oracle (AI)', icon: BrainCircuit },
     { id: 'shop', label: 'Loot Shop', icon: ShoppingBag },
     { id: 'dailyLogin', label: 'Daily Bonus', icon: Calendar },
     { id: 'achievements', label: 'Achievements', icon: Trophy }

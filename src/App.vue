@@ -16,17 +16,19 @@ import { useAchievements } from './composables/useAchievements';
 import { useDailyLogin } from './composables/useDailyLogin';
 import { useGameFilters } from './composables/useGameFilters';
 import { useModals } from './composables/useModals';
-import { useGemini } from './composables/useGemini';
+import { useAI } from './composables/useAI';
 import { useGameplayCoordinator } from './composables/useGameplayCoordinator';
 import { useSwipe } from './composables/useSwipe';
+import { useShare } from './composables/useShare';
 import { Settings, Bell } from 'lucide-vue-next';
 
 // Composables
-const { playingGames, backlogGames, completedGames, droppedGames, removeGame, games, updateStatus, userXP } = useGames();
+const { playingGames, backlogGames, completedGames, droppedGames, removeGame, addGame, games, updateStatus, userXP } = useGames();
 const { checkAchievements } = useAchievements();
 const { openModal, resetModal } = useModals();
-const { handleWebCheck, showCopyFeedback } = useGemini();
+const { handleWebCheck, showCopyFeedback } = useAI();
 const { handleUpdateStatus } = useGameplayCoordinator();
+const { checkShareUrl } = useShare();
 
 // Search & Sort
 const { searchQuery: localSearchQuery, sortOption: currentSort, getProcessedGames } = useGameFilters();
@@ -71,8 +73,35 @@ onMounted(() => {
 
     const { checkLogin } = useDailyLogin();
     const status = checkLogin();
-    if (!status.claimed) {
-        setTimeout(() => openModal('dailyLogin'), 1000);
+    // Check for shared game import
+    const sharedGame = checkShareUrl();
+    if (sharedGame) {
+        // Prevent duplicate import
+        if (games.value.some(g => g.id === sharedGame.id)) {
+             openModal('confirm', {
+                title: 'Game Already Exists',
+                message: `You already have "${sharedGame.name}" in your library!`,
+                confirmText: 'OK',
+                confirmColor: 'bg-gray-600',
+                onConfirm: () => {} // Just close
+            });
+        } else {
+            openModal('confirm', {
+                title: 'Game Recommendation',
+                message: `Someone shared "${sharedGame.name}" with you. Would you like to add it to your Backlog?`,
+                confirmText: 'Add to Backlog',
+                confirmColor: 'bg-green-500 hover:bg-green-600',
+                imageUrl: sharedGame.background_image,
+                onConfirm: () => {
+                    addGame(sharedGame, sharedGame.platform || 'PC');
+                }
+            });
+        }
+    } else {
+         // Only check daily login if not importing a game
+        if (!status.claimed) {
+            setTimeout(() => openModal('dailyLogin'), 1000);
+        }
     }
 });
 
@@ -126,7 +155,7 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
       </div>
       <div class="flex items-center gap-2">
         <button 
-            @click="handleWebCheck(games)" 
+            @click="handleWebCheck([...playingGames, ...backlogGames])" 
             class="relative p-2 text-gray-400 hover:text-primary transition-colors rounded-full hover:bg-gray-800"
             title="Check Game Updates on Web"
         >

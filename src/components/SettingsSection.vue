@@ -9,34 +9,35 @@ import { useSettings } from '../composables/useSettings';
 const emit = defineEmits(['close']);
 
 const { 
-  apiKey, setApiKey, exportData: exportDataRaw, importData, 
-  userAvatar, setUserAvatar, 
-  themeColor, setTheme, THEMES,
-  userName, setUserName,
-  userTitle, availableTitles, setUserTitle
+  exportData, importData, 
+  availableTitles 
 } = useGames();
 
-const { trackAction } = useAchievements();
-const { lastBackup } = useSettings();
-
+const {
+    apiKey, setApiKey,
+    geminiApiKey, setGeminiKey,
+    groqApiKey, setGroqKey,
+    tavilyApiKey, setTavilyKey,
+    aiProvider, setAiProvider,
+    themeColor, setTheme,
+    userName, setUserName,
+    userAvatar, setUserAvatar,
+    selectedTitle: userTitle, setUserTitle,
+    lastBackup,
+    THEMES
+} = useSettings();
 
 const lastBackupDisplay = computed(() => {
-    if (!lastBackup.value) return 'No backup recorded yet';
-    const date = new Date(lastBackup.value);
-    const now = new Date();
-    const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
-    
-    if (diffDays === 0) return 'Last backup: Today';
-    if (diffDays === 1) return 'Last backup: Yesterday';
-    return `Last backup: ${diffDays} days ago (${date.toLocaleDateString()})`;
+    if (!lastBackup.value) return 'Never';
+    return new Date(lastBackup.value).toLocaleString();
 });
 
-const exportData = () => {
-    exportDataRaw();
-    trackAction('export');
-};
+const newKey = ref(apiKey.value); // Maps to RAWG key input
+const geminiKeyInput = ref(geminiApiKey.value);
+const groqKeyInput = ref(groqApiKey.value);
+const tavilyKeyInput = ref(tavilyApiKey.value);
+const currentProvider = ref(aiProvider.value);
 
-const newKey = ref(apiKey.value);
 const fileInput = ref(null);
 const avatarInput = ref(null);
 const importStatus = ref('');
@@ -69,7 +70,28 @@ useSwipe(modalRef, {
 
 const saveKey = () => {
   setApiKey(newKey.value);
-  alert('API Key saved!');
+  alert('RAWG API Key saved!');
+};
+
+const saveGeminiKey = () => {
+    setGeminiKey(geminiKeyInput.value);
+    alert('Gemini API Key saved!');
+};
+
+const saveGroqKey = () => {
+    setGroqKey(groqKeyInput.value);
+    alert('Groq API Key saved!');
+};
+
+const saveTavilyKey = () => {
+    setTavilyKey(tavilyKeyInput.value);
+    alert('Tavily Search Key saved!');
+};
+
+const updateAiProvider = (provider) => {
+    currentProvider.value = provider;
+    setAiProvider(provider);
+    alert(`Switched to ${provider === 'groq' ? 'Groq' : 'Gemini'}`);
 };
 
 const triggerImport = () => {
@@ -204,32 +226,133 @@ const version = __APP_VERSION__;
         <!-- ================== GENERAL TAB (API) ================== -->
         <div v-if="activeTab === 'general'" class="space-y-6 animate-in fade-in slide-in-from-left-4 duration-300">
           
-
-
           <div class="space-y-4">
-            <div class="flex items-center justify-between">
-                <h3 class="text-sm font-medium text-gray-300">API Configuration</h3>
-                <button @click="saveKey" class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 text-sm shadow-lg">
-                    <Save class="w-4 h-4" /> Save Keys
-                </button>
-            </div>
             
             <!-- RAWG Key -->
-            <div class="bg-gray-800 p-4 rounded-lg border border-gray-700">
-                <label class="block text-sm font-medium text-gray-300 mb-2">RAWG.io API Key</label>
-                <div class="relative">
-                     <Key class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                     <input 
-                      v-model="newKey" 
-                      type="text" 
-                      placeholder="Enter your RAWG API Key" 
-                      class="w-full bg-gray-950 border border-gray-600 rounded-lg py-2 pl-10 pr-4 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                    />
+            <div class="space-y-2">
+                 <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-medium text-gray-300">Game Data API</h3>
+                    <button @click="saveKey" class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 text-sm shadow-lg">
+                        <Save class="w-4 h-4" /> Save RAWG Key
+                    </button>
                 </div>
-                <p class="mt-2 text-xs text-gray-400">
-                  Required for game data. <a href="https://rawg.io/apidocs" target="_blank" class="text-blue-400 hover:underline">Get key</a>.
-                </p>
+                <div class="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                    <label class="block text-sm font-medium text-gray-300 mb-2">RAWG.io API Key</label>
+                    <div class="relative">
+                         <Key class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                         <input 
+                          v-model="newKey" 
+                          type="text" 
+                          placeholder="Enter your RAWG API Key" 
+                          class="w-full bg-gray-950 border border-gray-600 rounded-lg py-2 pl-10 pr-4 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                        />
+                    </div>
+                    <p class="mt-2 text-xs text-gray-400">
+                      Required for game data. <a href="https://rawg.io/apidocs" target="_blank" class="text-blue-400 hover:underline">Get key</a>.
+                    </p>
+                </div>
             </div>
+
+            <!-- AI Settings -->
+            <div class="space-y-4 mt-6">
+                <h3 class="text-lg font-semibold text-gray-200 flex items-center gap-2">
+                    <span class="text-blue-400">🤖</span> AI Intelligence
+                </h3>
+                
+                <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 space-y-4">
+                    <!-- Provider Selection -->
+                    <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-2">AI Provider</label>
+                    <div class="flex gap-2">
+                        <button 
+                        @click="updateAiProvider('gemini')"
+                        :class="[
+                            'flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors border',
+                            currentProvider === 'gemini' 
+                            ? 'bg-blue-600 border-blue-500 text-white' 
+                            : 'bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600'
+                        ]"
+                        >
+                        Google Gemini
+                        </button>
+                        <button 
+                        @click="updateAiProvider('groq')"
+                        :class="[
+                            'flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors border',
+                            currentProvider === 'groq' 
+                            ? 'bg-orange-600 border-orange-500 text-white' 
+                            : 'bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600'
+                        ]"
+                        >
+                        Groq (Llama 3) 🚀
+                        </button>
+                    </div>
+                    </div>
+
+                    <!-- Gemini Config -->
+                    <div v-if="currentProvider === 'gemini'" class="space-y-2 fade-in">
+                    <label class="block text-sm font-medium text-gray-400">Gemini API Key</label>
+                    <div class="flex gap-2">
+                        <input 
+                            v-model="geminiKeyInput"
+                            type="password" 
+                            placeholder="AIzaSy..."
+                            class="flex-1 bg-gray-900 text-gray-200 px-4 py-2 rounded-lg border border-gray-700 focus:border-blue-500 focus:outline-none placeholder-gray-600"
+                        />
+                        <button @click="saveGeminiKey" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                            Save
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-500">
+                        Required for "The Oracle" recommendations. Get a free key at 
+                        <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-400 hover:underline">Google AI Studio</a>.
+                    </p>
+                    </div>
+
+                    <!-- Groq Config -->
+                    <div v-if="currentProvider === 'groq'" class="space-y-2 fade-in">
+                    <label class="block text-sm font-medium text-gray-400">Groq API Key</label>
+                    <div class="flex gap-2">
+                        <input 
+                            v-model="groqKeyInput"
+                            type="password" 
+                            placeholder="gsk_..."
+                            class="flex-1 bg-gray-900 text-gray-200 px-4 py-2 rounded-lg border border-gray-700 focus:border-orange-500 focus:outline-none placeholder-gray-600"
+                        />
+                        <button @click="saveGroqKey" class="bg-orange-600 hover:bg-orange-500 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                            Save
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-500">
+                        Extremely fast Llama 3 models with high free limits. Get a free key at 
+                        <a href="https://console.groq.com/keys" target="_blank" class="text-orange-400 hover:underline">Groq Console</a>.
+                    </p>
+                    </div>
+
+                    <!-- Tavily Config (Global) -->
+                    <div class="pt-4 border-t border-gray-700 space-y-2 fade-in">
+                         <label class="block text-sm font-medium text-purple-400 flex items-center gap-2">
+                            🌍 Live Web Access (Optional)
+                        </label>
+                         <div class="flex gap-2">
+                            <input 
+                                v-model="tavilyKeyInput"
+                                type="password" 
+                                placeholder="tvly-..."
+                                class="flex-1 bg-gray-900 text-gray-200 px-4 py-2 rounded-lg border border-gray-700 focus:border-purple-500 focus:outline-none placeholder-gray-600"
+                            />
+                            <button @click="saveTavilyKey" class="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                                Save
+                            </button>
+                        </div>
+                        <p class="text-xs text-gray-500">
+                            Enables REAL-TIME patch notes search. Get a free key (1000 searches/mo) at 
+                            <a href="https://tavily.com/" target="_blank" class="text-purple-400 hover:underline">tavily.com</a>.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
           </div>
         </div>
 

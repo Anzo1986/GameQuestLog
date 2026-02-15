@@ -49,7 +49,7 @@ defineEmits(['close']);
          <button 
             v-else
             @click="$emit('close')" 
-            class="absolute top-4 right-4 z-50 p-2 text-gray-400 hover:text-white rounded-full hover:bg-gray-900/50 transition-colors active:scale-95"
+            class="absolute top-4 right-4 z-50 p-2 bg-black/50 text-white rounded-full hover:bg-black/70 transition-colors active:scale-95"
         >
             <X class="w-5 h-5" />
         </button>

@@ -16,6 +16,7 @@ import VictoryOverlay from './VictoryOverlay.vue';
 import ShopModal from './ShopModal.vue';
 import DailyLoginModal from './DailyLoginModal.vue';
 import ConfirmModal from './ConfirmModal.vue';
+import AIQuestModal from './AIQuestModal.vue';
 
 const { activeModal, modalProps, openModal } = useModals(); // Added openModal
 const { updateStatus, removeGame, userLevel, userTitle, games } = useGames();
@@ -87,6 +88,8 @@ onUnmounted(() => {
     <StatsModal v-if="activeModal === 'stats'" :is-open="true" @close="handleClose" @open-timeline="openModal('timeline')" /> 
 
     <QuestGiverModal v-if="activeModal === 'quest'" :is-open="true" @close="handleClose" />
+
+    <AIQuestModal v-if="activeModal === 'oracle'" :is-open="true" @close="handleClose" />
     
     <AchievementsModal v-if="activeModal === 'achievements'" :is-open="true" @close="handleClose" />
     
@@ -114,6 +117,7 @@ onUnmounted(() => {
         :message="modalProps.message"
         :confirm-text="modalProps.confirmText"
         :confirm-color="modalProps.confirmColor"
+        :image-url="modalProps.imageUrl"
         @close="handleClose"
         @confirm="() => { modalProps.onConfirm?.(); handleClose(); }"
     />

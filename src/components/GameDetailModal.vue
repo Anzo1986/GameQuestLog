@@ -1,9 +1,10 @@
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue';
-import { X, Calendar, Gamepad2, Globe, Star, Play, Check, Trash2, Timer, Ban, Layers, PenLine } from 'lucide-vue-next';
+import { X, Calendar, Gamepad2, Globe, Star, Play, Check, Trash2, Timer, Ban, Layers, PenLine, Share2 } from 'lucide-vue-next';
 import { useGames } from '../composables/useGames';
 import { useShop } from '../composables/useShop';
 import { useCardStyles } from '../composables/useCardStyles';
+import { useShare } from '../composables/useShare';
 import EditGameModal from './EditGameModal.vue';
 import GameCardInnerEffects from './GameCardInnerEffects.vue';
 import BaseModal from './BaseModal.vue';
@@ -21,6 +22,7 @@ const emit = defineEmits(['close', 'update-status', 'delete']);
 const { games, rateGame, updateGame } = useGames();
 const { getEquippedItem } = useShop();
 const { getCardClasses } = useCardStyles();
+const { shareGame, showShareFeedback } = useShare();
 
 const equippedStyle = computed(() => getEquippedItem('card_style'));
 
@@ -94,6 +96,14 @@ const handleAction = async (action, val) => {
                 <button @click="showEditModal = true" class="bg-black/50 p-2 rounded-full hover:bg-black/70 text-white transition-colors active:scale-95" title="Edit Game Details">
                     <PenLine class="w-5 h-5" />
                 </button>
+                <div class="relative">
+                    <button @click="shareGame(gameDetails)" class="bg-black/50 p-2 rounded-full hover:bg-black/70 text-white transition-colors active:scale-95" title="Share Game">
+                        <Share2 class="w-5 h-5" />
+                    </button>
+                     <span v-if="showShareFeedback" class="absolute -bottom-8 right-0 bg-green-500 text-black text-xs font-bold px-2 py-1 rounded shadow animate-bounce whitespace-nowrap z-50">
+                        Link Copied!
+                    </span>
+                </div>
             </div>
 
             <!-- Header Image & Title & Rating -->

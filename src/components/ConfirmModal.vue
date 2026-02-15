@@ -19,6 +19,10 @@ defineProps({
     confirmColor: {
         type: String,
         default: 'bg-red-500 hover:bg-red-600'
+    },
+    imageUrl: {
+        type: String,
+        default: null
     }
 });
 
@@ -28,7 +32,11 @@ const emit = defineEmits(['close', 'confirm']);
 <template>
     <BaseModal :is-open="isOpen" @close="$emit('close')" max-width="max-w-md">
         <div class="flex flex-col items-center text-center gap-4 p-6">
-            <div class="p-3 bg-red-500/10 rounded-full border border-red-500/20">
+            <div v-if="imageUrl" class="w-full aspect-video rounded-xl overflow-hidden shadow-lg border border-gray-700 relative group">
+                <img :src="imageUrl" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Game Image">
+                <div class="absolute inset-0 bg-gradient-to-t from-gray-900/80 to-transparent"></div>
+            </div>
+            <div v-else class="p-3 bg-red-500/10 rounded-full border border-red-500/20">
                 <AlertTriangle class="w-8 h-8 text-red-500" />
             </div>
             

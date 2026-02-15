@@ -22,6 +22,7 @@ export function useToast() {
     return {
         toasts,
         showToast,
+        addToast: showToast, // Alias for compatibility
         removeToast
     };
 }
