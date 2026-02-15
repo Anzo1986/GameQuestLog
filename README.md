@@ -96,7 +96,7 @@ Experience the app like a native mobile application:
 
 <div style="display: flex; overflow-x: auto; gap: 10px; padding-bottom: 10px;">
   <img src="public/screenshots/Screenshot_20260215-182010.png" height="500" alt="App Screenshot 1" />
-  <img src="public/screenshots/Screenshot_20260215-182014.png" height="500" alt="App Screenshot 2" />
+  <img src="public/screenshots/Screenshot_20260215-183111.png" height="500" alt="App Screenshot 2" />
   <img src="public/screenshots/Screenshot_20260215-182036.png" height="500" alt="App Screenshot 3" />
   <img src="public/screenshots/Screenshot_20260215-182134.png" height="500" alt="App Screenshot 4" />
   <img src="public/screenshots/Screenshot_20260215-182148.png" height="500" alt="App Screenshot 5" />
