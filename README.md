@@ -15,13 +15,35 @@ GameQuestLog is not just a list—it's a **companion for your gaming journey**. 
 
 Earn XP for every game you add, start, or finish. Level up your profile from a "Novice Adventurer" to a "Godlike Entity" as you conquer your library.
 
-*   **🏆 Advanced Achievements**: Unlock over 50 unique achievements with **Bronze, Silver, Gold, and Platinum** tiers.
-*   **🃏 Gamer Card**: Generate a high-quality, shareable image of your profile stats.
-*   **📱 Gesture Navigation**: Swipe left/right to switch views, with haptic feedback for a tactile feel.
-*   **📊 Comprehensive Dashboard**: Visualize your habits with beautiful charts (Playing vs. Completed, Genre DNA).
-*   **🎨 Premium Visuals**: Enjoy 3D tilt effects, holographic card styles, and a polished glassmorphic UI.
-*   **🪄 Smart Updates**: Fetch game metadata automatically via the RAWG API.
-*   **💾 Local & Private**: 100% Client-side. Your data lives in your browser's LocalStorage.
+## 🚀 Key Features
+
+### 🎮 Gamification & Progression
+*   **XP System**: Earn experience points for every gaming activity.
+*   **Leveling**: Progress through 50+ levels with unique rank titles.
+*   **Achievements**: Unlock over **60 unique achievements** across Bronze, Silver, Gold, and Platinum tiers.
+*   **Streaks**: Track your **Daily Login Streak** and beat your all-time **Max Streak**.
+
+### 🤖 AI Integration ("The Oracle")
+*   **Manual AI Prompts**: Generate optimized prompts to paste into ChatGPT/Claude/Gemini.
+*   **Update Finder**: Instantly generate prompts to find patch notes and DLC for your playing/backlog games.
+*   **Sequel Scout**: Find sequels or prequels to your top-rated games.
+*   **Smart Recommendations**: Get game suggestions based on "Vibe", with optional **Hidden Gems Mode** (no AAA) and **Spoiler Shield**.
+
+### ☁️ Cloud & Data
+*   **Google Drive Sync**: Seamlessly save and load your progress across devices.
+*   **Local First**: Your data lives in your browser by default for privacy and speed.
+*   **Export/Import**: Manual JSON backup options available.
+
+### 📊 Statistics & Insights
+*   **Career Stats**: A comprehensive dashboard of your gaming habits.
+*   **Visual Charts**: Interactive Doughnut, Radar, and Bar charts for Genre DNA, Platform Wars, and Library Status.
+*   **Gamer Card**: Generate a high-quality, shareable image of your profile stats to show off social media.
+
+### 🎨 Premium UI/UX
+*   **Glassmorphism**: Modern, translucent UI aesthetics.
+*   **3D Tilt Effects**: Holographic card effects that react to your mouse movement.
+*   **Themes**: Customize the app with various color themes (Cyberpunk, Royal, Ocean, etc.).
+*   **Mobile Optimized**: Swipe gestures for navigation, haptic feedback, and a PWA installable experience.
 
 ---
 
@@ -31,6 +53,7 @@ Earn XP for every game you add, start, or finish. Level up your profile from a "
 *   **[Vite](https://vitejs.dev/)**
 *   **[Tailwind CSS](https://tailwindcss.com/)**
 *   **[Lucide Icons](https://lucide.dev/)**
+*   **[Chart.js](https://www.chartjs.org/)**
 
 ---
 
@@ -52,7 +75,7 @@ Earn XP for every game you add, start, or finish. Level up your profile from a "
     npm run dev
     ```
 
-4.  **Build by Yourself**
+4.  **Build**
     ```bash
     npm run build
     ```
@@ -70,7 +93,6 @@ Experience the app like a native mobile application:
 
 ---
 
-
 ## 📱 Smartphone Previews
 
 <p align="center">
@@ -78,9 +100,3 @@ Experience the app like a native mobile application:
   <img src="public/screenshots/game-detail.png" width="28%" alt="Game Detail View" />
   <img src="public/screenshots/quest-giver.png" width="28%" alt="Quest Giver Modal" />
 </p>
-
----
-
-## 📝 License
-
-Distributed under the MIT License. See `LICENSE` for more information.
