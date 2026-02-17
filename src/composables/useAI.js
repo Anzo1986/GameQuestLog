@@ -52,7 +52,7 @@ export function useAI() {
     const { geminiApiKey, groqApiKey, tavilyApiKey, aiProvider } = useSettings();
     const { apiKey: rawgApiKey } = useSettings(); // RAWG requires separate apiKey
 
-    const constructOraclePrompt = (backlogGames, playedGames, playingGames, preferredVibe = null, language = 'en', webContext = "", returnJson = true, hiddenGems = false, spoilerShield = false, minMetacriticScore = 0) => {
+    const constructOraclePrompt = (backlogGames, playedGames, playingGames, droppedGames = [], ignoredGames = [], preferredVibe = null, language = 'en', webContext = "", returnJson = true, hiddenGems = false, spoilerShield = false, minMetacriticScore = 0, maxPlaytime = null) => {
         // Format lists
         const formatGame = (g) => {
             const ratingInfo = g.rating > 0 ? ` (Rated: ${g.rating}/5 ⭐)` : '';
@@ -60,8 +60,10 @@ export function useAI() {
         };
 
         const playedList = (playedGames || []).map(formatGame);
-        const playingList = (playingGames || []).map(g => g.title);
-        const backlogList = (backlogGames || []).map(g => g.title);
+        const playingList = (playingGames || []).map(formatGame);
+        const backlogList = (backlogGames || []).map(formatGame);
+        const droppedList = (droppedGames || []).map(g => g.title);
+        const ignoredList = (ignoredGames || []).map(g => g.title);
 
         const contextString = playedList.join('\n- ');
 
@@ -109,6 +111,18 @@ export function useAI() {
             `;
         }
 
+        // Playtime Logic
+        let playtimeInstruction = "";
+        if (maxPlaytime) {
+            playtimeInstruction = `
+            TIME BUDGET / PLAYTIME FILTER:
+            The user explicitly requested a game with this duration: "${maxPlaytime}".
+            - STRICTLY RESPECT this time constraint.
+            - If "Short (< 10h)", DO NOT suggest 50h RPGs.
+            - If "Epic (80h+)", DO NOT suggest short indie games.
+            `;
+        }
+
         let outputInstructions = "";
         if (returnJson) {
             outputInstructions = `
@@ -150,6 +164,13 @@ export function useAI() {
             Also, the user already owns these games (DO NOT SUGGEST):
             ${backlogList.join(', ')}
 
+            AND THE USER HAS EXPLICITLY IGNORED THESE GAMES (NEVER SUGGEST):
+            ${ignoredList.join(', ')}
+
+            THE USER DROPPED / STOPPED PLAYING THESE GAMES:
+            ${droppedList.join(', ')}
+            (Instruction: Be cautious with games similar to these, unless they are critically acclaimed sequels or significantly improved versions.)
+
             ${vibeInstruction}
             
             ${hiddenGemsInstruction}
@@ -157,6 +178,8 @@ export function useAI() {
             ${scoreInstruction}
             
             ${spoilerInstruction}
+            
+            ${playtimeInstruction}
 
             CRITICAL INSTRUCTIONS:
             1. **Exclusion**: Do NOT recommend any game the user already owns (listed above).
@@ -166,7 +189,7 @@ export function useAI() {
             `;
     };
 
-    const generateGameRecommendation = async (backlogGames, playedGames, playingGames, preferredVibe = null, language = 'en') => {
+    const generateGameRecommendation = async (backlogGames, playedGames, playingGames, droppedGames = [], ignoredGames = [], preferredVibe = null, language = 'en', hiddenGems = false, spoilerShield = false, minMetacriticScore = 0, maxPlaytime = null) => {
         isGenerating.value = true;
         error.value = null;
 
@@ -174,37 +197,39 @@ export function useAI() {
         const currentApiKey = provider === 'groq' ? groqApiKey.value : geminiApiKey.value;
 
         if (!currentApiKey) {
-            error.value = `API Key missing for provider: ${provider.toUpperCase()}`;
+            error.value = `API Key missing for provider: ${provider.toUpperCase()} `;
             isGenerating.value = false;
             return [];
         }
 
-        console.log(`[useAI] Generating with Provider: ${provider}`);
+        console.log(`[useAI] Generating with Provider: ${provider} `);
 
         try {
             // --- LIVE WEB CONTEXT ---
             let webContext = "";
-            let searchQuery = `top rated new video games ${new Date().getFullYear()} ${language === 'de' ? 'germany' : ''}`;
+            let searchQuery = `top rated new video games ${new Date().getFullYear()} ${language === 'de' ? 'germany' : ''} `;
 
             if (preferredVibe && preferredVibe !== 'Surprise Me') {
                 searchQuery = `best ${preferredVibe} games ${new Date().getFullYear()} reviews`;
             }
 
             if (tavilyApiKey.value && provider !== 'gemini') {
-                console.log(`[useAI] Oracle Searching: ${searchQuery}`);
+                console.log(`[useAI] Oracle Searching: ${searchQuery} `);
                 const searchResults = await searchWeb(tavilyApiKey.value, searchQuery);
                 if (searchResults) {
                     webContext = `
-                    \n=== MARKET RESEARCH (LIVE WEB DATA) ===
-                    The following games are currently popular/trending or highly rated:
+    \n === MARKET RESEARCH(LIVE WEB DATA) ===
+        The following games are currently popular / trending or highly rated:
                     ${searchResults}
                     =======================================
-                    INSTRUCTION: You MAY use this list to find modern games that fit the user's vibe.
-                    `;
+        INSTRUCTION: You MAY use this list to find modern games that fit the user's vibe.
+            `;
                 }
             }
 
-            const prompt = constructOraclePrompt(backlogGames, playedGames, playingGames, preferredVibe, language, webContext, true, false);
+
+
+            const prompt = constructOraclePrompt(backlogGames, playedGames, playingGames, droppedGames, ignoredGames, preferredVibe, language, webContext, true, hiddenGems, spoilerShield, minMetacriticScore, maxPlaytime);
 
             let textResponse = '';
 
@@ -421,6 +446,39 @@ export function useAI() {
         }
     };
 
+    const generateSequelScout = async (completedTopGames, ownedGamesContext, language = 'en') => {
+        isGenerating.value = true;
+        error.value = null;
+
+        const provider = aiProvider.value;
+        const currentApiKey = provider === 'groq' ? groqApiKey.value : geminiApiKey.value;
+
+        if (!currentApiKey) {
+            error.value = "Missing API Key";
+            isGenerating.value = false;
+            return null;
+        }
+
+        try {
+            // Sequel Scout Logic
+            // We use constructUpdatePrompt with isSequelScout = true
+            const prompt = constructUpdatePrompt(null, null, language, "", true, completedTopGames, ownedGamesContext);
+
+            let text = '';
+            if (provider === 'groq') {
+                text = await callGroq(currentApiKey, prompt);
+            } else {
+                text = await callGemini(currentApiKey, prompt);
+            }
+            return text;
+        } catch (e) {
+            error.value = e.message;
+            throw e;
+        } finally {
+            isGenerating.value = false;
+        }
+    };
+
     // Helper: Copy Prompt for Web Check
     const handleWebCheck = async (gamesList) => {
         if (!gamesList || gamesList.length === 0) return;
@@ -440,6 +498,7 @@ export function useAI() {
     return {
         generateGameRecommendation,
         generateGameUpdates,
+        generateSequelScout,
         constructOraclePrompt,
         constructUpdatePrompt,
         handleWebCheck,

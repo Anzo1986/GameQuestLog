@@ -10,7 +10,8 @@ const emit = defineEmits(['close']);
 
 const { 
   exportData, importData, 
-  availableTitles 
+  availableTitles,
+  ignoredGames, unignoreGame
 } = useGames();
 
 const {
@@ -42,6 +43,8 @@ const fileInput = ref(null);
 const avatarInput = ref(null);
 const importStatus = ref('');
 const showTitles = ref(false);
+const showAIConfig = ref(false); // Collapsible state
+const showIgnoredGames = ref(false); // Collapsible state
 
 const activeTab = ref('profile'); // Default to Profile
 const tabs = [
@@ -236,15 +239,15 @@ const version = __APP_VERSION__;
                         <Save class="w-4 h-4" /> Save RAWG Key
                     </button>
                 </div>
-                <div class="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                <div class="bg-gray-800/50 p-4 rounded-xl border border-gray-700">
                     <label class="block text-sm font-medium text-gray-300 mb-2">RAWG.io API Key</label>
                     <div class="relative">
                          <Key class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                          <input 
                           v-model="newKey" 
-                          type="text" 
+                          type="password" 
                           placeholder="Enter your RAWG API Key" 
-                          class="w-full bg-gray-950 border border-gray-600 rounded-lg py-2 pl-10 pr-4 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                          class="w-full bg-gray-950 border border-gray-600 rounded-lg py-2 pl-10 pr-4 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none tracking-widest placeholder-gray-600 placeholder-normal"
                         />
                     </div>
                     <p class="mt-2 text-xs text-gray-400">
@@ -253,13 +256,19 @@ const version = __APP_VERSION__;
                 </div>
             </div>
 
-            <!-- AI Settings -->
+            <!-- AI Settings (Collapsible) -->
             <div class="space-y-4 mt-6">
-                <h3 class="text-lg font-semibold text-gray-200 flex items-center gap-2">
-                    <span class="text-blue-400">🤖</span> AI Intelligence
-                </h3>
-                
-                <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 space-y-4">
+                <!-- Header / Toggle -->
+                <div class="rounded-xl border border-gray-700 overflow-hidden bg-gray-800/50">
+                    <button 
+                    @click="showAIConfig = !showAIConfig"
+                    class="w-full flex items-center justify-between text-lg font-semibold text-gray-200 p-4 hover:bg-gray-800 transition-colors"
+                    >
+                        <span class="flex items-center gap-2"><span class="text-blue-400">🤖</span> AI Intelligence</span>
+                        <span class="text-xs text-gray-500 transform transition-transform duration-200" :class="showAIConfig ? 'rotate-180' : ''">▼</span>
+                    </button>
+                    
+                    <div v-show="showAIConfig" class="p-4 border-t border-gray-700 space-y-4 animate-in slide-in-from-top-2 fade-in duration-200 bg-gray-900/30">
                     <!-- Provider Selection -->
                     <div>
                     <label class="block text-sm font-medium text-gray-400 mb-2">AI Provider</label>
@@ -351,9 +360,39 @@ const version = __APP_VERSION__;
                         </p>
                     </div>
                 </div>
-            </div>
 
+                </div>
+            </div>
+            
           </div>
+          
+            <!-- IGNORED GAMES MANAGEMENT (Collapsible) -->
+             <div class="space-y-4 pt-6 border-t border-gray-700">
+                <div class="rounded-xl border border-gray-700 overflow-hidden bg-gray-800/50">
+                    <button 
+                    @click="showIgnoredGames = !showIgnoredGames"
+                    class="w-full flex items-center justify-between text-sm font-medium text-gray-300 hover:text-white transition-colors p-4 hover:bg-gray-800"
+                    >
+                        <span class="flex items-center gap-2">🚫 Ignored Games ({{ ignoredGames.length }})</span>
+                        <span class="text-xs text-gray-500 transform transition-transform duration-200" :class="showIgnoredGames ? 'rotate-180' : ''">▼</span>
+                    </button>
+
+                    <div v-show="showIgnoredGames" class="p-4 border-t border-gray-700 animate-in slide-in-from-top-2 fade-in duration-200 bg-gray-900/30">
+                        <div v-if="ignoredGames.length > 0" class="bg-gray-950 rounded-lg border border-gray-700 overflow-hidden max-h-40 overflow-y-auto">
+                            <div v-for="game in ignoredGames" :key="game.id" class="flex items-center justify-between p-3 border-b border-gray-700/50 last:border-0 hover:bg-gray-900 transition-colors">
+                                <span class="text-sm text-gray-300">{{ game.title }}</span>
+                                <button @click="unignoreGame(game.id)" class="text-xs text-red-400 hover:text-red-300 hover:underline">
+                                    Remove
+                                </button>
+                            </div>
+                        </div>
+                        <p v-else class="text-xs text-gray-500 italic text-center py-4 bg-gray-950/50 rounded-lg border border-gray-700/50">
+                            No ignored games. Recommendations you mark as "Not Interested" will appear here.
+                        </p>
+                    </div>
+                </div>
+             </div>
+
         </div>
 
         <!-- ================== PROFILE TAB ================== -->

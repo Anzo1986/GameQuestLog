@@ -63,7 +63,7 @@ export function useGameData() {
         const platformCounts = {};
         let totalDurationDays = 0;
 
-        games.value.forEach(game => {
+        games.value.filter(g => g.status !== 'ignored').forEach(game => {
             // Status
             if (statusCounts[game.status] !== undefined) {
                 statusCounts[game.status]++;

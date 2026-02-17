@@ -17,7 +17,7 @@ const props = defineProps({
 const emit = defineEmits(['close']);
 
 const { constructOraclePrompt, constructUpdatePrompt } = useAI();
-const { games, playingGames, backlogGames, completedGames } = useGames();
+const { games, playingGames, backlogGames, completedGames, ignoredGames, droppedGames } = useGames();
 const { addToast } = useToast();
 const { language, vibe, hiddenGemsMode } = useSettings(); 
 const { getEquippedItem } = useShop();
@@ -47,6 +47,7 @@ useSwipe(swipeArea, {
 // New Features Refs
 const spoilerShield = ref(true); // Default ON
 const minMetacriticScore = ref(0); // Default OFF
+const maxPlaytime = ref(null); // Default OFF
 const isSequelScoutMode = ref(false);
 
 const equippedStyle = computed(() => getEquippedItem('card_style')?.value);
@@ -103,13 +104,16 @@ const oraclePromptText = computed(() => {
         backlogGames.value, 
         completedGames.value, 
         playingGames.value, 
+        droppedGames.value,
+        ignoredGames.value,
         vibe.value, 
         language.value,
         "", 
         false, 
         hiddenGemsMode.value,
         spoilerShield.value,       // New
-        minMetacriticScore.value   // New
+        minMetacriticScore.value,   // New
+        maxPlaytime.value          // New
     );
 });
 
@@ -144,10 +148,10 @@ const handleClose = () => {
 </script>
 
 <template>
-  <div v-if="isOpen" class="fixed inset-0 z-50 flex items-start justify-center p-4 pt-24">
+  <div v-if="isOpen" class="fixed inset-0 z-50 flex items-start justify-center p-4 pt-10 sm:pt-20"> <!-- Increased top padding for better vertical centering -->
     <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="handleClose"></div>
 
-    <div ref="swipeArea" class="relative w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200 transition-all duration-500"
+    <div ref="swipeArea" class="relative w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200 transition-all duration-500 max-h-[85vh]"
          :class="getCardClasses(equippedStyle, true)">
         
         <!-- INNER EFFECTS LAYER -->
@@ -196,7 +200,7 @@ const handleClose = () => {
         </div>
 
         <!-- Content Area -->
-        <div class="p-6 overflow-y-auto flex-1 space-y-4 relative z-10">
+        <div class="p-4 overflow-y-auto flex-1 space-y-3 relative z-10 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent">
             
             <!-- UPDATE CONTROLS -->
             <div v-if="activeTab === 'updates'" class="space-y-4 animate-in slide-in-from-left-2 duration-300 flex flex-col justify-center">
@@ -218,9 +222,9 @@ const handleClose = () => {
             </div>
 
             <!-- ORACLE CONTROLS -->
-            <div v-if="activeTab === 'oracle'" class="space-y-4 animate-in slide-in-from-right-2 duration-300">
-                <p class="text-sm text-gray-400">Generates a prompt with your game history to find new recommendations.</p>
-                <select v-model="vibe" class="w-full bg-gray-800 text-white p-3 rounded-lg border border-gray-700 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 transition-all">
+            <div v-if="activeTab === 'oracle'" class="space-y-3 animate-in slide-in-from-right-2 duration-300">
+                <p class="text-xs text-center text-gray-400">Generates a prompt with your game history.</p>
+                <select v-model="vibe" class="w-full bg-gray-800 text-white p-2 text-sm rounded-lg border border-gray-700 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 transition-all">
                     <option :value="null">🔮 Surprise Me (Any Vibe)</option>
                     <option value="Action-Adventure">⚔️ Action & Adventure</option>
                     <option value="RPG">🛡️ RPG & Story Rich</option>
@@ -231,46 +235,63 @@ const handleClose = () => {
                     <option value="Retro">👾 Retro & Indie</option>
                 </select>
 
-                <!-- Hidden Gems Toggle -->
-                <div class="flex items-center gap-3 p-3 bg-gray-800/50 rounded-lg border border-gray-700 hover:border-purple-500/50 cursor-pointer group" @click="hiddenGemsMode = !hiddenGemsMode">
-                    <div class="w-8 h-4 rounded-full relative transition-colors duration-300"
-                        :class="hiddenGemsMode ? 'bg-purple-500' : 'bg-gray-600'">
-                        <div class="absolute top-0.5 left-0.5 w-3 h-3 rounded-full bg-white transition-transform duration-300"
-                            :class="hiddenGemsMode ? 'translate-x-4' : 'translate-x-0'"></div>
-                    </div>
-                    <span class="text-xs font-bold transition-colors" :class="hiddenGemsMode ? 'text-purple-300' : 'text-gray-400'">
-                        💎 Hidden Gems Mode (No AAA)
-                    </span>
-                </div>
-
-                <!-- Spoiler Shield Toggle -->
-                <div class="flex items-center gap-3 p-3 bg-gray-800/50 rounded-lg border border-gray-700 hover:border-blue-500/50 cursor-pointer group" @click="spoilerShield = !spoilerShield">
-                    <div class="w-8 h-4 rounded-full relative transition-colors duration-300"
-                        :class="spoilerShield ? 'bg-blue-500' : 'bg-gray-600'">
-                        <div class="absolute top-0.5 left-0.5 w-3 h-3 rounded-full bg-white transition-transform duration-300"
-                            :class="spoilerShield ? 'translate-x-4' : 'translate-x-0'"></div>
-                    </div>
-                    <span class="text-xs font-bold transition-colors" :class="spoilerShield ? 'text-blue-300' : 'text-gray-400'">
-                        🛡️ Spoiler Shield (No Plot Twists)
-                    </span>
-                </div>
-
-                <!-- Metacritic Slider -->
-                <div class="p-3 bg-gray-800/50 rounded-lg border border-gray-700 space-y-2">
-                    <div class="flex justify-between text-xs font-bold text-gray-400">
-                        <span>💯 Metacritic Score</span>
-                        <span :class="minMetacriticScore > 0 ? 'text-green-400' : 'text-gray-500'">
-                            {{ minMetacriticScore > 0 ? `> ${minMetacriticScore}` : 'Any Score' }}
+                <!-- GRID LAYOUT FOR FILTERS -->
+                <div class="grid grid-cols-2 gap-2">
+                    <!-- Hidden Gems Toggle -->
+                    <div class="flex items-center gap-2 p-2 bg-gray-800/50 rounded-lg border border-gray-700 hover:border-purple-500/50 cursor-pointer group" @click="hiddenGemsMode = !hiddenGemsMode">
+                        <div class="w-6 h-3 rounded-full relative transition-colors duration-300"
+                            :class="hiddenGemsMode ? 'bg-purple-500' : 'bg-gray-600'">
+                            <div class="absolute top-0.5 left-0.5 w-2 h-2 rounded-full bg-white transition-transform duration-300"
+                                :class="hiddenGemsMode ? 'translate-x-3' : 'translate-x-0'"></div>
+                        </div>
+                        <span class="text-[10px] font-bold transition-colors" :class="hiddenGemsMode ? 'text-purple-300' : 'text-gray-400'">
+                            💎 Hidden Gems
                         </span>
                     </div>
-                    <input 
-                        type="range" 
-                        v-model.number="minMetacriticScore" 
-                        min="0" 
-                        max="90" 
-                        step="5"
-                        class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
-                    />
+    
+                    <!-- Spoiler Shield Toggle -->
+                    <div class="flex items-center gap-2 p-2 bg-gray-800/50 rounded-lg border border-gray-700 hover:border-blue-500/50 cursor-pointer group" @click="spoilerShield = !spoilerShield">
+                        <div class="w-6 h-3 rounded-full relative transition-colors duration-300"
+                            :class="spoilerShield ? 'bg-blue-500' : 'bg-gray-600'">
+                            <div class="absolute top-0.5 left-0.5 w-2 h-2 rounded-full bg-white transition-transform duration-300"
+                                :class="spoilerShield ? 'translate-x-3' : 'translate-x-0'"></div>
+                        </div>
+                        <span class="text-[10px] font-bold transition-colors" :class="spoilerShield ? 'text-blue-300' : 'text-gray-400'">
+                            🛡️ No Spoilers
+                        </span>
+                    </div>
+
+                    <!-- Metacritic Slider -->
+                    <div class="p-2 bg-gray-800/50 rounded-lg border border-gray-700 space-y-1">
+                        <div class="flex justify-between text-[10px] font-bold text-gray-400">
+                            <span>💯 Metacritic</span>
+                            <span :class="minMetacriticScore > 0 ? 'text-green-400' : 'text-gray-500'">
+                                {{ minMetacriticScore > 0 ? `> ${minMetacriticScore}` : 'Any' }}
+                            </span>
+                        </div>
+                        <input 
+                            type="range" 
+                            v-model.number="minMetacriticScore" 
+                            min="0" 
+                            max="90" 
+                            step="5"
+                            class="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                        />
+                    </div>
+
+                    <!-- Playtime Filter -->
+                    <div class="p-2 bg-gray-800/50 rounded-lg border border-gray-700 space-y-1">
+                        <div class="flex justify-between text-[10px] font-bold text-gray-400">
+                            <span>⏳ Time</span>
+                        </div>
+                        <select v-model="maxPlaytime" class="w-full bg-gray-900 text-white text-[10px] p-1 rounded border border-gray-600 focus:border-blue-500 focus:outline-none cursor-pointer">
+                            <option :value="null">Any Length</option>
+                            <option value="Short (< 10h)">Short (< 10h)</option>
+                            <option value="Medium (10-30h)">Med (10-30h)</option>
+                            <option value="Long (30-80h)">Long (30-80h)</option>
+                            <option value="Epic (80h+)">Epic (80h+)</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -328,7 +349,7 @@ const handleClose = () => {
                         <div class="absolute -inset-0.5 bg-gradient-to-r opacity-30 rounded-lg blur"
                              :class="activeTab === 'updates' ? 'from-blue-600 to-cyan-500' : 'from-purple-600 to-pink-500'">
                         </div>
-                        <div class="relative bg-gray-950 rounded-lg p-4 font-mono text-xs text-gray-300 h-64 overflow-y-auto whitespace-pre-wrap border border-gray-700 shadow-inner">
+                        <div class="relative bg-gray-950 rounded-lg p-4 font-mono text-xs text-gray-300 h-40 overflow-y-auto whitespace-pre-wrap border border-gray-700 shadow-inner">
                             {{ currentPrompt }}
                         </div>
                     </div>

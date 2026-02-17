@@ -162,6 +162,24 @@ export function useGames() {
         game.status = newStatus;
     };
 
+    // Ignore Game Wrapper
+    const ignoreGame = (gameTitle, platform = 'Any') => {
+        // Add minimal game object with IGN status
+        const newGame = {
+            id: Date.now(),
+            title: gameTitle,
+            platform: platform,
+            status: 'ignored',
+            addedAt: new Date().toISOString()
+        };
+        gameData.addGameRaw(newGame);
+    };
+
+    // Unignore Game Wrapper
+    const unignoreGame = (id) => {
+        gameData.removeGameRaw(id);
+    };
+
     // Refresh Game Wrapper (API access)
     const refreshGame = async (id) => {
         const game = gameData.games.value.find(g => g.id === id);
@@ -265,11 +283,12 @@ export function useGames() {
 
 
         // Data
-        games: gameData.games,
+        games: computed(() => gameData.games.value.filter(g => g.status !== 'ignored')),
         backlogGames: gameData.backlogGames,
         playingGames: gameData.playingGames,
         completedGames: gameData.completedGames,
         droppedGames: gameData.droppedGames,
+        ignoredGames: computed(() => gameData.games.value.filter(g => g.status === 'ignored')),
         gameStats: gameData.gameStats,
         PLATFORMS: gameData.PLATFORMS,
 
@@ -278,6 +297,8 @@ export function useGames() {
         removeGame,
         updateStatus,
         refreshGame,
+        ignoreGame,
+        unignoreGame,
 
         // Actions (Direct)
         updateGame: gameData.updateGame,

@@ -15,14 +15,19 @@ const props = defineProps({
 
 const emit = defineEmits(['close']);
 
-const { generateGameRecommendation, generateGameUpdates, isGenerating, error: aiError } = useAI();
-const { games, addGame } = useGames();
+const { generateGameRecommendation, generateGameUpdates, generateSequelScout, isGenerating, error: aiError } = useAI();
+const { games, addGame, ignoreGame, ignoredGames, droppedGames } = useGames();
 const { getEquippedItem } = useShop();
 const { getCardClasses } = useCardStyles();
 const { hiddenGemsMode } = useSettings();
 
 // const equippedStyle = 'cyber'; // Force Cyber style for AI -> REMOVED. Use shop style.
 const equippedStyle = computed(() => getEquippedItem('card_style')?.value);
+
+const minMetacriticScore = ref(0);
+
+const spoilerShield = ref(false);
+const maxPlaytime = ref(null);
 
 const mode = ref('menu'); // 'menu', 'oracle', 'updates'
 const language = ref('de'); // Default to German
@@ -50,9 +55,14 @@ const consultOracle = async () => {
             backlog, 
             completed, 
             playing, 
+            droppedGames.value,
+            ignoredGames.value,
             selectedVibe.value,
             language.value,
-            hiddenGemsMode.value
+            hiddenGemsMode.value,
+            spoilerShield.value,
+            minMetacriticScore.value,
+            maxPlaytime.value
         );
         recommendation.value = results;
     } catch (e) {
@@ -67,6 +77,24 @@ const checkUpdates = async () => {
     localError.value = null;
     batchProgress.value = 0;
     batchTotal.value = 0;
+
+    // Handle Sequel Scout
+    if (selectedGameForUpdate.value === 'SEQUEL_SCOUT') {
+        try {
+            const completedTopGames = games.value.filter(g => g.status === 'completed' && g.rating >= 4);
+            const allOwned = games.value;
+
+            const result = await generateSequelScout(completedTopGames, allOwned, language.value);
+            
+            updateResults.value.push({
+                title: "Series Scout Report",
+                text: result
+            });
+        } catch (e) {
+             localError.value = e.message;
+        }
+        return;
+    }
 
     let targets = [];
 
@@ -124,6 +152,15 @@ const addToBacklog = async (rec) => {
         });
         addedGames.value.add(rec.gameTitle);
     }
+};
+
+
+
+const handleIgnore = async (rec) => {
+    ignoreGame(rec.gameTitle, rec.platform || 'Any');
+    addToast(`"${rec.gameTitle}" will not be suggested again.`, 'success');
+    // Remove from current list
+    recommendation.value = recommendation.value.filter(r => r.gameTitle !== rec.gameTitle);
 };
 
 const { addToast } = useToast();
@@ -262,6 +299,47 @@ const copyPrompt = async () => {
                     </span>
                 </div>
 
+                <!-- Spoiler Shield Toggle -->
+                <div class="mb-4 flex items-center justify-center gap-3 bg-gray-800/50 p-3 rounded-xl border border-blue-500/20 hover:bg-gray-800 transition-colors cursor-pointer group" @click="spoilerShield = !spoilerShield">
+                    <div class="w-10 h-6 rounded-full relative transition-colors duration-300"
+                        :class="spoilerShield ? 'bg-blue-500' : 'bg-gray-600'">
+                        <div class="absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform duration-300"
+                            :class="spoilerShield ? 'translate-x-4' : 'translate-x-0'"></div>
+                    </div>
+                    <span class="text-sm font-bold transition-colors" :class="spoilerShield ? 'text-blue-300' : 'text-gray-400'">
+                        🛡️ Spoiler Shield <span class="text-xs font-normal opacity-70">(No Spoilers)</span>
+                    </span>
+                </div>
+
+                <!-- Metacritic Slider -->
+                 <div class="mb-6 px-4">
+                    <div class="flex justify-between text-xs font-bold text-gray-400 mb-2">
+                        <span>💯 Min Score: {{ minMetacriticScore > 0 ? minMetacriticScore : 'Any' }}</span>
+                    </div>
+                    <input 
+                        type="range" 
+                        v-model.number="minMetacriticScore" 
+                        min="0" 
+                        max="90" 
+                        step="5"
+                        class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                    />
+                </div>
+
+                <!-- Playtime Filter -->
+                <div class="mb-6 px-4">
+                    <div class="space-y-2">
+                        <label class="text-xs text-gray-500 font-bold uppercase tracking-wider">Time Budget</label>
+                        <select v-model="maxPlaytime" class="w-full bg-gray-900 text-white p-2 rounded-lg border border-gray-700 focus:border-blue-500 focus:outline-none text-sm cursor-pointer">
+                            <option :value="null">⏳ Any Length</option>
+                            <option value="Short (< 10h)">⚡ Short (< 10h)</option>
+                            <option value="Medium (10-30h)">🌙 Weekend (10-30h)</option>
+                            <option value="Long (30-80h)">🏰 Long (30-80h)</option>
+                            <option value="Epic (80h+)">♾️ Epic (80h+)</option>
+                        </select>
+                    </div>
+                </div>
+
                 <button 
                     @click="consultOracle"
                     class="w-full bg-purple-600 hover:bg-purple-500 text-white py-4 rounded-xl font-bold uppercase tracking-wider shadow-lg flex items-center justify-center gap-3 transition-all active:scale-95 group"
@@ -305,6 +383,9 @@ const copyPrompt = async () => {
                                     {{ addedGames.has(rec.gameTitle) ? 'Added' : 'Add' }}
                                 </button>
                             </div>
+                             <button @click="handleIgnore(rec)" class="w-full mt-2 py-1 text-[10px] text-gray-500 hover:text-red-400 border border-transparent hover:border-red-500/20 rounded transition-colors uppercase font-bold tracking-widest">
+                                Not Interested (Ignore)
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -329,6 +410,7 @@ const copyPrompt = async () => {
                         <option :value="null" disabled>Select a Game...</option>
                         <option value="ALL_PLAYING" class="font-bold text-green-400">⚡ Check ALL Currently Playing</option>
                         <option value="ALL_BACKLOG" class="font-bold text-yellow-400">📚 Check ALL Backlog Games</option>
+                        <option value="SEQUEL_SCOUT" class="font-bold text-purple-400">🔍 Series Scout (Sequels & Prequels)</option>
                         <hr />
                         <optgroup label="Playing Now">
                             <option v-for="g in games.filter(g => g.status === 'playing')" :key="g.id" :value="g">{{ g.title }}</option>
