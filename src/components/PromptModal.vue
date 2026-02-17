@@ -19,7 +19,7 @@ const emit = defineEmits(['close']);
 const { constructOraclePrompt, constructUpdatePrompt } = useAI();
 const { games, playingGames, backlogGames, completedGames, ignoredGames, droppedGames } = useGames();
 const { addToast } = useToast();
-const { language, vibe, hiddenGemsMode } = useSettings(); 
+const { language, vibe, hiddenGemsMode, userName } = useSettings(); 
 const { getEquippedItem } = useShop();
 const { getCardClasses } = useCardStyles();
 
@@ -117,47 +117,94 @@ const oraclePromptText = computed(() => {
     );
 });
 
+import { useGamification } from '../composables/useGamification';
+
+// ... other imports ...
+
+const { userLevel, getTitleForLevel } = useGamification();
+
 const collageStyle = ref('Cyberpunk'); // Default Style
 
+// ... existing code ...
+
 const collagePromptText = computed(() => {
-    // 1. Gather Data
-    const topGames = completedGames.value
-        .filter(g => g.rating >= 4)
-        // Removed limit: Include ALL highly rated games as requested
-        .map(g => `${g.title} (Hero/Centerpiece)`);
-    
-    // For villains, we also increase the limit significantly but keep some cap to avoid prompt overflow if library is huge
-    const neglectedGames = [
+    // 1. Gather Data - ABSOLUTELY EVERYTHING
+    const formatGame = (g) => {
+        let title = g.title;
+        let ratingInfo = g.rating > 0 ? ` (${g.rating}/5 ⭐)` : ' (Unrated)';
+        return `"${title}"${ratingInfo}`;
+    };
+
+    // Grouping by status for better structure in prompt, but passing ALL data.
+    const heroGames = [
+        ...completedGames.value.filter(g => g.rating >= 4), // High rated completed
+        ...playingGames.value, // Currently playing are usually positive
+        ...backlogGames.value.filter(g => g.rating >= 4) // High rated backlog (replays or anticipations)
+    ].map(formatGame);
+
+    const normalGames = [
+        ...completedGames.value.filter(g => g.rating === 3),
+        ...backlogGames.value.filter(g => !g.rating || g.rating === 3) // Average or unrated backlog
+    ].map(formatGame);
+
+    const villainGames = [
         ...ignoredGames.value,
         ...droppedGames.value,
-        ...completedGames.value.filter(g => g.rating <= 2)
-    ].slice(0, 50).map(g => `${g.title} (Villain/Broken/Glitch)`);
+        ...completedGames.value.filter(g => g.rating <= 2),
+        ...backlogGames.value.filter(g => g.rating <= 2)
+    ].map(formatGame);
 
-    const totalGamesBeaten = completedGames.value.length;
+    // Calculate Top Genre
+    const allGamesForGenre = [...completedGames.value, ...playingGames.value, ...backlogGames.value];
+    const genreCounts = {};
+    allGamesForGenre.forEach(g => {
+        if (g.genres) {
+            g.genres.forEach(genre => {
+                genreCounts[genre] = (genreCounts[genre] || 0) + 1;
+            });
+        }
+    });
+    const topGenre = Object.entries(genreCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Gamer';
     
+    // Get actual Player Level and Title
+    const playerLevel = userLevel.value;
+    const playerTitle = getTitleForLevel(playerLevel);
+    const playerName = userName.value;
+
     // 2. Construct Prompt
     return `
     **Role:** Digital Artist / Concept Artist
     **Task:** Create an epic "Gamer Profile Collage" visualization.
     
     **Subject:**
-    A central hero figure (representing the gamer) surrounded by a chaotic but artistic composition of their gaming history.
+    A central hero figure (representing the gamer) surrounded by a chaotic but artistic composition of their ENTIRE gaming history.
     
-    **Composition (Hero vs Villain):**
-    - **CENTER (The Triumphs):** 
-      Glorious, high-definition, heroic visual elements from these top-rated games: ${topGames.join(', ')}.
-      They should look victorious, shiny, and legendary.
+    **CRITICAL INSTRUCTION - VISUALS ONLY:**
+    Do NOT write the names of the games as text loops. Instead, **ILLUSTRATE** iconic characters, weapons, items, environments, or symbols from these games. The composition should be a visual mashup, not a word cloud.
+    
+    **DATA SOURCE (USE AS MANY AS POSSIBLE):**
+    
+    **Group A: The Legends (HEROIC / CENTER Focus):**
+    ${heroGames.join(', ')}
+    
+    **Group B: The Journey (MID-GROUND / TEXTURE):**
+    ${normalGames.join(', ')}
+    
+    **Group C: The Shadows (BACKGROUND / CRUMBLED RUINS / VILLAINS):**
+    ${villainGames.join(', ')}
+    
+    **Visual Hierarchy:** 
+    - **CENTER:** High rated games (Group A) should be the most prominent, shiny, and victorious.
+    - **BOTTOM/BACKGROUND:** Low rated/Ignored games (Group C) should be dark, glitchy, broken, or forming the debris at the bottom.
       
-    - **BOTTOM/BACKGROUND (The Shadows):**
-      Dark, corrupted, glitching, or defeated elements representing these ignored/dropped games: ${neglectedGames.join(', ')}.
-      They should look like crumbled ruins, defeated enemies, or corrupted data lying at the hero's feet.
-      
-    **Stats Display (Integrated into art):**
-    - Text overlay in stylized font: "LEVEL ${totalGamesBeaten}" (representing games beaten).
+    **Stats Display (ONLY TEXT ALLOWED):**
+    - Text overlay in stylized font: "PLAYER: ${playerName}"
+    - Subtext: "LEVEL ${playerLevel} - ${playerTitle}".
+    - Badge/Tag: "Master of ${topGenre}".
     
     **Art Style:** ${collageStyle.value} aesthetic.
     
-    **Technical:** 8k resolution, highly detailed, cinematic lighting, volumetric fog, contrast between the golden light of victory and the purple/red shadows of defeat.
+    **Technical:** 8k resolution, highly detailed, densely packed composition (horror vacui), cinematic lighting, contrast between victory and defeat.
     `;
 });
 
