@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue';
-import { X, Copy, Check, Terminal, Sparkles, RefreshCw } from 'lucide-vue-next';
+import { X, Copy, Check, Terminal, Sparkles, RefreshCw, Image } from 'lucide-vue-next';
 import { useAI } from '../composables/useAI';
 import { useGames } from '../composables/useGames';
 import { useSettings } from '../composables/useSettings';
@@ -117,8 +117,54 @@ const oraclePromptText = computed(() => {
     );
 });
 
+const collageStyle = ref('Cyberpunk'); // Default Style
+
+const collagePromptText = computed(() => {
+    // 1. Gather Data
+    const topGames = completedGames.value
+        .filter(g => g.rating >= 4)
+        // Removed limit: Include ALL highly rated games as requested
+        .map(g => `${g.title} (Hero/Centerpiece)`);
+    
+    // For villains, we also increase the limit significantly but keep some cap to avoid prompt overflow if library is huge
+    const neglectedGames = [
+        ...ignoredGames.value,
+        ...droppedGames.value,
+        ...completedGames.value.filter(g => g.rating <= 2)
+    ].slice(0, 50).map(g => `${g.title} (Villain/Broken/Glitch)`);
+
+    const totalGamesBeaten = completedGames.value.length;
+    
+    // 2. Construct Prompt
+    return `
+    **Role:** Digital Artist / Concept Artist
+    **Task:** Create an epic "Gamer Profile Collage" visualization.
+    
+    **Subject:**
+    A central hero figure (representing the gamer) surrounded by a chaotic but artistic composition of their gaming history.
+    
+    **Composition (Hero vs Villain):**
+    - **CENTER (The Triumphs):** 
+      Glorious, high-definition, heroic visual elements from these top-rated games: ${topGames.join(', ')}.
+      They should look victorious, shiny, and legendary.
+      
+    - **BOTTOM/BACKGROUND (The Shadows):**
+      Dark, corrupted, glitching, or defeated elements representing these ignored/dropped games: ${neglectedGames.join(', ')}.
+      They should look like crumbled ruins, defeated enemies, or corrupted data lying at the hero's feet.
+      
+    **Stats Display (Integrated into art):**
+    - Text overlay in stylized font: "LEVEL ${totalGamesBeaten}" (representing games beaten).
+    
+    **Art Style:** ${collageStyle.value} aesthetic.
+    
+    **Technical:** 8k resolution, highly detailed, cinematic lighting, volumetric fog, contrast between the golden light of victory and the purple/red shadows of defeat.
+    `;
+});
+
 const currentPrompt = computed(() => {
-    return activeTab.value === 'updates' ? updatePromptText.value : oraclePromptText.value;
+    if (activeTab.value === 'updates') return updatePromptText.value;
+    if (activeTab.value === 'oracle') return oraclePromptText.value;
+    return collagePromptText.value;
 });
 
 const copyToClipboard = async () => {
@@ -187,6 +233,13 @@ const handleClose = () => {
                     >
                         <Sparkles class="w-4 h-4" /> Oracle
                     </button>
+                    <button 
+                        @click="activeTab = 'collage'"
+                        :class="activeTab === 'collage' ? 'bg-pink-600 text-white shadow' : 'text-gray-400 hover:text-white'"
+                        class="px-4 py-2 rounded-md text-sm font-bold transition-all flex items-center gap-2"
+                    >
+                        <Image class="w-4 h-4" /> Collage
+                    </button>
                 </div>
 
                 <!-- Controls -->
@@ -218,6 +271,30 @@ const handleClose = () => {
                             <option v-for="g in backlogGames" :key="g.id" :value="g">{{ g.title }}</option>
                         </optgroup>
                     </select>
+                </div>
+            </div>
+
+            <!-- COLLAGE CONTROLS -->
+            <div v-if="activeTab === 'collage'" class="space-y-3 animate-in slide-in-from-bottom-2 duration-300">
+                <p class="text-xs text-center text-gray-400">Create an epic art prompt from your gaming history.</p>
+                
+                <div class="p-4 bg-gray-800/50 rounded-xl border border-gray-700 space-y-4">
+                    <div>
+                        <label class="text-xs font-bold text-gray-400 block mb-2">Art Style</label>
+                        <select v-model="collageStyle" class="w-full bg-gray-900 text-white p-2 rounded-lg border border-gray-600 focus:border-pink-500 focus:outline-none">
+                            <option value="Cyberpunk">🤖 Cyberpunk / High Tech</option>
+                            <option value="Fantasy Oil Painting">🎨 Epic Fantasy Oil Painting</option>
+                            <option value="Vaporwave">📼 Vaporwave / Retro 80s</option>
+                            <option value="Pixel Art">👾 Detailed Pixel Art</option>
+                            <option value="Dark Souls-like">🌑 Grim Dark / Souls-like</option>
+                            <option value="Anime Poster">🎌 High Quality Anime Poster</option>
+                        </select>
+                    </div>
+
+                    <div class="text-xs text-gray-500 space-y-1">
+                        <p><strong>Includes:</strong> Top 5 Favorites (Heroes) vs. Ignored/Bad Games (Villains)</p>
+                        <p><strong>Stats:</strong> "Level {{ completedGames.length }}" (Games Beaten)</p>
+                    </div>
                 </div>
             </div>
 
@@ -304,8 +381,8 @@ const handleClose = () => {
                   :disabled="isUploading || copied"
                   class="w-full relative group overflow-hidden rounded-xl p-4 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg border-2 flex items-center justify-center"
                   :class="[
-                      activeTab === 'updates' ? 'border-blue-400/50' : 'border-purple-400/50',
-                      isUploading ? 'cursor-wait bg-gray-900 border-white/50' : (activeTab === 'updates' ? 'bg-blue-600 hover:bg-blue-500' : 'bg-purple-600 hover:bg-purple-500')
+                      activeTab === 'updates' ? 'border-blue-400/50' : (activeTab === 'collage' ? 'border-pink-400/50' : 'border-purple-400/50'),
+                      isUploading ? 'cursor-wait bg-gray-900 border-white/50' : (activeTab === 'updates' ? 'bg-blue-600 hover:bg-blue-500' : (activeTab === 'collage' ? 'bg-pink-600 hover:bg-pink-500' : 'bg-purple-600 hover:bg-purple-500'))
                   ]"
                 >
                     <!-- 1. PROGRESS BAR FILL (Background Layer) -->
