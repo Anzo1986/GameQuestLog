@@ -2,6 +2,7 @@
 import { ref, onMounted, watch, computed } from 'vue';
 import { X, Calendar, Gamepad2, Globe, Star, Play, Check, Trash2, Timer, Ban, Layers, PenLine, Share2 } from 'lucide-vue-next';
 import { useGames } from '../composables/useGames';
+import { useModals } from '../composables/useModals';
 import { useShop } from '../composables/useShop';
 import { useCardStyles } from '../composables/useCardStyles';
 import { useShare } from '../composables/useShare';
@@ -23,6 +24,7 @@ const { games, rateGame, updateGame } = useGames();
 const { getEquippedItem } = useShop();
 const { getCardClasses } = useCardStyles();
 const { shareGame, showShareFeedback } = useShare();
+const { activeModal } = useModals();
 
 const equippedStyle = computed(() => getEquippedItem('card_style')?.value);
 
@@ -64,7 +66,9 @@ const handleAction = async (action, val) => {
         emit('delete', props.gameId);
     } else {
         emit('update-status', props.gameId, val);
-        emit('close');
+        if (activeModal.value === 'gameDetail') {
+            emit('close');
+        }
     }
 }
 </script>

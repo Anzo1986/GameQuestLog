@@ -137,14 +137,14 @@ const collagePromptText = computed(() => {
 
     // Grouping by status for better structure in prompt, but passing ALL data.
     const heroGames = [
-        ...completedGames.value.filter(g => g.rating >= 4), // High rated completed
-        ...playingGames.value, // Currently playing are usually positive
-        ...backlogGames.value.filter(g => g.rating >= 4) // High rated backlog (replays or anticipations)
+        ...completedGames.value.filter(g => g.rating >= 4), 
+        ...playingGames.value, 
+        ...backlogGames.value.filter(g => g.rating >= 4) 
     ].map(formatGame);
 
     const normalGames = [
         ...completedGames.value.filter(g => g.rating === 3),
-        ...backlogGames.value.filter(g => !g.rating || g.rating === 3) // Average or unrated backlog
+        ...backlogGames.value.filter(g => !g.rating || g.rating === 3) 
     ].map(formatGame);
 
     const villainGames = [
@@ -160,7 +160,7 @@ const collagePromptText = computed(() => {
     allGamesForGenre.forEach(g => {
         if (g.genres) {
             g.genres.forEach(genre => {
-                genreCounts[genre] = (genreCounts[genre] || 0) + 1;
+                genreCounts[genre.name] = (genreCounts[genre.name] || 0) + 1;
             });
         }
     });
@@ -170,41 +170,30 @@ const collagePromptText = computed(() => {
     const playerLevel = userLevel.value;
     const playerTitle = getTitleForLevel(playerLevel);
     const playerName = userName.value;
-
-    // 2. Construct Prompt
+    
+    // 2. Construct Prompt using game titles and negative prompts
     return `
-    **Role:** Digital Artist / Concept Artist
-    **Task:** Create an epic "Gamer Profile Collage" visualization.
+    **Style:** ${collageStyle.value} illustration, epic concept art, 8k, highly detailed.
     
-    **Subject:**
-    A central hero figure (representing the gamer) surrounded by a chaotic but artistic composition of their ENTIRE gaming history.
+    **Subject:** 
+    A masterpiece "Gamer Profile Collage". In the center, a heroic figure sits on a throne or stands triumphant, surrounded by a chaotic, massive mashup of gaming universes.
     
-    **CRITICAL INSTRUCTION - VISUALS ONLY:**
-    Do NOT write the names of the games as text loops. Instead, **ILLUSTRATE** iconic characters, weapons, items, environments, or symbols from these games. The composition should be a visual mashup, not a word cloud.
+    **Player Metadata (VISUAL INSPIRATION, DO NOT WRITE THIS):**
+    The hero represents ${playerName}, a Level ${playerLevel} ${playerTitle} and a Master of ${topGenre} games.
     
-    **DATA SOURCE (USE AS MANY AS POSSIBLE):**
+    **Visual Elements to Include:**
+    - Epic/Center scale characters and themes from: ${heroGames.join(', ')}
+    - Mid-ground details characters and themes from: ${normalGames.join(', ')}
+    - Dark/Background details characters and themes from: broken controllers, ruined landscapes, ${villainGames.join(', ')}
     
-    **Group A: The Legends (HEROIC / CENTER Focus):**
-    ${heroGames.join(', ')}
+    **Composition:**
+    High contrast between the glorious center and the chaotic edges. Densely packed composition (horror vacui).
     
-    **Group B: The Journey (MID-GROUND / TEXTURE):**
-    ${normalGames.join(', ')}
+    **CRITICAL INSTRUCTION FOR AI:**
+    This image must contain ZERO TEXT. Do NOT write any titles, names, words, letters, logos, UI overlays, star ratings, or numbers in this image. No floating text. No watermarks.
     
-    **Group C: The Shadows (BACKGROUND / CRUMBLED RUINS / VILLAINS):**
-    ${villainGames.join(', ')}
-    
-    **Visual Hierarchy:** 
-    - **CENTER:** High rated games (Group A) should be the most prominent, shiny, and victorious.
-    - **BOTTOM/BACKGROUND:** Low rated/Ignored games (Group C) should be dark, glitchy, broken, or forming the debris at the bottom.
-      
-    **Stats Display (ONLY TEXT ALLOWED):**
-    - Text overlay in stylized font: "PLAYER: ${playerName}"
-    - Subtext: "LEVEL ${playerLevel} - ${playerTitle}".
-    - Badge/Tag: "Master of ${topGenre}".
-    
-    **Art Style:** ${collageStyle.value} aesthetic.
-    
-    **Technical:** 8k resolution, highly detailed, densely packed composition (horror vacui), cinematic lighting, contrast between victory and defeat.
+    **Negative Prompt (for Midjourney/Stable Diffusion):**
+    --no text, words, letters, numbers, fonts, logos, titles, writing, UI, watermarks, signature, user interface, labels
     `;
 });
 
@@ -264,34 +253,34 @@ const handleClose = () => {
         <!-- Language & Tabs -->
         <div class="p-4 flex flex-col gap-4 bg-gray-900/30 relative z-10">
             <!-- Tabs -->
-            <div class="flex justify-between items-center">
-                 <div class="flex p-1 bg-gray-800 rounded-lg shadow-inner">
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
+                 <div class="flex p-1 bg-gray-800 rounded-lg shadow-inner w-full sm:w-auto justify-between sm:justify-start overflow-x-auto">
                     <button 
                         @click="activeTab = 'updates'"
                         :class="activeTab === 'updates' ? 'bg-blue-600 text-white shadow' : 'text-gray-400 hover:text-white'"
-                        class="px-4 py-2 rounded-md text-sm font-bold transition-all flex items-center gap-2"
+                        class="px-3 py-2 sm:px-4 sm:py-2 rounded-md text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap"
                     >
-                        <RefreshCw class="w-4 h-4" /> Updates
+                        <RefreshCw class="w-3 h-3 sm:w-4 sm:h-4" /> Updates
                     </button>
                     <button 
                         @click="activeTab = 'oracle'"
                         :class="activeTab === 'oracle' ? 'bg-purple-600 text-white shadow' : 'text-gray-400 hover:text-white'"
-                        class="px-4 py-2 rounded-md text-sm font-bold transition-all flex items-center gap-2"
+                        class="px-3 py-2 sm:px-4 sm:py-2 rounded-md text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap"
                     >
-                        <Sparkles class="w-4 h-4" /> Oracle
+                        <Sparkles class="w-3 h-3 sm:w-4 sm:h-4" /> Oracle
                     </button>
                     <button 
                         @click="activeTab = 'collage'"
                         :class="activeTab === 'collage' ? 'bg-pink-600 text-white shadow' : 'text-gray-400 hover:text-white'"
-                        class="px-4 py-2 rounded-md text-sm font-bold transition-all flex items-center gap-2"
+                        class="px-3 py-2 sm:px-4 sm:py-2 rounded-md text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap"
                     >
-                        <Image class="w-4 h-4" /> Collage
+                        <Image class="w-3 h-3 sm:w-4 sm:h-4" /> Collage
                     </button>
                 </div>
 
                 <!-- Controls -->
-                <div class="flex gap-2">
-                     <select v-model="language" class="bg-gray-800 text-white text-xs px-2 py-1 rounded border border-gray-700 focus:border-primary focus:outline-none">
+                <div class="flex gap-2 w-full sm:w-auto justify-end">
+                     <select v-model="language" class="bg-gray-800 text-white text-xs px-2 py-1 rounded border border-gray-700 focus:border-primary focus:outline-none w-full sm:w-auto">
                         <option value="en">English (EN)</option>
                         <option value="de">German (DE)</option>
                     </select>
@@ -336,11 +325,6 @@ const handleClose = () => {
                             <option value="Dark Souls-like">🌑 Grim Dark / Souls-like</option>
                             <option value="Anime Poster">🎌 High Quality Anime Poster</option>
                         </select>
-                    </div>
-
-                    <div class="text-xs text-gray-500 space-y-1">
-                        <p><strong>Includes:</strong> Top 5 Favorites (Heroes) vs. Ignored/Bad Games (Villains)</p>
-                        <p><strong>Stats:</strong> "Level {{ completedGames.length }}" (Games Beaten)</p>
                     </div>
                 </div>
             </div>
