@@ -67,16 +67,13 @@ export function useGames() {
         return Array.from(mappedGenres).filter(genre => GENRES.includes(genre)).map(name => ({ name }));
     };
 
-    // Helper: Get Best Website Link from IGDB mapped categories
-    const getBestIGDBWebsite = (websites) => {
-        if (!websites || !Array.isArray(websites) || websites.length === 0) return null;
-        // Priority: 1 (Official), 13 (Steam), 17 (GOG), 16 (Epic), 3 (Wikipedia), 2 (Wikia), 6 (Twitch), 9 (YouTube)
-        const priorities = [1, 13, 17, 16, 3, 2, 6, 9];
-        for (const catId of priorities) {
-            const found = websites.find(w => w.category === catId);
-            if (found && found.url) return found.url;
-        }
-        return null;
+    // Helper: Get All Website Links from IGDB mapped categories
+    const getAllIGDBWebsites = (websites) => {
+        if (!websites || !Array.isArray(websites) || websites.length === 0) return [];
+        // Extract all valid URLs
+        const validUrls = websites.filter(w => w.url).map(w => w.url);
+        // Remove duplicates just in case
+        return Array.from(new Set(validUrls));
     };
 
     // Helper: Map IGDB DLCs and Expansions to a unified additions array
@@ -181,7 +178,7 @@ export function useGames() {
                             parent_platforms: aggregateIGDBPlatforms(igdbGame.platforms),
                             genres: aggregateIGDBGenres(igdbGame.genres),
                             developers: igdbGame.involved_companies ? igdbGame.involved_companies.map(c => ({ name: c.company.name })) : [],
-                            website: getBestIGDBWebsite(igdbGame.websites),
+                            websites: getAllIGDBWebsites(igdbGame.websites),
                             additions: aggregateIGDBAdditions(igdbGame.dlcs, igdbGame.expansions)
                         };
 
@@ -208,10 +205,16 @@ export function useGames() {
                     // Fetch additions separately for RAWG
                     const additions = await fetchRAWGAdditions(newGameData.id);
 
+                    // Compile websites list
+                    const rawgWebsites = [];
+                    if (details.website) rawgWebsites.push(details.website);
+                    if (details.reddit_url) rawgWebsites.push(details.reddit_url);
+
                     // Update via gameData
                     gameData.updateGame(newGameData.id, {
                         ...details,
                         additions,
+                        websites: rawgWebsites,
                         // Preserve local state
                         status: GAME_STATUS.BACKLOG,
                         platform: platform,
@@ -414,7 +417,7 @@ export function useGames() {
                             parent_platforms: aggregateIGDBPlatforms(igdbGame.platforms),
                             genres: aggregateIGDBGenres(igdbGame.genres),
                             developers: igdbGame.involved_companies ? igdbGame.involved_companies.map(c => ({ name: c.company.name })) : [],
-                            website: getBestIGDBWebsite(igdbGame.websites),
+                            websites: getAllIGDBWebsites(igdbGame.websites),
                             additions: aggregateIGDBAdditions(igdbGame.dlcs, igdbGame.expansions)
                         };
                         gameData.updateGame(id, {
@@ -442,9 +445,15 @@ export function useGames() {
                     // Fetch additions separately for RAWG
                     const additions = await fetchRAWGAdditions(id);
 
+                    // Compile websites list
+                    const rawgWebsites = [];
+                    if (details.website) rawgWebsites.push(details.website);
+                    if (details.reddit_url) rawgWebsites.push(details.reddit_url);
+
                     gameData.updateGame(id, {
                         ...details,
                         additions,
+                        websites: rawgWebsites,
                         status: game.status,
                         platform: game.platform,
                         rating: game.rating,
@@ -491,7 +500,7 @@ export function useGames() {
                             parent_platforms: aggregateIGDBPlatforms(igdbGame.platforms),
                             genres: aggregateIGDBGenres(igdbGame.genres),
                             developers: igdbGame.involved_companies ? igdbGame.involved_companies.map(c => ({ name: c.company.name })) : [],
-                            website: getBestIGDBWebsite(igdbGame.websites),
+                            websites: getAllIGDBWebsites(igdbGame.websites),
                             additions: aggregateIGDBAdditions(igdbGame.dlcs, igdbGame.expansions)
                         };
                     }
@@ -508,9 +517,15 @@ export function useGames() {
                     // Fetch additions separately for RAWG
                     const additions = await fetchRAWGAdditions(id);
 
+                    // Compile websites list
+                    const rawgWebsites = [];
+                    if (details.website) rawgWebsites.push(details.website);
+                    if (details.reddit_url) rawgWebsites.push(details.reddit_url);
+
                     return {
                         ...details,
-                        additions
+                        additions,
+                        websites: rawgWebsites
                     };
                 }
             } catch (e) {

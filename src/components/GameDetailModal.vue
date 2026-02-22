@@ -213,13 +213,22 @@ const getWebsiteDisplayInfo = (url) => {
         if (hostname.includes('discord.com') || hostname.includes('discord.gg')) return { label: 'Discord', icon: Globe };
         if (hostname.includes('reddit.com')) return { label: 'Reddit', icon: Globe };
 
-        return { label: 'Website', icon: Globe };
+        return { url, label: 'Website', icon: Globe };
     } catch {
-        return { label: 'Website', icon: Globe };
+        return { url, label: 'Website', icon: Globe };
     }
 };
 
-const websiteInfo = computed(() => getWebsiteDisplayInfo(gameDetails.value?.website));
+const allWebsites = computed(() => {
+    const urls = [];
+    if (gameDetails.value?.websites && Array.isArray(gameDetails.value.websites)) {
+        urls.push(...gameDetails.value.websites);
+    } else if (gameDetails.value?.website) { // Legacy fallback
+        urls.push(gameDetails.value.website);
+    }
+    
+    return urls.map(url => getWebsiteDisplayInfo(url));
+});
 
 </script>
 
@@ -389,12 +398,21 @@ const websiteInfo = computed(() => getWebsiteDisplayInfo(gameDetails.value?.webs
                       </div>
                   </div>
 
-                  <!-- Row 3: Website -->
-                  <div v-if="gameDetails.website">
-                       <a :href="gameDetails.website" target="_blank" class="inline-flex items-center gap-2 px-3 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-sm text-primary border border-white/10 transition-colors active:scale-95 shadow-sm hover:shadow">
-                          <component :is="websiteInfo?.icon || Globe" class="w-4 h-4" /> 
-                          <span class="font-medium">{{ websiteInfo?.label || 'Website' }}</span>
-                      </a>
+                  <!-- Row 3: Websites -->
+                  <div v-if="allWebsites.length > 0">
+                       <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Links</h4>
+                       <div class="flex flex-wrap gap-2">
+                           <a 
+                               v-for="(site, idx) in allWebsites" 
+                               :key="idx" 
+                               :href="site.url" 
+                               target="_blank" 
+                               class="inline-flex items-center gap-2 px-3 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-sm text-primary border border-white/10 transition-colors active:scale-95 shadow-sm hover:shadow"
+                           >
+                              <component :is="site.icon" class="w-4 h-4" /> 
+                              <span class="font-medium">{{ site.label }}</span>
+                          </a>
+                       </div>
                   </div>
 
                   <!-- Row 4: DLCs & Expansions -->

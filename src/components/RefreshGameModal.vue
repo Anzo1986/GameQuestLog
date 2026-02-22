@@ -127,7 +127,7 @@ const applyUpdates = () => {
         if (n.parent_platforms) updates.parent_platforms = n.parent_platforms;
         if (n.genres) updates.genres = n.genres;
         if (n.developers) updates.developers = n.developers;
-        if (n.website) updates.website = n.website;
+        if (n.websites) updates.websites = n.websites;
         if (n.released) updates.released = n.released;
         if (n.metacritic) updates.metacritic = n.metacritic;
     }
