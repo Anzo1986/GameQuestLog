@@ -25,7 +25,7 @@ import { Settings, Bell } from 'lucide-vue-next';
 // Composables
 const { playingGames, backlogGames, completedGames, droppedGames, removeGame, addGame, games, updateStatus, userXP } = useGames();
 const { checkAchievements } = useAchievements();
-const { openModal, resetModal } = useModals();
+const { openModal, resetModal, handlePopstate } = useModals();
 const { handleWebCheck, showCopyFeedback } = useAI();
 const { handleUpdateStatus } = useGameplayCoordinator();
 const { checkShareUrl } = useShare();
@@ -66,7 +66,7 @@ const confirmDelete = (gameId) => {
 // Lifecycle & Events
 onMounted(() => {
     window.addEventListener('popstate', (event) => {
-        resetModal();
+        handlePopstate();
     });
 
     checkAchievements({ games, playingGames, backlogGames, completedGames, droppedGames, userXP });
