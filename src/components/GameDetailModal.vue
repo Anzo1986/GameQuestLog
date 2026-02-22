@@ -4,7 +4,8 @@ import {
     X, Edit2, Play, Ban, Check, CheckCircle2, Layers, 
     Image as ImageIcon, Gamepad2, Timer, Calendar, Plus, 
     MoreVertical, Share2, Globe, RefreshCw, Youtube, Twitch, Book, ShoppingCart,
-    Twitter, Facebook, Instagram, MessageSquare, MessageCircle
+    Twitter, Facebook, Instagram, MessageSquare, MessageCircle,
+    Star, Trash2, PenLine, Circle, Loader2
 } from 'lucide-vue-next';
 import { useGames } from '../composables/useGames';
 import { useModals } from '../composables/useModals';
