@@ -2,6 +2,7 @@
 import { ref, watch, computed } from 'vue';
 import { Search, Loader2, X, Check, Save, Gamepad2, Database, AlertCircle, RefreshCw, Layers, Calendar, Image as ImageIcon, PenTool } from 'lucide-vue-next';
 import { useGames } from '../composables/useGames';
+import { useModals } from '../composables/useModals';
 import BaseModal from './BaseModal.vue';
 
 const props = defineProps({
@@ -16,6 +17,7 @@ const props = defineProps({
 const emit = defineEmits(['close']);
 
 const { games, searchGames, searchResults, isSearching, fetchGameDetailsOnly, fetchGameImages, updateGame, gameApiProvider } = useGames();
+const { resetModal } = useModals();
 
 const currentGame = computed(() => games.value.find(g => g.id === props.gameId));
 
@@ -133,10 +135,18 @@ const applyUpdates = () => {
     }
     
     // Always update ID so it maps to the active provider natively for future fetches
+    const idChanged = props.gameId !== n.id;
     updates.id = n.id;
     
     updateGame(props.gameId, updates);
     emit('close');
+    
+    if (idChanged) {
+        // Since the ID changed, the parent GameDetailModal (which relies on gameId) 
+        // will crash because the old object is effectively gone. 
+        // We must clear the entire modal stack to return safely to the dashboard.
+        setTimeout(() => resetModal(), 10); 
+    }
 };
 </script>
 
