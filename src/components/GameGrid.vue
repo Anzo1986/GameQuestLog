@@ -19,6 +19,10 @@ const props = defineProps({
     searchQuery: {
         type: String,
         default: ''
+    },
+    showUnreleasedSeparator: {
+        type: Boolean,
+        default: false
     }
 });
 
@@ -26,6 +30,9 @@ const emit = defineEmits(['click-game', 'update-status', 'delete-game']);
 
 const { viewMode } = useSettings();
 import { ref, computed, watch } from 'vue';
+import { useGameFilters } from '../composables/useGameFilters';
+
+const { isUnreleased } = useGameFilters();
 
 const VISIBLE_INCREMENT = 48; // Enough for 4 rows of 4 cards on XL
 const visibleCount = ref(VISIBLE_INCREMENT);
@@ -61,12 +68,22 @@ watch(() => props.searchQuery, () => {
         }">
             
             
-            <div 
-                v-for="(game, index) in displayedGames" 
-                :key="game.id" 
-                class="relative group animate-stagger-enter w-full hover:z-20 min-w-0" 
-                :style="{ animationDelay: `${index * 50}ms` }"
-            >
+            <template v-for="(game, index) in displayedGames" :key="game.id">
+                
+                <!-- UNRELEASED SEPARATOR -->
+                <div 
+                    v-if="showUnreleasedSeparator && isUnreleased(game) && (index === 0 || !isUnreleased(displayedGames[index - 1]))"
+                    class="col-span-full flex items-center gap-4 py-6 mt-4 w-full"
+                >
+                    <div class="h-px bg-gradient-to-r from-transparent via-gray-700 to-gray-700 flex-1"></div>
+                    <span class="text-xs font-bold text-gray-500 uppercase tracking-widest px-2">Unreleased / TBA</span>
+                    <div class="h-px bg-gradient-to-r from-gray-700 via-gray-700 to-transparent flex-1"></div>
+                </div>
+
+                <div 
+                    class="relative group animate-stagger-enter w-full hover:z-20 min-w-0" 
+                    :style="{ animationDelay: `${index * 50}ms` }"
+                >
                  <GameCard 
                     v-if="viewMode === 'grid'"
                     :game="game" 
@@ -92,8 +109,7 @@ watch(() => props.searchQuery, () => {
 
 
             </div>
-
-
+            </template>
 
             <!-- Empty State -->
              <div v-if="games.length === 0" class="p-8 border-2 border-dashed border-gray-700 rounded-xl text-center text-gray-500 col-span-2 sm:col-span-3 lg:col-span-4">

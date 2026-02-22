@@ -7,6 +7,21 @@ import packageJson from './package.json'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  server: {
+    proxy: {
+      '/api/igdb': {
+        target: 'https://api.igdb.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/igdb/, ''),
+        configure: (proxy, _options) => {
+          proxy.on('proxyReq', (proxyReq, req, _res) => {
+            proxyReq.removeHeader('origin');
+            proxyReq.removeHeader('referer');
+          });
+        }
+      },
+    }
+  },
   define: {
     '__APP_VERSION__': JSON.stringify(packageJson.version)
   },

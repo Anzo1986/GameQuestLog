@@ -16,6 +16,9 @@ const {
 
 const {
     apiKey, setApiKey,
+    gameApiProvider, setGameApiProvider,
+    igdbClientId, setIgdbClientId,
+    igdbAccessToken, setIgdbAccessToken,
     geminiApiKey, setGeminiKey,
     groqApiKey, setGroqKey,
     tavilyApiKey, setTavilyKey,
@@ -34,6 +37,12 @@ const lastBackupDisplay = computed(() => {
 });
 
 const newKey = ref(apiKey.value); // Maps to RAWG key input
+const currentGameApiProvider = ref(gameApiProvider.value);
+const newIgdbClientId = ref(igdbClientId.value);
+const newIgdbClientSecret = ref(''); // Only used temporarily to generate the token
+const newIgdbAccessToken = ref(igdbAccessToken.value);
+const isGeneratingToken = ref(false);
+
 const geminiKeyInput = ref(geminiApiKey.value);
 const groqKeyInput = ref(groqApiKey.value);
 const tavilyKeyInput = ref(tavilyApiKey.value);
@@ -43,6 +52,7 @@ const fileInput = ref(null);
 const avatarInput = ref(null);
 const importStatus = ref('');
 const showTitles = ref(false);
+const showApiConfig = ref(false); // Collapsible state
 const showAIConfig = ref(false); // Collapsible state
 const showIgnoredGames = ref(false); // Collapsible state
 
@@ -74,6 +84,47 @@ useSwipe(modalRef, {
 const saveKey = () => {
   setApiKey(newKey.value);
   alert('RAWG API Key saved!');
+};
+
+const saveIgdbKeys = () => {
+  setIgdbClientId(newIgdbClientId.value.trim());
+  setIgdbAccessToken(newIgdbAccessToken.value.trim());
+  alert('IGDB API Keys saved!');
+};
+
+const generateIgdbToken = async () => {
+    if (!newIgdbClientId.value || !newIgdbClientSecret.value) {
+        alert('Please provide both Client ID and Client Secret first.');
+        return;
+    }
+
+    isGeneratingToken.value = true;
+    try {
+        const response = await fetch(`https://id.twitch.tv/oauth2/token?client_id=${newIgdbClientId.value.trim()}&client_secret=${newIgdbClientSecret.value.trim()}&grant_type=client_credentials`, {
+            method: 'POST'
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            newIgdbAccessToken.value = data.access_token;
+            setIgdbClientId(newIgdbClientId.value.trim());
+            setIgdbAccessToken(data.access_token);
+            alert('Successfully generated App Access Token! Your keys have been auto-saved.');
+        } else {
+            const err = await response.json();
+            alert(`Failed to generate token: ${err.message || 'Unknown error'}`);
+        }
+    } catch (e) {
+        alert('Network error while generating token: ' + e.message);
+    } finally {
+        isGeneratingToken.value = false;
+    }
+};
+
+const updateGameApiProvider = (provider) => {
+    currentGameApiProvider.value = provider;
+    setGameApiProvider(provider);
+    alert(`Switched to ${provider === 'igdb' ? 'IGDB' : 'RAWG.io'}`);
 };
 
 const saveGeminiKey = () => {
@@ -231,29 +282,132 @@ const version = __APP_VERSION__;
           
           <div class="space-y-4">
             
-            <!-- RAWG Key -->
-            <div class="space-y-2">
-                 <div class="flex items-center justify-between">
-                    <h3 class="text-sm font-medium text-gray-300">Game Data API</h3>
-                    <button @click="saveKey" class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 text-sm shadow-lg">
-                        <Save class="w-4 h-4" /> Save RAWG Key
-                    </button>
-                </div>
-                <div class="bg-gray-800/50 p-4 rounded-xl border border-gray-700">
-                    <label class="block text-sm font-medium text-gray-300 mb-2">RAWG.io API Key</label>
-                    <div class="relative">
-                         <Key class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                         <input 
-                          v-model="newKey" 
-                          type="password" 
-                          placeholder="Enter your RAWG API Key" 
-                          class="w-full bg-gray-950 border border-gray-600 rounded-lg py-2 pl-10 pr-4 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none tracking-widest placeholder-gray-600 placeholder-normal"
-                        />
+            <!-- Game Data API Provider Selection (Collapsible) -->
+            <div class="rounded-xl border border-gray-700 overflow-hidden bg-gray-800/50">
+                <button 
+                  @click="showApiConfig = !showApiConfig"
+                  class="w-full flex items-center justify-between text-lg font-semibold text-gray-200 p-4 hover:bg-gray-800 transition-colors"
+                >
+                    <span class="flex items-center gap-2"><span class="text-purple-400">🎮</span> Game Data API</span>
+                    <span class="text-xs text-gray-500 transform transition-transform duration-200" :class="showApiConfig ? 'rotate-180' : ''">▼</span>
+                </button>
+                 
+                <div v-show="showApiConfig" class="p-4 border-t border-gray-700 space-y-4 animate-in slide-in-from-top-2 fade-in duration-200 bg-gray-900/30">
+                    <div class="flex items-center justify-between bg-gray-800/50 p-3 rounded-lg border border-gray-700">
+                        <span class="text-sm font-medium text-gray-400">Active Provider</span>
+                        <button v-if="currentGameApiProvider === 'rawg'" @click="saveKey" class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 text-sm shadow-lg">
+                            <Save class="w-4 h-4" /> Save RAWG Key
+                        </button>
+                        <button v-if="currentGameApiProvider === 'igdb'" @click="saveIgdbKeys" class="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 text-sm shadow-lg">
+                            <Save class="w-4 h-4" /> Save IGDB Keys
+                        </button>
                     </div>
-                    <p class="mt-2 text-xs text-gray-400">
-                      Required for game data. <a href="https://rawg.io/apidocs" target="_blank" class="text-blue-400 hover:underline">Get key</a>.
-                    </p>
+
+                <div class="bg-gray-800/50 p-4 rounded-xl border border-gray-700 space-y-4">
+                    <!-- Provider Toggle -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2">Provider</label>
+                        <div class="flex gap-2">
+                            <button 
+                            @click="updateGameApiProvider('rawg')"
+                            :class="[
+                                'flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors border',
+                                currentGameApiProvider === 'rawg' 
+                                ? 'bg-blue-600 border-blue-500 text-white' 
+                                : 'bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600'
+                            ]"
+                            >
+                            RAWG.io
+                            </button>
+                            <button 
+                            @click="updateGameApiProvider('igdb')"
+                            :class="[
+                                'flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors border',
+                                currentGameApiProvider === 'igdb' 
+                                ? 'bg-purple-600 border-purple-500 text-white' 
+                                : 'bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600'
+                            ]"
+                            >
+                            IGDB (Twitch)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- RAWG Fields -->
+                    <div v-if="currentGameApiProvider === 'rawg'" class="animate-in fade-in space-y-2">
+                        <label class="block text-sm font-medium text-gray-300">RAWG.io API Key</label>
+                        <div class="relative">
+                            <Key class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                            <input 
+                            v-model="newKey" 
+                            type="password" 
+                            placeholder="Enter your RAWG API Key" 
+                            class="w-full bg-gray-950 border border-gray-600 rounded-lg py-2 pl-10 pr-4 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none tracking-widest placeholder-gray-600 placeholder-normal"
+                            />
+                        </div>
+                        <p class="mt-2 text-xs text-gray-400">
+                        Required for game data. <a href="https://rawg.io/apidocs" target="_blank" class="text-blue-400 hover:underline">Get key</a>.
+                        </p>
+                    </div>
+
+                    <!-- IGDB Fields -->
+                    <div v-if="currentGameApiProvider === 'igdb'" class="animate-in fade-in space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-1">Twitch Client ID</label>
+                            <div class="relative">
+                                <Key class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                <input 
+                                v-model="newIgdbClientId" 
+                                type="text" 
+                                placeholder="Enter Client ID" 
+                                class="w-full bg-gray-950 border border-gray-600 rounded-lg py-2 pl-10 pr-4 text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none placeholder-gray-600"
+                                />
+                            </div>
+                        </div>
+
+                        <!-- Auto Generate Token -->
+                        <div class="bg-gray-900/50 p-3 rounded-lg border border-purple-500/30">
+                            <label class="block text-sm font-medium text-purple-300 mb-1">Generate Access Token</label>
+                            <p class="text-xs text-gray-400 mb-2">Provide your Client Secret to automatically generate the required App Access Token.</p>
+                            <div class="flex gap-2">
+                                <div class="relative flex-1">
+                                    <Key class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                    <input 
+                                    v-model="newIgdbClientSecret" 
+                                    type="password" 
+                                    placeholder="Enter Client Secret" 
+                                    class="w-full bg-gray-950 border border-gray-600 rounded-lg py-2 pl-10 pr-4 text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none placeholder-gray-600"
+                                    />
+                                </div>
+                                <button 
+                                    @click="generateIgdbToken"
+                                    :disabled="isGeneratingToken || !newIgdbClientId || !newIgdbClientSecret"
+                                    class="bg-purple-600 hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap"
+                                >
+                                    {{ isGeneratingToken ? 'Generating...' : 'Generate' }}
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-1">App Access Token</label>
+                            <div class="relative">
+                                <Key class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                <input 
+                                v-model="newIgdbAccessToken" 
+                                type="password" 
+                                placeholder="Generated Token will appear here..." 
+                                class="w-full bg-gray-950 border border-gray-600 rounded-lg py-2 pl-10 pr-4 text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none tracking-widest placeholder-gray-600 placeholder-normal"
+                                />
+                            </div>
+                            <p class="mt-2 text-xs text-gray-400">
+                            Required for game data. <a href="https://api-docs.igdb.com/#account-creation" target="_blank" class="text-purple-400 hover:underline">Get credentials</a>.
+                            </p>
+                        </div>
+                    </div>
                 </div>
+            </div>
+            <!-- Missing closing tag for the space-y-4 parent of the provider selection -->
             </div>
 
             <!-- AI Settings (Collapsible) -->

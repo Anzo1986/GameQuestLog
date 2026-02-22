@@ -24,7 +24,11 @@ export function usePersistence() {
                 geminiKey: localStorage.getItem('game-tracker-gemini-key'),
                 groqKey: localStorage.getItem('game-tracker-groq-key'),
                 tavilyKey: localStorage.getItem('game-tracker-tavily-key'),
-                hiddenGems: localStorage.getItem('game-tracker-hidden-gems')
+                hiddenGems: localStorage.getItem('game-tracker-hidden-gems'),
+                // Game API Keys
+                gameApiProvider: localStorage.getItem('game-tracker-game-api-provider'),
+                igdbClientId: localStorage.getItem('game-tracker-igdb-client-id'),
+                igdbAccessToken: localStorage.getItem('game-tracker-igdb-access-token')
             }
         };
 
@@ -82,6 +86,11 @@ export function usePersistence() {
                             if (data.settings.groqKey) localStorage.setItem('game-tracker-groq-key', data.settings.groqKey);
                             if (data.settings.tavilyKey) localStorage.setItem('game-tracker-tavily-key', data.settings.tavilyKey);
                             if (data.settings.hiddenGems) localStorage.setItem('game-tracker-hidden-gems', data.settings.hiddenGems);
+
+                            // Import Game API Keys
+                            if (data.settings.gameApiProvider) localStorage.setItem('game-tracker-game-api-provider', data.settings.gameApiProvider);
+                            if (data.settings.igdbClientId) localStorage.setItem('game-tracker-igdb-client-id', data.settings.igdbClientId);
+                            if (data.settings.igdbAccessToken) localStorage.setItem('game-tracker-igdb-access-token', data.settings.igdbAccessToken);
                         }
 
                         window.location.reload(); // Refresh to load changes

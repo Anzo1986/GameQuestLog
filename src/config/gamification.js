@@ -16,6 +16,8 @@ export const XP_REWARDS = {
     // Bonuses
     COMPLETE_FROM_BACKLOG: 250, // 50 (Start) + 200 (Complete)
     COMPLETE_FROM_DROPPED: 250, // Reclaiming a dropped game
+    ADD_DLC: 20, // Buying/Adding a nested DLC
+    FINISH_DLC: 50, // Finishing a nested DLC
 
     // Deductions (Negative values)
     REMOVE_GAME: -10,
@@ -24,7 +26,9 @@ export const XP_REWARDS = {
 
     // Revert Status (Undo)
     UNDO_COMPLETE: -200,
-    UNDO_START: -50
+    UNDO_START: -50,
+    UNDO_ADD_DLC: -20,
+    UNDO_FINISH_DLC: -50
 };
 
 export const LEVEL_CURVE = {

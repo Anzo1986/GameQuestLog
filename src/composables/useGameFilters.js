@@ -5,8 +5,16 @@ export function useGameFilters() {
     const { sortOption } = useSettings();
     const searchQuery = ref('');
 
+    // Helper to identify games with no release date or a future release date
+    const isUnreleased = (game) => {
+        if (!game.released) return true; // TBA Games
+        const releaseStr = game.released.split('T')[0]; // Ensure precision
+        const todayStr = new Date().toISOString().split('T')[0];
+        return releaseStr > todayStr;
+    };
+
     // Logic moved from App.vue
-    const getProcessedGames = (gameList) => {
+    const getProcessedGames = (gameList, options = { separateUnreleased: false }) => {
         let result = [...gameList];
 
         // 1. Filter
@@ -17,6 +25,16 @@ export function useGameFilters() {
 
         // 2. Sort
         result.sort((a, b) => {
+            // Unreleased Separation (if enabled)
+            if (options.separateUnreleased) {
+                const aUnreleased = isUnreleased(a);
+                const bUnreleased = isUnreleased(b);
+                if (aUnreleased && !bUnreleased) return 1; // push a down
+                if (!aUnreleased && bUnreleased) return -1; // push b down
+                // If they're both released (or both unreleased), continue to normal sort
+            }
+
+            // Normal Sort Options
             switch (sortOption.value) {
                 case 'name': return a.title.localeCompare(b.title);
                 case 'released':
@@ -35,6 +53,7 @@ export function useGameFilters() {
     return {
         searchQuery,
         sortOption,
-        getProcessedGames
+        getProcessedGames,
+        isUnreleased
     };
 }

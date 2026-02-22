@@ -7,11 +7,13 @@ import { useGamification } from './useGamification';
 import { useGameData } from './useGameData';
 import { usePersistence } from './usePersistence';
 import { XP_REWARDS, GAME_STATUS } from '../config/gamification';
+import { GENRES } from '../constants/genres';
 
-// Shared state for Search (keep here or move to useGameSearch if needed)
 const searchQuery = ref('');
 const searchResults = ref([]);
 const isSearching = ref(false);
+
+const IGDB_ENDPOINT = import.meta.env.DEV ? '/api/igdb/v4/games' : 'https://corsproxy.io/?https://api.igdb.com/v4/games';
 
 export function useGames() {
     // 1. Import Sub-Modules
@@ -21,6 +23,88 @@ export function useGames() {
     const persistence = usePersistence();
 
     // 2. Facade Methods (Stitching logic together)
+
+    // Helper: Aggregate Specific IGDB Platforms to RAWG Parent Platforms
+    const aggregateIGDBPlatforms = (platforms) => {
+        if (!platforms) return [];
+        const parents = new Set();
+        platforms.forEach(p => {
+            parents.add(gameData.mapPlatform([p]));
+        });
+        return Array.from(parents).map(name => ({ platform: { name } }));
+    };
+
+    // Helper: Map IGDB Genres to our internal standard GENRES list
+    const aggregateIGDBGenres = (igdbGenres) => {
+        if (!igdbGenres) return [];
+        const mappedGenres = new Set();
+
+        igdbGenres.forEach(g => {
+            const lowerName = g.name.toLowerCase();
+
+            if (lowerName.includes('role-playing') || lowerName.includes('rpg')) { mappedGenres.add('RPG'); }
+            else if (lowerName.includes('shooter')) { mappedGenres.add('Shooter'); }
+            else if (lowerName.includes('adventure')) { mappedGenres.add('Adventure'); }
+            else if (lowerName.includes('action')) { mappedGenres.add('Action'); }
+            else if (lowerName.includes('strategy') || lowerName.includes('tactical') || lowerName.includes('rts') || lowerName.includes('tbs') || lowerName.includes('moba')) { mappedGenres.add('Strategy'); }
+            else if (lowerName.includes('puzzle')) { mappedGenres.add('Puzzle'); }
+            else if (lowerName.includes('platform')) { mappedGenres.add('Platformer'); }
+            else if (lowerName.includes('racing')) { mappedGenres.add('Racing'); }
+            else if (lowerName.includes('sport')) { mappedGenres.add('Sports'); }
+            else if (lowerName.includes('fighting') || lowerName.includes('beat \'em up') || lowerName.includes('hack and slash')) { mappedGenres.add('Fighting'); }
+            else if (lowerName.includes('simulator') || lowerName.includes('simulation')) { mappedGenres.add('Simulation'); }
+            else if (lowerName.includes('mmo') || lowerName.includes('massively')) { mappedGenres.add('Massively Multiplayer'); }
+            else if (lowerName.includes('indie')) { mappedGenres.add('Indie'); }
+            else if (lowerName.includes('arcade')) { mappedGenres.add('Arcade'); }
+            else if (lowerName.includes('casual')) { mappedGenres.add('Casual'); }
+            else if (lowerName.includes('board') || lowerName.includes('tabletop')) { mappedGenres.add('Board Games'); }
+            else if (lowerName.includes('card')) { mappedGenres.add('Card'); }
+            else if (lowerName.includes('family') || lowerName.includes('party')) { mappedGenres.add('Family'); }
+            else if (lowerName.includes('educational')) { mappedGenres.add('Educational'); }
+        });
+
+        // Ensure we only return genres that actually exist in our master list
+        return Array.from(mappedGenres).filter(genre => GENRES.includes(genre)).map(name => ({ name }));
+    };
+
+    // Helper: Get Best Website Link from IGDB mapped categories
+    const getBestIGDBWebsite = (websites) => {
+        if (!websites || !Array.isArray(websites) || websites.length === 0) return null;
+        // Priority: 1 (Official), 13 (Steam), 17 (GOG), 16 (Epic), 3 (Wikipedia), 2 (Wikia), 6 (Twitch), 9 (YouTube)
+        const priorities = [1, 13, 17, 16, 3, 2, 6, 9];
+        for (const catId of priorities) {
+            const found = websites.find(w => w.category === catId);
+            if (found && found.url) return found.url;
+        }
+        return null;
+    };
+
+    // Helper: Map IGDB DLCs and Expansions to a unified additions array
+    const getBestIGDBBackground = (game) => {
+        if (game.artworks && game.artworks.length > 0 && game.artworks[0].image_id) {
+            return `https://images.igdb.com/igdb/image/upload/t_1080p/${game.artworks[0].image_id}.jpg`;
+        }
+        if (game.screenshots && game.screenshots.length > 0 && game.screenshots[0].image_id) {
+            return `https://images.igdb.com/igdb/image/upload/t_1080p/${game.screenshots[0].image_id}.jpg`;
+        }
+        if (game.cover && game.cover.image_id) {
+            return `https://images.igdb.com/igdb/image/upload/t_1080p/${game.cover.image_id}.jpg`;
+        }
+        return null;
+    };
+
+    const aggregateIGDBAdditions = (dlcs, expansions) => {
+        const raw = [...(dlcs || []), ...(expansions || [])];
+        const unique = Array.from(new Map(raw.map(item => [item.id, item])).values());
+
+        return unique.sort((a, b) => (a.first_release_date || 0) - (b.first_release_date || 0))
+            .map(item => ({
+                id: item.id,
+                name: item.name,
+                released: item.first_release_date ? new Date(item.first_release_date * 1000).toISOString().split('T')[0] : null,
+                background_image: item.cover ? `https://images.igdb.com/igdb/image/upload/t_1080p/${item.cover.image_id}.jpg` : null
+            }));
+    };
 
     // Add Game Wrapper (Data + Gamification + API Fetch)
     const addGame = async (newGameData, platform = 'PC') => {
@@ -34,6 +118,7 @@ export function useGames() {
             platform: platform, // Use mapping if needed, but UI usually passes string
             playtime: newGameData.playtime || 0,
             rating: 0,
+            rating_top: 0,
             addedAt: new Date().toISOString()
         };
 
@@ -45,7 +130,54 @@ export function useGames() {
         gamification.awardXP(XP_REWARDS.ADD_GAME);
 
         // Fetch Full Details (Only for API games, skip manual timestamps)
-        if (settings.apiKey.value && newGameData.id < 10000000000) {
+        if (settings.gameApiProvider.value === 'igdb' && settings.igdbClientId.value && settings.igdbAccessToken.value && newGameData.id < 10000000000) {
+            try {
+                const response = await fetch(IGDB_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Client-ID': settings.igdbClientId.value.trim(),
+                        'Authorization': `Bearer ${settings.igdbAccessToken.value.trim()}`,
+                        'Accept': 'application/json',
+                    },
+                    body: `fields name, summary, cover.image_id, artworks.image_id, screenshots.image_id, first_release_date, platforms.name, aggregated_rating, genres.name, involved_companies.company.name, websites.category, websites.url, dlcs.name, dlcs.first_release_date, dlcs.cover.image_id, expansions.name, expansions.first_release_date, expansions.cover.image_id; where id = ${newGameData.id};`
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data.length > 0) {
+                        const igdbGame = data[0];
+
+                        const details = {
+                            id: igdbGame.id,
+                            name: igdbGame.name,
+                            description: igdbGame.summary || '',
+                            description_raw: igdbGame.summary || '',
+                            released: igdbGame.first_release_date ? new Date(igdbGame.first_release_date * 1000).toISOString().split('T')[0] : null,
+                            background_image: getBestIGDBBackground(igdbGame),
+                            metacritic: igdbGame.aggregated_rating ? Math.round(igdbGame.aggregated_rating) : null,
+                            rating_top: igdbGame.aggregated_rating ? Math.round((igdbGame.aggregated_rating / 100) * 5) : 0,
+                            parent_platforms: aggregateIGDBPlatforms(igdbGame.platforms),
+                            genres: aggregateIGDBGenres(igdbGame.genres),
+                            developers: igdbGame.involved_companies ? igdbGame.involved_companies.map(c => ({ name: c.company.name })) : [],
+                            website: getBestIGDBWebsite(igdbGame.websites),
+                            additions: aggregateIGDBAdditions(igdbGame.dlcs, igdbGame.expansions)
+                        };
+
+                        gameData.updateGame(newGameData.id, {
+                            ...details,
+                            status: GAME_STATUS.BACKLOG,
+                            platform: platform || gameData.mapPlatform(details.parent_platforms),
+                            rating: 0,
+                            addedAt: newGame.addedAt,
+                            playtime: newGame.playtime,
+                            owned_additions: newGame.owned_additions || []
+                        });
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to fetch full details on add from IGDB', e);
+            }
+        } else if (settings.gameApiProvider.value === 'rawg' && settings.apiKey.value && newGameData.id < 10000000000) {
             try {
                 const response = await fetch(`https://api.rawg.io/api/games/${newGameData.id}?key=${settings.apiKey.value}`);
                 if (response.ok) {
@@ -59,11 +191,12 @@ export function useGames() {
                         platform: platform,
                         rating: 0,
                         addedAt: newGame.addedAt,
-                        playtime: details.playtime || newGame.playtime
+                        playtime: details.playtime || newGame.playtime,
+                        owned_additions: newGame.owned_additions || []
                     });
                 }
             } catch (e) {
-                console.error('Failed to fetch full details on add', e);
+                console.error('Failed to fetch full details on add from RAWG', e);
             }
         }
     };
@@ -158,8 +291,50 @@ export function useGames() {
             game.completedAt = new Date().toISOString();
         }
 
-        // 3. Update Status
-        game.status = newStatus;
+        // 3. Apply Status Status
+        gameData.updateGame(id, { status: newStatus });
+    };
+
+    // Toggle Nested DLC Ownership / Completion Status
+    const toggleAdditionStatus = (gameId, additionId) => {
+        const game = gameData.games.value.find(g => g.id === gameId);
+        if (!game) return;
+
+        // Initialize array if missing
+        if (!game.owned_additions) {
+            game.owned_additions = [];
+        }
+
+        // Auto-Migrate flat arrays (backward compatibility)
+        game.owned_additions = game.owned_additions.map(item => {
+            if (typeof item !== 'object') {
+                return { id: item, status: 'owned' };
+            }
+            return item;
+        });
+
+        const index = game.owned_additions.findIndex(a => a.id === additionId);
+
+        if (index === -1) {
+            // State: Unowned -> Owned
+            game.owned_additions.push({ id: additionId, status: 'owned' });
+            gamification.awardXP(XP_REWARDS.ADD_DLC);
+        } else {
+            const currentStatus = game.owned_additions[index].status;
+            if (currentStatus === 'owned') {
+                // State: Owned -> Finished
+                game.owned_additions[index].status = 'finished';
+                gamification.awardXP(XP_REWARDS.FINISH_DLC);
+            } else {
+                // State: Finished -> Unowned
+                game.owned_additions.splice(index, 1);
+                gamification.awardXP(XP_REWARDS.UNDO_FINISH_DLC);
+                gamification.awardXP(XP_REWARDS.UNDO_ADD_DLC); // Need to deduct both since it goes flat Unowned
+            }
+        }
+
+        // Force reactivity update in local storage wrapper
+        gameData.updateGame(gameId, { owned_additions: [...game.owned_additions] });
     };
 
     // Ignore Game Wrapper
@@ -183,46 +358,250 @@ export function useGames() {
     // Refresh Game Wrapper (API access)
     const refreshGame = async (id) => {
         const game = gameData.games.value.find(g => g.id === id);
-        if (!game || !settings.apiKey.value) return;
+        if (!game) return;
+
+        if (settings.gameApiProvider.value === 'igdb' && settings.igdbClientId.value && settings.igdbAccessToken.value) {
+            try {
+                const response = await fetch(IGDB_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Client-ID': settings.igdbClientId.value.trim(),
+                        'Authorization': `Bearer ${settings.igdbAccessToken.value.trim()}`,
+                        'Accept': 'application/json'
+                    },
+                    body: `fields name, summary, cover.image_id, artworks.image_id, screenshots.image_id, first_release_date, platforms.name, aggregated_rating, genres.name, involved_companies.company.name, websites.category, websites.url, dlcs.name, dlcs.first_release_date, dlcs.cover.image_id, expansions.name, expansions.first_release_date, expansions.cover.image_id; where id = ${id};`
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data.length > 0) {
+                        const igdbGame = data[0];
+                        const details = {
+                            id: igdbGame.id,
+                            name: igdbGame.name,
+                            description: igdbGame.summary || '',
+                            description_raw: igdbGame.summary || '',
+                            released: igdbGame.first_release_date ? new Date(igdbGame.first_release_date * 1000).toISOString().split('T')[0] : null,
+                            background_image: getBestIGDBBackground(igdbGame),
+                            metacritic: igdbGame.aggregated_rating ? Math.round(igdbGame.aggregated_rating) : null,
+                            rating_top: igdbGame.aggregated_rating ? Math.round((igdbGame.aggregated_rating / 100) * 5) : 0,
+                            parent_platforms: aggregateIGDBPlatforms(igdbGame.platforms),
+                            genres: aggregateIGDBGenres(igdbGame.genres),
+                            developers: igdbGame.involved_companies ? igdbGame.involved_companies.map(c => ({ name: c.company.name })) : [],
+                            website: getBestIGDBWebsite(igdbGame.websites),
+                            additions: aggregateIGDBAdditions(igdbGame.dlcs, igdbGame.expansions)
+                        };
+                        gameData.updateGame(id, {
+                            ...details,
+                            // Preserve local info
+                            status: game.status,
+                            platform: game.platform,
+                            rating: game.rating,
+                            addedAt: game.addedAt,
+                            startedAt: game.startedAt,
+                            completedAt: game.completedAt,
+                            playtime: game.playtime || details.playtime || 0
+                        });
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to refresh details from IGDB', e);
+            }
+        } else if (settings.gameApiProvider.value === 'rawg' && settings.apiKey.value && id < 10000000000) {
+            try {
+                const response = await fetch(`https://api.rawg.io/api/games/${id}?key=${settings.apiKey.value}`);
+                if (response.ok) {
+                    const details = await response.json();
+                    gameData.updateGame(id, {
+                        ...details,
+                        status: game.status,
+                        platform: game.platform,
+                        rating: game.rating,
+                        addedAt: game.addedAt,
+                        startedAt: game.startedAt,
+                        completedAt: game.completedAt,
+                        playtime: game.playtime || details.playtime || 0
+                    });
+                }
+            } catch (e) {
+                console.error('Failed to refresh details from RAWG', e);
+            }
+        }
+        return { success: false, error: 'Network error or missing keys' };
+    };
+
+    // Deep fetch single game without saving to backlog
+    const fetchGameDetailsOnly = async (id) => {
+        if (settings.gameApiProvider.value === 'igdb' && settings.igdbClientId.value && settings.igdbAccessToken.value) {
+            try {
+                const response = await fetch(IGDB_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Client-ID': settings.igdbClientId.value.trim(),
+                        'Authorization': `Bearer ${settings.igdbAccessToken.value.trim()}`,
+                        'Accept': 'application/json'
+                    },
+                    body: `fields name, summary, cover.image_id, artworks.image_id, screenshots.image_id, first_release_date, platforms.name, aggregated_rating, genres.name, involved_companies.company.name, websites.category, websites.url, dlcs.name, dlcs.first_release_date, dlcs.cover.image_id, expansions.name, expansions.first_release_date, expansions.cover.image_id; where id = ${id};`
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data.length > 0) {
+                        const igdbGame = data[0];
+                        return {
+                            id: igdbGame.id,
+                            name: igdbGame.name,
+                            description: igdbGame.summary || '',
+                            description_raw: igdbGame.summary || '',
+                            released: igdbGame.first_release_date ? new Date(igdbGame.first_release_date * 1000).toISOString().split('T')[0] : null,
+                            background_image: getBestIGDBBackground(igdbGame),
+                            metacritic: igdbGame.aggregated_rating ? Math.round(igdbGame.aggregated_rating) : null,
+                            rating_top: igdbGame.aggregated_rating ? Math.round((igdbGame.aggregated_rating / 100) * 5) : 0,
+                            parent_platforms: aggregateIGDBPlatforms(igdbGame.platforms),
+                            genres: aggregateIGDBGenres(igdbGame.genres),
+                            developers: igdbGame.involved_companies ? igdbGame.involved_companies.map(c => ({ name: c.company.name })) : [],
+                            website: getBestIGDBWebsite(igdbGame.websites),
+                            additions: aggregateIGDBAdditions(igdbGame.dlcs, igdbGame.expansions)
+                        };
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to fetch deep details from IGDB', e);
+            }
+        } else if (settings.gameApiProvider.value === 'rawg' && settings.apiKey.value) {
+            try {
+                const response = await fetch(`https://api.rawg.io/api/games/${id}?key=${settings.apiKey.value}`);
+                if (response.ok) {
+                    return await response.json();
+                }
+            } catch (e) {
+                console.error('Failed to fetch deep details from RAWG', e);
+            }
+        }
+        return null;
+    };
+
+    // Helper: Fetch only available hi-res artworks and screenshots for a game from IGDB
+    const fetchGameImages = async (id) => {
+        if (settings.gameApiProvider.value !== 'igdb' || !settings.igdbClientId.value || !settings.igdbAccessToken.value) {
+            return [];
+        }
 
         try {
-            const response = await fetch(`https://api.rawg.io/api/games/${id}?key=${settings.apiKey.value}`);
-            if (response.ok) {
-                const details = await response.json();
-                const newPlaytime = Math.max(details.playtime || 0, details.average_playtime || 0) || game.playtime;
+            const response = await fetch(IGDB_ENDPOINT, {
+                method: 'POST',
+                headers: {
+                    'Client-ID': settings.igdbClientId.value.trim(),
+                    'Authorization': `Bearer ${settings.igdbAccessToken.value.trim()}`,
+                    'Accept': 'application/json'
+                },
+                body: `fields cover.image_id, artworks.image_id, screenshots.image_id; where id = ${id};`
+            });
 
-                gameData.updateGame(id, {
-                    ...details,
-                    // protect local fields
-                    status: game.status,
-                    platform: game.platform,
-                    rating: game.rating,
-                    addedAt: game.addedAt,
-                    startedAt: game.startedAt,
-                    completedAt: game.completedAt,
-                    playtime: newPlaytime
-                });
-                return { success: true };
+            if (response.ok) {
+                const data = await response.json();
+                if (data && data.length > 0) {
+                    const game = data[0];
+                    const images = [];
+
+                    // Extract Cover (Fallback)
+                    if (game.cover && game.cover.image_id) {
+                        images.push({
+                            id: `cover_${game.cover.id || Math.random()}`,
+                            thumb: `https://images.igdb.com/igdb/image/upload/t_screenshot_med/${game.cover.image_id}.jpg`, // Use wide format thumb for UI consistency
+                            hires: `https://images.igdb.com/igdb/image/upload/t_1080p/${game.cover.image_id}.jpg`
+                        });
+                    }
+
+                    // Extract Artworks
+                    if (game.artworks) {
+                        game.artworks.forEach(art => {
+                            if (art.image_id) {
+                                images.push({
+                                    id: `art_${art.id || Math.random()}`,
+                                    thumb: `https://images.igdb.com/igdb/image/upload/t_screenshot_med/${art.image_id}.jpg`,
+                                    hires: `https://images.igdb.com/igdb/image/upload/t_1080p/${art.image_id}.jpg`
+                                });
+                            }
+                        });
+                    }
+
+                    // Extract Screenshots
+                    if (game.screenshots) {
+                        game.screenshots.forEach(screen => {
+                            if (screen.image_id) {
+                                images.push({
+                                    id: `screen_${screen.id || Math.random()}`,
+                                    thumb: `https://images.igdb.com/igdb/image/upload/t_screenshot_med/${screen.image_id}.jpg`,
+                                    hires: `https://images.igdb.com/igdb/image/upload/t_1080p/${screen.image_id}.jpg`
+                                });
+                            }
+                        });
+                    }
+
+                    return images;
+                }
             }
         } catch (e) {
-            console.error('Failed to refresh game', e);
-            return { success: false, error: e.message };
+            console.error('Failed to fetch game images from IGDB', e);
         }
-        return { success: false, error: 'Network error' };
+        return [];
     };
 
     // Search Logic (Depends on API Key and Settings)
     const searchGames = async (query) => {
-        if (!query || !settings.apiKey.value) return;
+        if (!query) return;
 
         isSearching.value = true;
         try {
-            const response = await fetch(`https://api.rawg.io/api/games?key=${settings.apiKey.value}&search=${encodeURIComponent(query)}&page_size=10`);
-            const data = await response.json();
-            searchResults.value = (data.results || []).map(game => ({
-                ...game,
-                selectedPlatform: gameData.mapPlatform(game.parent_platforms || game.platforms)
-            }));
+            if (settings.gameApiProvider.value === 'igdb' && settings.igdbClientId.value && settings.igdbAccessToken.value) {
+                const response = await fetch(IGDB_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Client-ID': settings.igdbClientId.value.trim(),
+                        'Authorization': `Bearer ${settings.igdbAccessToken.value.trim()}`,
+                        'Accept': 'application/json'
+                    },
+                    body: `search "${query}"; fields id, name, cover.image_id, artworks.image_id, screenshots.image_id, first_release_date, platforms.name, aggregated_rating; limit 10;`
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    searchResults.value = (data || []).map(game => {
+                        let background_image = null;
+                        if (game.cover && game.cover.image_id) {
+                            background_image = `https://images.igdb.com/igdb/image/upload/t_1080p/${game.cover.image_id}.jpg`;
+                        } else {
+                            background_image = getBestIGDBBackground(game);
+                        }
+
+                        return {
+                            id: game.id,
+                            name: game.name,
+                            background_image,
+                            released: game.first_release_date ? new Date(game.first_release_date * 1000).toISOString().split('T')[0] : null,
+                            rating_top: game.aggregated_rating ? Math.round((game.aggregated_rating / 100) * 5) : 0,
+                            parent_platforms: aggregateIGDBPlatforms(game.platforms),
+                            selectedPlatform: gameData.mapPlatform(game.platforms ? game.platforms.map(p => ({ platform: { name: p.name } })) : [])
+                        };
+                    });
+                } else {
+                    searchResults.value = [];
+                }
+            } else if (settings.gameApiProvider.value === 'rawg' && settings.apiKey.value) {
+                const response = await fetch(`https://api.rawg.io/api/games?key=${settings.apiKey.value}&search=${encodeURIComponent(query)}&page_size=10`);
+                if (response.ok) {
+                    const data = await response.json();
+                    searchResults.value = (data.results || []).map(game => ({
+                        ...game,
+                        selectedPlatform: gameData.mapPlatform(game.parent_platforms || game.platforms)
+                    }));
+                } else {
+                    searchResults.value = [];
+                }
+            } else {
+                searchResults.value = [];
+            }
         } catch (error) {
             console.error('Search failed', error);
             searchResults.value = [];
@@ -249,6 +628,9 @@ export function useGames() {
     return {
         // Settings
         apiKey: settings.apiKey,
+        gameApiProvider: settings.gameApiProvider,
+        igdbClientId: settings.igdbClientId,
+        igdbAccessToken: settings.igdbAccessToken,
         setApiKey: settings.setApiKey,
         themeColor: settings.themeColor,
         setTheme: settings.setTheme,
@@ -296,12 +678,15 @@ export function useGames() {
         addGame,
         removeGame,
         updateStatus,
+        toggleAdditionStatus,
         refreshGame,
+        fetchGameDetailsOnly,
         ignoreGame,
         unignoreGame,
+        fetchGameImages,
 
         // Actions (Direct)
-        updateGame: gameData.updateGame,
+        updateGame: gameData.updateGame, // Map directly to raw update for simple edits
         rateGame: gameData.rateGame,
 
         // Comprehensive Export

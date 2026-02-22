@@ -38,7 +38,7 @@ const currentTab = ref('dashboard');
 const displayGames = computed(() => {
     switch(currentTab.value) {
         case 'dashboard': return getProcessedGames(playingGames.value);
-        case 'backlog': return getProcessedGames(backlogGames.value);
+        case 'backlog': return getProcessedGames(backlogGames.value, { separateUnreleased: true });
         case 'completed': return getProcessedGames(completedGames.value);
         case 'dropped': return getProcessedGames(droppedGames.value);
         default: return [];
@@ -207,6 +207,7 @@ const logoPath = `${import.meta.env.BASE_URL}logo.png`;
           title="Backlog"
           empty-message="Your backlog is empty. Time to find new games!"
           :search-query="localSearchQuery"
+          :show-unreleased-separator="true"
           @click-game="openGameDetails"
           @update-status="updateStatus"
           @delete-game="confirmDelete"

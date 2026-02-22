@@ -145,6 +145,26 @@ const setAiProvider = (provider) => {
     localStorage.setItem('game-tracker-ai-provider', provider);
 };
 
+// Game API Settings
+const gameApiProvider = ref(localStorage.getItem('game-tracker-game-api-provider') || 'rawg'); // 'rawg' or 'igdb'
+const igdbClientId = ref(localStorage.getItem('game-tracker-igdb-client-id') || '');
+const igdbAccessToken = ref(localStorage.getItem('game-tracker-igdb-access-token') || '');
+
+const setGameApiProvider = (provider) => {
+    gameApiProvider.value = provider;
+    localStorage.setItem('game-tracker-game-api-provider', provider);
+};
+
+const setIgdbClientId = (id) => {
+    igdbClientId.value = id;
+    localStorage.setItem('game-tracker-igdb-client-id', id);
+};
+
+const setIgdbAccessToken = (token) => {
+    igdbAccessToken.value = token;
+    localStorage.setItem('game-tracker-igdb-access-token', token);
+};
+
 const hiddenGemsMode = ref(localStorage.getItem('game-tracker-hidden-gems') === 'true');
 
 watch(hiddenGemsMode, (newVal) => {
@@ -169,6 +189,12 @@ export function useSettings() {
         THEMES,
         applyTheme,
         setApiKey,
+        gameApiProvider,
+        igdbClientId,
+        igdbAccessToken,
+        setGameApiProvider,
+        setIgdbClientId,
+        setIgdbAccessToken,
         setGeminiKey,
         setGroqKey,
         setTavilyKey,

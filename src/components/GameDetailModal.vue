@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue';
-import { X, Calendar, Gamepad2, Globe, Star, Play, Check, Trash2, Timer, Ban, Layers, PenLine, Share2 } from 'lucide-vue-next';
+import { X, Calendar, Gamepad2, Globe, Star, Play, Check, Trash2, Timer, Ban, Layers, PenLine, Share2, Plus, CheckCircle2, Circle, Loader2, RefreshCw } from 'lucide-vue-next';
 import { useGames } from '../composables/useGames';
 import { useModals } from '../composables/useModals';
 import { useShop } from '../composables/useShop';
@@ -15,25 +15,135 @@ const props = defineProps({
     type: Number,
     default: null
   },
+  dynamicGame: {
+      type: Object,
+      default: null
+  },
+  parentId: {
+      type: Number,
+      default: null
+  },
   isOpen: Boolean
 });
 
 const emit = defineEmits(['close', 'update-status', 'delete']);
 
-const { games, rateGame, updateGame } = useGames();
+const { games, rateGame, updateGame, toggleAdditionStatus, fetchGameDetailsOnly } = useGames();
 const { getEquippedItem } = useShop();
 const { getCardClasses } = useCardStyles();
 const { shareGame, showShareFeedback } = useShare();
-const { activeModal } = useModals();
+const { activeModal, openModal } = useModals();
 
 const equippedStyle = computed(() => getEquippedItem('card_style')?.value);
 
 // Use computed for gameDetails to ensure immediate availability on mount
 const gameDetails = computed(() => {
+    if (props.dynamicGame) return props.dynamicGame;
     return games.value.find(g => g.id === props.gameId);
 });
 
+const parentGameDetails = computed(() => {
+    if (props.parentId) return games.value.find(g => g.id === props.parentId);
+    return gameDetails.value;
+});
+
 const showEditModal = ref(false);
+const isFetchingDynamic = ref(false);
+
+const openDynamicAddition = async (id, name) => {
+    if (isFetchingDynamic.value) return;
+    
+    // Check if we already cached the full details in the parent game's memory
+    const parent = parentGameDetails.value;
+    const cachedAddition = parent?.additions?.find(a => a.id === id);
+    if (cachedAddition && cachedAddition.fullDetailsLoaded) {
+        openModal('gameDetail', { dynamicGame: cachedAddition, parentId: parent?.id });
+        return;
+    }
+
+    isFetchingDynamic.value = true;
+    const dynamicData = await fetchGameDetailsOnly(id);
+    isFetchingDynamic.value = false;
+    
+    if (dynamicData) {
+        dynamicData.fullDetailsLoaded = true;
+        
+        // Inject locally saved rating if it exists
+        const localAdditionStatus = parent?.owned_additions?.find(a => (typeof a === 'object' ? a.id === id : a === id));
+        if (typeof localAdditionStatus === 'object' && localAdditionStatus.rating) {
+            dynamicData.rating = localAdditionStatus.rating;
+        } else {
+            dynamicData.rating = 0;
+        }
+
+        // Cache it in the parent game's `additions` list for the duration of the session
+        if (parent && parent.additions) {
+            const index = parent.additions.findIndex(a => a.id === id);
+            if (index !== -1) {
+                parent.additions[index] = { ...parent.additions[index], ...dynamicData };
+                updateGame(parent.id, { additions: [...parent.additions] });
+            }
+        }
+        openModal('gameDetail', { dynamicGame: dynamicData, parentId: parent?.id });
+    } else {
+        // Fallback to searching manually if deep API fails
+        emit('close');
+        setTimeout(() => openModal('addGame', { initialSearch: name }), 150);
+    }
+};
+
+const handleRate = (star) => {
+    if (props.dynamicGame && parentGameDetails.value) {
+        const additionId = props.dynamicGame.id;
+        // Emit an event or call useGames (we will add rateNestedAddition to useGames)
+        if (props.dynamicGame.rating === star) return;
+        
+        // Optimistic UI update
+        props.dynamicGame.rating = star;
+
+        // Sync with parent
+        const parent = parentGameDetails.value;
+        if (!parent.owned_additions) parent.owned_additions = [];
+        
+        // Ensure it's in object format
+        parent.owned_additions = parent.owned_additions.map(item => {
+            if (typeof item !== 'object') return { id: item, status: 'owned', rating: 0 };
+            return item;
+        });
+        
+        const index = parent.owned_additions.findIndex(a => a.id === additionId);
+        if (index === -1) {
+            // Implicitly mark as owned if they rate it? The user might just be rating an unowned game?
+            // Actually, normally you only rate owned games.
+            parent.owned_additions.push({ id: additionId, status: 'owned', rating: star });
+        } else {
+            parent.owned_additions[index].rating = star;
+        }
+        
+        updateGame(parent.id, { owned_additions: [...parent.owned_additions] });
+    } else {
+        rateGame(props.gameId, star);
+    }
+};
+
+const toggleNestedAddition = (additionId, event) => {
+    if (event) event.stopPropagation();
+    if(parentGameDetails.value) {
+        toggleAdditionStatus(parentGameDetails.value.id, additionId);
+    }
+};
+
+const getAdditionStatus = (additionId) => {
+    const parent = parentGameDetails.value;
+    if (!parent || !parent.owned_additions) return 'unowned';
+    
+    // Check if it's the old flat array format for safety
+    const addition = parent.owned_additions.find(a => (typeof a === 'object' ? a.id === additionId : a === additionId));
+    
+    if (!addition) return 'unowned';
+    if (typeof addition !== 'object') return 'owned'; // Legacy
+    return addition.status;
+};
 
 const formatDate = (dateString) => {
   if (!dateString) return 'N/A';
@@ -49,8 +159,9 @@ const calculateDaysPlayed = (startDate) => {
 };
 
 const isOwnedPlatform = (platformName) => {
-    if (!gameDetails.value || !gameDetails.value.platform) return false;
-    const owned = gameDetails.value.platform.toLowerCase();
+    const sourceGame = props.dynamicGame ? parentGameDetails.value : gameDetails.value;
+    if (!sourceGame || !sourceGame.platform) return false;
+    const owned = sourceGame.platform.toLowerCase();
     const current = platformName.toLowerCase();
     
     if (owned === current) return true;
@@ -98,6 +209,9 @@ const handleAction = async (action, val) => {
 
             <!-- Controls (Custom placement inside card) -->
             <div class="absolute top-4 right-14 z-50 flex items-center gap-2">
+                <button @click="openModal('refreshGame', { gameId: gameDetails.id })" class="bg-black/50 p-2 rounded-full hover:bg-black/70 text-white transition-colors active:scale-95" title="Update or Sync Game Data">
+                    <RefreshCw class="w-5 h-5" />
+                </button>
                 <button @click="showEditModal = true" class="bg-black/50 p-2 rounded-full hover:bg-black/70 text-white transition-colors active:scale-95" title="Edit Game Details">
                     <PenLine class="w-5 h-5" />
                 </button>
@@ -127,7 +241,7 @@ const handleAction = async (action, val) => {
                        <button 
                         v-for="star in 5" 
                         :key="star" 
-                        @click.stop="rateGame(gameId, star)"
+                        @click.stop="handleRate(star)"
                         class="transition-transform active:scale-110 focus:outline-none hover:scale-110"
                        >
                            <Star 
@@ -223,12 +337,67 @@ const handleAction = async (action, val) => {
                       </a>
                   </div>
 
+                  <!-- Row 4: DLCs & Expansions -->
+                  <div v-if="gameDetails.additions && gameDetails.additions.length > 0" class="pt-4 border-t border-white/10 mt-4">
+                      <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">DLCs & Expansions</h4>
+                      <div class="flex overflow-x-auto gap-4 custom-scrollbar pb-4 snap-x relative">
+                          <div 
+                              v-for="addition in gameDetails.additions" 
+                              :key="addition.id"
+                              @click="openDynamicAddition(addition.id, addition.name)"
+                              class="flex-shrink-0 w-28 snap-start group cursor-pointer"
+                          >
+                              <div 
+                                  class="relative aspect-[3/4] rounded-lg overflow-hidden border mb-2 bg-gray-900 transition-all duration-300"
+                                  :class="getAdditionStatus(addition.id) === 'finished' ? 'border-green-500 shadow-[0_0_15px_rgba(34,197,94,0.3)] opacity-100' : getAdditionStatus(addition.id) === 'owned' ? 'border-primary shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)] opacity-100' : 'border-white/10 opacity-100'"
+                              >
+                                  <img :src="addition.background_image" v-if="addition.background_image" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                                  <div v-else class="w-full h-full bg-gray-800 flex items-center justify-center">
+                                      <Gamepad2 class="w-8 h-8 text-gray-600" />
+                                  </div>
+                                  
+                                  <!-- Owned Toggle Badge (View Only) -->
+                                  <div 
+                                      v-if="getAdditionStatus(addition.id) !== 'unowned'"
+                                      class="absolute top-2 right-2 rounded-full bg-black/60 backdrop-blur-md p-1 z-10"
+                                      :title="getAdditionStatus(addition.id) === 'finished' ? 'Expansion Finished' : 'Expansion Owned'"
+                                  >
+                                      <CheckCircle2 v-if="getAdditionStatus(addition.id) === 'finished'" class="w-5 h-5 text-green-400 drop-shadow-[0_0_5px_rgba(34,197,94,0.5)]" />
+                                      <Plus v-else-if="getAdditionStatus(addition.id) === 'owned'" class="w-5 h-5 text-primary drop-shadow-[0_0_5px_rgba(var(--primary-rgb),0.5)]" />
+                                  </div>
+                                  
+                              </div>
+                              <h5 class="text-xs font-bold line-clamp-2 leading-tight group-hover:text-primary transition-colors leading-snug" :class="getAdditionStatus(addition.id) !== 'unowned' ? 'text-white' : 'text-gray-400'">{{ addition.name }}</h5>
+                              <p class="text-[10px] text-gray-500 mt-1 uppercase tracking-wider font-semibold">{{ addition.type }} {{ addition.released ? '• ' + addition.released.substring(0,4) : '' }}</p>
+                          </div>
+                      </div>
+                  </div>
+
                </div>
 
             </div>
 
-            <!-- Footer Actions -->
-            <div class="p-4 border-t border-white/10 bg-gray-900/60 backdrop-blur flex items-center gap-3">
+            <!-- Loading Overlay -->
+            <div v-if="isFetchingDynamic" class="absolute inset-0 bg-gray-900/80 backdrop-blur-sm flex items-center justify-center z-50">
+                <Loader2 class="w-12 h-12 text-primary animate-spin" />
+            </div>
+
+            <!-- Dynamic DLC Footer Actions -->
+            <div v-if="dynamicGame" class="p-4 border-t border-white/10 bg-gray-900/60 backdrop-blur flex items-center justify-center gap-3">
+                <button @click="toggleNestedAddition(dynamicGame.id)" 
+                        class="w-full py-4 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-transform active:scale-95 shadow-lg border border-white/10"
+                        :class="getAdditionStatus(dynamicGame.id) === 'finished' ? 'bg-green-600 hover:bg-green-500 text-white' : getAdditionStatus(dynamicGame.id) === 'owned' ? 'bg-primary hover:bg-primary/90 text-white' : 'bg-gray-800 hover:bg-gray-700 text-gray-300'">
+                    
+                    <CheckCircle2 v-if="getAdditionStatus(dynamicGame.id) === 'finished'" class="w-6 h-6" />
+                    <Plus v-else-if="getAdditionStatus(dynamicGame.id) === 'owned'" class="w-6 h-6" />
+                    <Circle v-else class="w-6 h-6" />
+                    
+                    <span class="text-lg uppercase tracking-wider">{{ getAdditionStatus(dynamicGame.id) === 'finished' ? 'Expansion Finished' : getAdditionStatus(dynamicGame.id) === 'owned' ? 'Expansion Owned' : 'Mark as Owned' }}</span>
+                </button>
+            </div>
+
+            <!-- Standard Footer Actions -->
+            <div v-else class="p-4 border-t border-white/10 bg-gray-900/60 backdrop-blur flex items-center gap-3">
                  <button @click="handleAction('update-status', 'playing')" class="flex-1 bg-primary hover:bg-primary/90 text-white py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-transform active:scale-95 shadow-lg border border-white/10">
                     <Play class="w-5 h-5" /> Playing
                 </button>

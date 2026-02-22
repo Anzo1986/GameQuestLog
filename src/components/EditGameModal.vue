@@ -1,6 +1,6 @@
 <script setup>
 import { ref, watch, computed } from 'vue';
-import { X, Save, ImageIcon, Calendar, Gamepad2, Tag, Check } from 'lucide-vue-next';
+import { X, Save, ImageIcon, Calendar, Gamepad2, Tag, Check, Search, Loader2 } from 'lucide-vue-next';
 import { useGames } from '../composables/useGames';
 import { GENRES } from '../constants/genres';
 import BaseModal from './BaseModal.vue';
@@ -15,7 +15,7 @@ const props = defineProps({
 
 const emit = defineEmits(['close']);
 
-const { updateGame, PLATFORMS } = useGames();
+const { updateGame, PLATFORMS, fetchGameImages, gameApiProvider } = useGames();
 
 const form = ref({
     name: '',
@@ -26,6 +26,9 @@ const form = ref({
 });
 
 const showGenreDropdown = ref(false);
+const showGallery = ref(false);
+const isFetchingImages = ref(false);
+const galleryImages = ref([]);
 
 watch(() => props.isOpen, (newVal) => {
   if (newVal && props.game) {
@@ -38,6 +41,8 @@ watch(() => props.isOpen, (newVal) => {
         // Let's store as simple array of names locally for easier handling
         genres: props.game.genres ? props.game.genres.map(g => g.name) : []
     };
+    showGallery.value = false;
+    galleryImages.value = [];
   }
 });
 
@@ -47,6 +52,28 @@ const toggleGenre = (genre) => {
     } else {
         form.value.genres.push(genre);
     }
+};
+
+const openGallery = async () => {
+    if (!props.game || isFetchingImages.value) return;
+    
+    // Toggle close if already open
+    if (showGallery.value) {
+        showGallery.value = false;
+        return;
+    }
+    
+    // Open and fetch if empty
+    showGallery.value = true;
+    if (galleryImages.value.length === 0) {
+        isFetchingImages.value = true;
+        galleryImages.value = await fetchGameImages(props.game.id);
+        isFetchingImages.value = false;
+    }
+};
+
+const selectGalleryImage = (hiresUrl) => {
+    form.value.background_image = hiresUrl;
 };
 
 const saveChanges = () => {
@@ -86,9 +113,38 @@ const saveChanges = () => {
           </div>
 
           <div class="space-y-2">
-              <label class="text-sm font-medium text-gray-400 flex items-center gap-2">
-                  <ImageIcon class="w-4 h-4" /> Cover Image URL
+              <label class="text-sm font-medium text-gray-400 flex items-center justify-between">
+                  <span class="flex items-center gap-2"><ImageIcon class="w-4 h-4" /> Cover Image URL</span>
+                  <button 
+                    v-if="gameApiProvider === 'igdb'"
+                    @click="openGallery" 
+                    class="flex items-center gap-1.5 px-2 py-1 rounded bg-primary/20 text-primary hover:bg-primary hover:text-white transition-colors text-xs font-bold"
+                  >
+                      <Search class="w-3.5 h-3.5" /> Search Gallery
+                  </button>
               </label>
+              
+              <!-- Image Gallery UI -->
+              <div v-if="showGallery" class="bg-gray-900 border border-gray-700 rounded-lg p-3 mb-2 animate-in slide-in-from-top-2 duration-200">
+                  <div v-if="isFetchingImages" class="flex flex-col items-center justify-center p-6 text-gray-500">
+                      <Loader2 class="w-6 h-6 animate-spin mb-2 text-primary" />
+                      <span class="text-xs">Fetching high-res images...</span>
+                  </div>
+                  <div v-else-if="galleryImages.length > 0" class="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto custom-scrollbar pr-1">
+                      <img 
+                          v-for="img in galleryImages" 
+                          :key="img.id" 
+                          :src="img.thumb" 
+                          @click="selectGalleryImage(img.hires)"
+                          class="w-full aspect-video object-cover rounded cursor-pointer border-2 hover:scale-105 transition-all"
+                          :class="form.background_image === img.hires ? 'border-primary shadow-[0_0_10px_rgba(var(--primary-rgb),0.5)]' : 'border-transparent opacity-70 hover:opacity-100'"
+                      />
+                  </div>
+                  <div v-else class="text-xs text-gray-500 text-center p-4">
+                      No alternate artworks or screenshots found for this game.
+                  </div>
+              </div>
+
               <input 
                 v-model="form.background_image" 
                 class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-primary outline-none transition-all placeholder-gray-600 active:scale-[0.99]"

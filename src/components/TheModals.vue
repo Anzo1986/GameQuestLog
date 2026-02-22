@@ -18,6 +18,7 @@ import DailyLoginModal from './DailyLoginModal.vue';
 import ConfirmModal from './ConfirmModal.vue';
 import AIQuestModal from './AIQuestModal.vue';
 import PromptModal from './PromptModal.vue';
+import RefreshGameModal from './RefreshGameModal.vue';
 
 const { activeModal, modalProps, openModal } = useModals(); // Added openModal
 const { updateStatus, removeGame, userLevel, userTitle, games } = useGames();
@@ -73,12 +74,21 @@ onUnmounted(() => {
 
 <template>
   <div>
-    <AddGameModal :is-open="activeModal === 'addGame'" @close="handleClose" />
+    <AddGameModal :is-open="activeModal === 'addGame'" :initial-search="modalProps?.initialSearch" @close="handleClose" />
+
+    <RefreshGameModal
+      v-if="activeModal === 'refreshGame'"
+      :is-open="true"
+      :game-id="modalProps.gameId"
+      @close="handleClose"
+    />
 
     <GameDetailModal 
       v-if="activeModal === 'gameDetail'" 
       :is-open="true"
       :game-id="modalProps.gameId" 
+      :dynamic-game="modalProps.dynamicGame"
+      :parent-id="modalProps.parentId"
       @close="handleClose"
       @update-status="modalProps.onUpdateStatus" 
       @delete="confirmDelete"

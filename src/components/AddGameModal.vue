@@ -6,12 +6,16 @@ import { GENRES } from '../constants/genres';
 import BaseModal from './BaseModal.vue';
 
 const props = defineProps({
-  isOpen: Boolean
+  isOpen: Boolean,
+  initialSearch: {
+      type: String,
+      default: ''
+  }
 });
 
 const emit = defineEmits(['close']);
 
-const { searchQuery, searchResults, isSearching, searchGames, addGame, apiKey, PLATFORMS } = useGames();
+const { searchQuery, searchResults, isSearching, searchGames, addGame, apiKey, gameApiProvider, igdbClientId, igdbAccessToken, PLATFORMS } = useGames();
 const inputRef = ref(null);
 const manualInputRef = ref(null);
 
@@ -30,6 +34,14 @@ watch(() => props.isOpen, (newVal) => {
   if (newVal) {
     showManualForm.value = false;
     manualForm.value = { name: '', image: '', releaseDate: '', platform: 'PC', genres: [] };
+    
+    if (props.initialSearch) {
+        searchQuery.value = props.initialSearch;
+    } else {
+        searchQuery.value = '';
+        searchResults.value = [];
+    }
+
     setTimeout(() => inputRef.value?.focus(), 100);
   } else {
     searchQuery.value = '';
@@ -249,8 +261,8 @@ const handleAdd = (game) => {
           </div>
 
           <!-- No API Key Warning -->
-           <div v-else-if="!apiKey" class="p-8 text-center text-gray-400">
-              <p>Please configure your API Key in settings first.</p>
+           <div v-else-if="(gameApiProvider === 'rawg' && !apiKey) || (gameApiProvider === 'igdb' && (!igdbClientId || !igdbAccessToken))" class="p-8 text-center text-gray-400">
+              <p>Please configure your {{ gameApiProvider === 'rawg' ? 'RAWG API Key' : 'IGDB API Keys' }} in settings first.</p>
               <p class="text-sm mt-2 text-gray-500">Or use the manual add button above.</p>
            </div>
 
