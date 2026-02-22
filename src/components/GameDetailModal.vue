@@ -198,20 +198,20 @@ const getWebsiteDisplayInfo = (url) => {
         const urlObj = new URL(url);
         const hostname = urlObj.hostname.toLowerCase();
         
-        if (hostname.includes('youtube.com') || hostname.includes('youtu.be')) return { label: 'YouTube', icon: Youtube };
-        if (hostname.includes('twitch.tv')) return { label: 'Twitch', icon: Twitch };
-        if (hostname.includes('wikipedia.org')) return { label: 'Wikipedia', icon: Book };
-        if (hostname.includes('steampowered.com') || hostname.includes('steamcommunity.com')) return { label: 'Steam', icon: ShoppingCart };
-        if (hostname.includes('epicgames.com')) return { label: 'Epic Games', icon: ShoppingCart };
-        if (hostname.includes('gog.com')) return { label: 'GOG', icon: ShoppingCart };
-        if (hostname.includes('playstation.com')) return { label: 'PlayStation', icon: Globe };
-        if (hostname.includes('xbox.com')) return { label: 'Xbox', icon: Globe };
-        if (hostname.includes('nintendo.com')) return { label: 'Nintendo', icon: Globe };
-        if (hostname.includes('instagram.com')) return { label: 'Instagram', icon: Globe };
-        if (hostname.includes('twitter.com') || hostname.includes('x.com')) return { label: 'X (Twitter)', icon: Globe };
-        if (hostname.includes('facebook.com')) return { label: 'Facebook', icon: Globe };
-        if (hostname.includes('discord.com') || hostname.includes('discord.gg')) return { label: 'Discord', icon: Globe };
-        if (hostname.includes('reddit.com')) return { label: 'Reddit', icon: Globe };
+        if (hostname.includes('youtube.com') || hostname.includes('youtu.be')) return { url, label: 'YouTube', icon: Youtube };
+        if (hostname.includes('twitch.tv')) return { url, label: 'Twitch', icon: Twitch };
+        if (hostname.includes('wikipedia.org')) return { url, label: 'Wikipedia', icon: Book };
+        if (hostname.includes('steampowered.com') || hostname.includes('steamcommunity.com')) return { url, label: 'Steam', icon: ShoppingCart };
+        if (hostname.includes('epicgames.com')) return { url, label: 'Epic Games', icon: ShoppingCart };
+        if (hostname.includes('gog.com')) return { url, label: 'GOG', icon: ShoppingCart };
+        if (hostname.includes('playstation.com')) return { url, label: 'PlayStation', icon: Globe };
+        if (hostname.includes('xbox.com')) return { url, label: 'Xbox', icon: Globe };
+        if (hostname.includes('nintendo.com')) return { url, label: 'Nintendo', icon: Globe };
+        if (hostname.includes('instagram.com')) return { url, label: 'Instagram', icon: Globe };
+        if (hostname.includes('twitter.com') || hostname.includes('x.com')) return { url, label: 'X (Twitter)', icon: Globe };
+        if (hostname.includes('facebook.com')) return { url, label: 'Facebook', icon: Globe };
+        if (hostname.includes('discord.com') || hostname.includes('discord.gg')) return { url, label: 'Discord', icon: Globe };
+        if (hostname.includes('reddit.com')) return { url, label: 'Reddit', icon: Globe };
 
         return { url, label: 'Website', icon: Globe };
     } catch {
