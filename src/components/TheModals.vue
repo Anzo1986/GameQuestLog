@@ -20,7 +20,7 @@ import AIQuestModal from './AIQuestModal.vue';
 import PromptModal from './PromptModal.vue';
 import RefreshGameModal from './RefreshGameModal.vue';
 
-const { activeModal, modalProps, openModal } = useModals(); // Added openModal
+const { activeModal, modalProps, openModal, resetModal } = useModals(); // Added openModal and resetModal
 const { updateStatus, removeGame, userLevel, userTitle, games } = useGames();
 
 // Confirm Delete from Modals
@@ -35,11 +35,7 @@ const confirmDelete = (gameId) => {
         confirmColor: 'bg-red-500 hover:bg-red-600',
         onConfirm: () => {
             removeGame(gameId);
-            // Close detail modal too if open? 
-            // openModal replaces current modal, so detail is already closed/hidden.
-            // But if we want to go back? 
-            // Actually openModal pushes to stack? No, useModals is simple state replacement in current impl?
-            // Let's check useModals.js later. Assuming simple replacement for now.
+            resetModal();
         }
     });
 };

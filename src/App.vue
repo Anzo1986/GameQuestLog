@@ -59,7 +59,10 @@ const confirmDelete = (gameId) => {
         message: `Are you sure you want to delete "${game.title}"? This action cannot be undone and will remove all associated XP and progress.`,
         confirmText: 'Delete',
         confirmColor: 'bg-red-500 hover:bg-red-600',
-        onConfirm: () => removeGame(gameId)
+        onConfirm: () => {
+            removeGame(gameId);
+            resetModal();
+        }
     });
 };
 
