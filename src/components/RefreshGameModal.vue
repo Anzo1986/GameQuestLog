@@ -239,7 +239,7 @@ const applyUpdates = () => {
                 <!-- Cover Image Selection -->
                 <div class="flex flex-col gap-2 p-4 bg-gray-900 rounded-xl border border-white/10 hover:border-white/20 transition-colors">
                     <label class="flex gap-3 cursor-pointer select-none" :class="{ 'ring-1 ring-primary border-primary rounded-lg': updateSelection.cover }">
-                        <div class="pt-0.5" @click="updateSelection.cover = !updateSelection.cover">
+                        <div class="pt-0.5">
                             <div class="w-5 h-5 rounded border border-gray-600 flex items-center justify-center bg-gray-800" :class="{ 'bg-primary border-primary': updateSelection.cover }">
                                 <Check v-if="updateSelection.cover" class="w-3.5 h-3.5 text-white" />
                             </div>
@@ -247,7 +247,7 @@ const applyUpdates = () => {
                         </div>
                         <div class="flex-1 flex flex-col gap-2">
                              <div class="flex items-center justify-between">
-                                <h4 class="text-sm font-bold text-white flex items-center gap-2" @click="updateSelection.cover = !updateSelection.cover"><ImageIcon class="w-4 h-4 text-gray-400" /> Cover Art</h4>
+                                <h4 class="text-sm font-bold text-white flex items-center gap-2"><ImageIcon class="w-4 h-4 text-gray-400" /> Cover Art</h4>
                                 <button 
                                     v-if="gameApiProvider === 'igdb'"
                                     @click.prevent="openGallery" 
@@ -257,7 +257,7 @@ const applyUpdates = () => {
                                 </button>
                             </div>
                             
-                            <div class="flex items-center gap-3" @click="updateSelection.cover = !updateSelection.cover">
+                            <div class="flex items-center gap-3">
                                 <img v-if="currentGame?.background_image" :src="currentGame.background_image" class="w-12 h-16 object-cover rounded shadow opacity-50 grayscale" />
                                 <span class="text-gray-500 font-bold">➔</span>
                                 <img v-if="newGameDetails.background_image" :src="newGameDetails.background_image" class="w-12 h-16 object-cover rounded shadow-lg border border-primary/50" />

@@ -213,9 +213,9 @@ const getWebsiteDisplayInfo = (url) => {
         if (hostname.includes('discord.com') || hostname.includes('discord.gg')) return { label: 'Discord', icon: Globe };
         if (hostname.includes('reddit.com')) return { label: 'Reddit', icon: Globe };
 
-        return { label: 'Official Website', icon: Globe };
+        return { label: 'Website', icon: Globe };
     } catch {
-        return { label: 'Official Website', icon: Globe };
+        return { label: 'Website', icon: Globe };
     }
 };
 
