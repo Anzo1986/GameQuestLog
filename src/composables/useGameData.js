@@ -126,14 +126,14 @@ export function useGameData() {
     });
 
     const updateGame = (id, updates) => {
-        const game = games.value.find(g => g.id === id);
+        const game = games.value.find(g => Number(g.id) === Number(id));
         if (game) {
             Object.assign(game, updates);
         }
     };
 
     const rateGame = (id, rating) => {
-        const game = games.value.find(g => g.id === id);
+        const game = games.value.find(g => Number(g.id) === Number(id));
         if (game) {
             game.rating = rating;
         }
@@ -146,14 +146,14 @@ export function useGameData() {
 
     // Low-level add (just data)
     const addGameRaw = (newGame) => {
-        if (games.value.some(g => g.id === newGame.id)) return false;
+        if (games.value.some(g => Number(g.id) === Number(newGame.id))) return false;
         games.value.push(newGame);
         return true;
     };
 
     // Low-level remove
     const removeGameRaw = (id) => {
-        games.value = games.value.filter(g => g.id !== id);
+        games.value = games.value.filter(g => Number(g.id) !== Number(id));
     };
 
     const importData = (file) => {

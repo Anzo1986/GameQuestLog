@@ -106,6 +106,26 @@ export function useGames() {
             }));
     };
 
+    // Helper: Fetch RAWG Additions (DLCs)
+    const fetchRAWGAdditions = async (gameId) => {
+        if (!settings.apiKey.value) return [];
+        try {
+            const response = await fetch(`https://api.rawg.io/api/games/${gameId}/additions?key=${settings.apiKey.value}`);
+            if (response.ok) {
+                const data = await response.json();
+                return (data.results || []).map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    released: item.released,
+                    background_image: item.background_image
+                }));
+            }
+        } catch (e) {
+            console.error('Failed to fetch RAWG additions', e);
+        }
+        return [];
+    };
+
     // Add Game Wrapper (Data + Gamification + API Fetch)
     const addGame = async (newGameData, platform = 'PC') => {
         // Prepare Basic Object
@@ -183,9 +203,13 @@ export function useGames() {
                 if (response.ok) {
                     const details = await response.json();
 
+                    // Fetch additions separately for RAWG
+                    const additions = await fetchRAWGAdditions(newGameData.id);
+
                     // Update via gameData
                     gameData.updateGame(newGameData.id, {
                         ...details,
+                        additions,
                         // Preserve local state
                         status: GAME_STATUS.BACKLOG,
                         platform: platform,
@@ -412,8 +436,13 @@ export function useGames() {
                 const response = await fetch(`https://api.rawg.io/api/games/${id}?key=${settings.apiKey.value}`);
                 if (response.ok) {
                     const details = await response.json();
+
+                    // Fetch additions separately for RAWG
+                    const additions = await fetchRAWGAdditions(id);
+
                     gameData.updateGame(id, {
                         ...details,
+                        additions,
                         status: game.status,
                         platform: game.platform,
                         rating: game.rating,
@@ -472,7 +501,15 @@ export function useGames() {
             try {
                 const response = await fetch(`https://api.rawg.io/api/games/${id}?key=${settings.apiKey.value}`);
                 if (response.ok) {
-                    return await response.json();
+                    const details = await response.json();
+
+                    // Fetch additions separately for RAWG
+                    const additions = await fetchRAWGAdditions(id);
+
+                    return {
+                        ...details,
+                        additions
+                    };
                 }
             } catch (e) {
                 console.error('Failed to fetch deep details from RAWG', e);
