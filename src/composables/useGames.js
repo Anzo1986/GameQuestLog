@@ -102,7 +102,7 @@ export function useGames() {
                 id: item.id,
                 name: item.name,
                 released: item.first_release_date ? new Date(item.first_release_date * 1000).toISOString().split('T')[0] : null,
-                background_image: item.cover ? `https://images.igdb.com/igdb/image/upload/t_1080p/${item.cover.image_id}.jpg` : null
+                cover_image: item.cover ? `https://images.igdb.com/igdb/image/upload/t_1080p/${item.cover.image_id}.jpg` : null
             }));
     };
 
@@ -117,7 +117,7 @@ export function useGames() {
                     id: item.id,
                     name: item.name,
                     released: item.released,
-                    background_image: item.background_image
+                    cover_image: item.background_image
                 }));
             }
         } catch (e) {
