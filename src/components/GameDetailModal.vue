@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue';
-import { X, Calendar, Gamepad2, Globe, Star, Play, Check, Trash2, Timer, Ban, Layers, PenLine, Share2, Plus, CheckCircle2, Circle, Loader2, RefreshCw } from 'lucide-vue-next';
+import { X, Calendar, Gamepad2, Globe, Star, Play, Check, Trash2, Timer, Ban, Layers, PenLine, Share2, Plus, CheckCircle2, Circle, Loader2, RefreshCw, MoreVertical, Youtube, Twitch, Book, ShoppingCart } from 'lucide-vue-next';
 import { useGames } from '../composables/useGames';
 import { useModals } from '../composables/useModals';
 import { useShop } from '../composables/useShop';
@@ -48,6 +48,7 @@ const parentGameDetails = computed(() => {
 });
 
 const showEditModal = ref(false);
+const showDropdown = ref(false);
 const isFetchingDynamic = ref(false);
 
 const openDynamicAddition = async (id, name) => {
@@ -190,6 +191,36 @@ const handleAction = async (action, val) => {
         }
     }
 }
+
+const getWebsiteDisplayInfo = (url) => {
+    if (!url) return null;
+    try {
+        const urlObj = new URL(url);
+        const hostname = urlObj.hostname.toLowerCase();
+        
+        if (hostname.includes('youtube.com') || hostname.includes('youtu.be')) return { label: 'YouTube', icon: Youtube };
+        if (hostname.includes('twitch.tv')) return { label: 'Twitch', icon: Twitch };
+        if (hostname.includes('wikipedia.org')) return { label: 'Wikipedia', icon: Book };
+        if (hostname.includes('steampowered.com') || hostname.includes('steamcommunity.com')) return { label: 'Steam', icon: ShoppingCart };
+        if (hostname.includes('epicgames.com')) return { label: 'Epic Games', icon: ShoppingCart };
+        if (hostname.includes('gog.com')) return { label: 'GOG', icon: ShoppingCart };
+        if (hostname.includes('playstation.com')) return { label: 'PlayStation', icon: Globe };
+        if (hostname.includes('xbox.com')) return { label: 'Xbox', icon: Globe };
+        if (hostname.includes('nintendo.com')) return { label: 'Nintendo', icon: Globe };
+        if (hostname.includes('instagram.com')) return { label: 'Instagram', icon: Globe };
+        if (hostname.includes('twitter.com') || hostname.includes('x.com')) return { label: 'X (Twitter)', icon: Globe };
+        if (hostname.includes('facebook.com')) return { label: 'Facebook', icon: Globe };
+        if (hostname.includes('discord.com') || hostname.includes('discord.gg')) return { label: 'Discord', icon: Globe };
+        if (hostname.includes('reddit.com')) return { label: 'Reddit', icon: Globe };
+
+        return { label: 'Official Website', icon: Globe };
+    } catch {
+        return { label: 'Official Website', icon: Globe };
+    }
+};
+
+const websiteInfo = computed(() => getWebsiteDisplayInfo(gameDetails.value?.website));
+
 </script>
 
 <template>
@@ -217,16 +248,37 @@ const handleAction = async (action, val) => {
 
             <!-- Controls (Custom placement inside card) -->
             <div class="absolute top-4 right-14 z-50 flex items-center gap-2">
-                <button @click="openModal('refreshGame', { gameId: gameDetails.id })" class="bg-black/50 p-2 rounded-full hover:bg-black/70 text-white transition-colors active:scale-95" title="Update or Sync Game Data">
-                    <RefreshCw class="w-5 h-5" />
-                </button>
-                <button @click="showEditModal = true" class="bg-black/50 p-2 rounded-full hover:bg-black/70 text-white transition-colors active:scale-95" title="Edit Game Details">
-                    <PenLine class="w-5 h-5" />
-                </button>
                 <div class="relative">
-                    <button @click="shareGame(gameDetails)" class="bg-black/50 p-2 rounded-full hover:bg-black/70 text-white transition-colors active:scale-95" title="Share Game">
-                        <Share2 class="w-5 h-5" />
+                    <button @click="showDropdown = !showDropdown" class="bg-black/50 p-2 rounded-full hover:bg-black/70 text-white transition-colors active:scale-95 shadow-md" title="More Actions">
+                        <MoreVertical class="w-5 h-5" />
                     </button>
+                    
+                    <!-- Click-away overlay -->
+                    <div v-if="showDropdown" @click="showDropdown = false" class="fixed inset-0 z-[60]"></div>
+
+                    <!-- Dropdown Menu -->
+                    <div v-if="showDropdown" class="absolute right-0 mt-2 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-2xl z-[70] overflow-hidden py-1 animate-in fade-in slide-in-from-top-2 duration-200">
+                        <button 
+                            @click="showDropdown = false; openModal('refreshGame', { gameId: gameDetails.id })" 
+                            class="w-full text-left px-4 py-3 text-sm text-gray-200 hover:bg-gray-700/50 hover:text-white flex items-center gap-3 transition-colors"
+                        >
+                            <RefreshCw class="w-4 h-4 text-primary" /> Sync Data
+                        </button>
+                        <button 
+                            @click="showDropdown = false; showEditModal = true" 
+                            class="w-full text-left px-4 py-3 text-sm text-gray-200 hover:bg-gray-700/50 hover:text-white flex items-center gap-3 transition-colors"
+                        >
+                            <PenLine class="w-4 h-4 text-blue-400" /> Edit Game
+                        </button>
+                        <button 
+                            @click="showDropdown = false; shareGame(gameDetails)" 
+                            class="w-full text-left px-4 py-3 text-sm text-gray-200 hover:bg-gray-700/50 hover:text-white flex items-center gap-3 transition-colors"
+                        >
+                            <Share2 class="w-4 h-4 text-purple-400" /> Share Game
+                        </button>
+                    </div>
+
+                    <!-- Share Feedback -->
                      <span v-if="showShareFeedback" class="absolute -bottom-8 right-0 bg-green-500 text-black text-xs font-bold px-2 py-1 rounded shadow animate-bounce whitespace-nowrap z-50">
                         Link Copied!
                     </span>
@@ -339,9 +391,9 @@ const handleAction = async (action, val) => {
 
                   <!-- Row 3: Website -->
                   <div v-if="gameDetails.website">
-                       <a :href="gameDetails.website" target="_blank" class="inline-flex items-center gap-2 px-3 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-sm text-primary border border-white/10 transition-colors active:scale-95">
-                          <Globe class="w-4 h-4" /> 
-                          <span class="font-medium">Official Website</span>
+                       <a :href="gameDetails.website" target="_blank" class="inline-flex items-center gap-2 px-3 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-sm text-primary border border-white/10 transition-colors active:scale-95 shadow-sm hover:shadow">
+                          <component :is="websiteInfo?.icon || Globe" class="w-4 h-4" /> 
+                          <span class="font-medium">{{ websiteInfo?.label || 'Website' }}</span>
                       </a>
                   </div>
 
