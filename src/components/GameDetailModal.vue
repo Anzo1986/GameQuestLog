@@ -1,6 +1,11 @@
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue';
-import { X, Calendar, Gamepad2, Globe, Star, Play, Check, Trash2, Timer, Ban, Layers, PenLine, Share2, Plus, CheckCircle2, Circle, Loader2, RefreshCw, MoreVertical, Youtube, Twitch, Book, ShoppingCart } from 'lucide-vue-next';
+import { 
+    X, Edit2, Play, Ban, Check, CheckCircle2, Layers, 
+    Image as ImageIcon, Gamepad2, Timer, Calendar, Plus, 
+    MoreVertical, Share2, Globe, RefreshCw, Youtube, Twitch, Book, ShoppingCart,
+    Twitter, Facebook, Instagram, MessageSquare, MessageCircle
+} from 'lucide-vue-next';
 import { useGames } from '../composables/useGames';
 import { useModals } from '../composables/useModals';
 import { useShop } from '../composables/useShop';
@@ -207,11 +212,11 @@ const getWebsiteDisplayInfo = (url) => {
         if (hostname.includes('playstation.com')) return { url, label: 'PlayStation', icon: Globe };
         if (hostname.includes('xbox.com')) return { url, label: 'Xbox', icon: Globe };
         if (hostname.includes('nintendo.com')) return { url, label: 'Nintendo', icon: Globe };
-        if (hostname.includes('instagram.com')) return { url, label: 'Instagram', icon: Globe };
-        if (hostname.includes('twitter.com') || hostname.includes('x.com')) return { url, label: 'X (Twitter)', icon: Globe };
-        if (hostname.includes('facebook.com')) return { url, label: 'Facebook', icon: Globe };
-        if (hostname.includes('discord.com') || hostname.includes('discord.gg')) return { url, label: 'Discord', icon: Globe };
-        if (hostname.includes('reddit.com')) return { url, label: 'Reddit', icon: Globe };
+        if (hostname.includes('instagram.com')) return { url, label: 'Instagram', icon: Instagram };
+        if (hostname.includes('twitter.com') || hostname.includes('x.com')) return { url, label: 'X (Twitter)', icon: Twitter };
+        if (hostname.includes('facebook.com')) return { url, label: 'Facebook', icon: Facebook };
+        if (hostname.includes('discord.com') || hostname.includes('discord.gg')) return { url, label: 'Discord', icon: MessageSquare };
+        if (hostname.includes('reddit.com')) return { url, label: 'Reddit', icon: MessageCircle };
 
         return { url, label: 'Website', icon: Globe };
     } catch {
@@ -407,10 +412,10 @@ const allWebsites = computed(() => {
                                :key="idx" 
                                :href="site.url" 
                                target="_blank" 
-                               class="inline-flex items-center gap-2 px-3 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-sm text-primary border border-white/10 transition-colors active:scale-95 shadow-sm hover:shadow"
+                               :title="site.label"
+                               class="inline-flex items-center justify-center w-9 h-9 bg-white/5 hover:bg-white/10 rounded-lg text-primary border border-white/10 transition-colors active:scale-95 shadow-sm hover:shadow"
                            >
                               <component :is="site.icon" class="w-4 h-4" /> 
-                              <span class="font-medium">{{ site.label }}</span>
                           </a>
                        </div>
                   </div>
