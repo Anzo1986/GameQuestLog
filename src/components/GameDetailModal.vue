@@ -81,8 +81,9 @@ const openDynamicAddition = async (id, name) => {
             const index = parent.additions.findIndex(a => a.id === id);
             if (index !== -1) {
                 // Preserve the original cover_image which is vertical, 
-                // while dynamicData has the landscape background_image
-                const originalCover = parent.additions[index].cover_image;
+                // while dynamicData has the landscape background_image.
+                // Fallback to background_image for migrating existing library items.
+                const originalCover = parent.additions[index].cover_image || parent.additions[index].background_image;
                 parent.additions[index] = { 
                     ...parent.additions[index], 
                     ...dynamicData,
