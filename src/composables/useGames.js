@@ -102,7 +102,9 @@ export function useGames() {
                 id: item.id,
                 name: item.name,
                 released: item.first_release_date ? new Date(item.first_release_date * 1000).toISOString().split('T')[0] : null,
-                cover_image: item.cover ? `https://images.igdb.com/igdb/image/upload/t_1080p/${item.cover.image_id}.jpg` : null
+                cover_image: item.cover ? `https://images.igdb.com/igdb/image/upload/t_cover_big/${item.cover.image_id}.jpg` :
+                    (item.screenshots && item.screenshots.length > 0) ? `https://images.igdb.com/igdb/image/upload/t_screenshot_med/${item.screenshots[0].image_id}.jpg` : null,
+                background_image: getBestIGDBBackground(item) // Keep high-res reference too
             }));
     };
 
@@ -159,7 +161,7 @@ export function useGames() {
                         'Authorization': `Bearer ${settings.igdbAccessToken.value.trim()}`,
                         'Accept': 'application/json',
                     },
-                    body: `fields name, summary, cover.image_id, artworks.image_id, screenshots.image_id, first_release_date, platforms.name, aggregated_rating, genres.name, involved_companies.company.name, websites.category, websites.url, dlcs.name, dlcs.first_release_date, dlcs.cover.image_id, expansions.name, expansions.first_release_date, expansions.cover.image_id; where id = ${newGameData.id};`
+                    body: `fields name, summary, cover.image_id, artworks.image_id, screenshots.image_id, first_release_date, platforms.name, aggregated_rating, genres.name, involved_companies.company.name, websites.category, websites.url, dlcs.name, dlcs.first_release_date, dlcs.cover.image_id, dlcs.screenshots.image_id, expansions.name, expansions.first_release_date, expansions.cover.image_id, expansions.screenshots.image_id; where id = ${newGameData.id};`
                 });
 
                 if (response.ok) {
@@ -393,7 +395,7 @@ export function useGames() {
                         'Authorization': `Bearer ${settings.igdbAccessToken.value.trim()}`,
                         'Accept': 'application/json'
                     },
-                    body: `fields name, summary, cover.image_id, artworks.image_id, screenshots.image_id, first_release_date, platforms.name, aggregated_rating, genres.name, involved_companies.company.name, websites.category, websites.url, dlcs.name, dlcs.first_release_date, dlcs.cover.image_id, expansions.name, expansions.first_release_date, expansions.cover.image_id; where id = ${id};`
+                    body: `fields name, summary, cover.image_id, artworks.image_id, screenshots.image_id, first_release_date, platforms.name, aggregated_rating, genres.name, involved_companies.company.name, websites.category, websites.url, dlcs.name, dlcs.first_release_date, dlcs.cover.image_id, dlcs.screenshots.image_id, expansions.name, expansions.first_release_date, expansions.cover.image_id, expansions.screenshots.image_id; where id = ${id};`
                 });
 
                 if (response.ok) {
@@ -470,7 +472,7 @@ export function useGames() {
                         'Authorization': `Bearer ${settings.igdbAccessToken.value.trim()}`,
                         'Accept': 'application/json'
                     },
-                    body: `fields name, summary, cover.image_id, artworks.image_id, screenshots.image_id, first_release_date, platforms.name, aggregated_rating, genres.name, involved_companies.company.name, websites.category, websites.url, dlcs.name, dlcs.first_release_date, dlcs.cover.image_id, expansions.name, expansions.first_release_date, expansions.cover.image_id; where id = ${id};`
+                    body: `fields name, summary, cover.image_id, artworks.image_id, screenshots.image_id, first_release_date, platforms.name, aggregated_rating, genres.name, involved_companies.company.name, websites.category, websites.url, dlcs.name, dlcs.first_release_date, dlcs.cover.image_id, dlcs.screenshots.image_id, expansions.name, expansions.first_release_date, expansions.cover.image_id, expansions.screenshots.image_id; where id = ${id};`
                 });
 
                 if (response.ok) {

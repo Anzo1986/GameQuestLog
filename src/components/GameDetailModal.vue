@@ -358,7 +358,7 @@ const handleAction = async (action, val) => {
                                   class="relative aspect-[3/4] rounded-lg overflow-hidden border mb-2 bg-gray-900 transition-all duration-300"
                                   :class="getAdditionStatus(addition.id) === 'finished' ? 'border-green-500 shadow-[0_0_15px_rgba(34,197,94,0.3)] opacity-100' : getAdditionStatus(addition.id) === 'owned' ? 'border-primary shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)] opacity-100' : 'border-white/10 opacity-100'"
                               >
-                                  <img :src="addition.cover_image" v-if="addition.cover_image" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                                  <img :src="addition.cover_image || addition.background_image" v-if="addition.cover_image || addition.background_image" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                                   <div v-else class="w-full h-full bg-gray-800 flex items-center justify-center">
                                       <Gamepad2 class="w-8 h-8 text-gray-600" />
                                   </div>
