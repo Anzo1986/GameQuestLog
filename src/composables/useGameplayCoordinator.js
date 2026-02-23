@@ -21,7 +21,7 @@ export function useGameplayCoordinator() {
 
     // Handle Pending Level Up after Victory closes
     watch(activeModal, (newVal, oldVal) => {
-        if (oldVal === 'victory' && !newVal && pendingLevelUp.value) {
+        if (oldVal === 'victory' && newVal !== 'victory' && pendingLevelUp.value) {
             setTimeout(() => {
                 openModal('levelUp');
                 pendingLevelUp.value = false;
