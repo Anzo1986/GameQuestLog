@@ -165,11 +165,11 @@ const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString();
 };
 
-const calculateDaysPlayed = (startDate) => {
-    if (!startDate) return 0;
-    const start = new Date(startDate);
-    const now = new Date();
-    const diffTime = Math.abs(now - start);
+const calculateDaysPlayed = (game) => {
+    if (!game || !game.startedAt) return 0;
+    const start = new Date(game.startedAt);
+    const end = game.completedAt ? new Date(game.completedAt) : new Date();
+    const diffTime = Math.abs(end - start);
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
 };
 
@@ -357,7 +357,7 @@ const allWebsites = computed(() => {
                 <!-- Playtime / HLTB (Days Played Only) -->
                 <div class="flex items-center gap-1 text-sm flex-shrink-0" v-if="gameDetails.startedAt">
                     <Timer class="w-4 h-4 text-primary" />
-                    <span class="text-white font-bold">{{ calculateDaysPlayed(gameDetails.startedAt) }} Days</span>
+                    <span class="text-white font-bold">{{ calculateDaysPlayed(gameDetails) }} Days</span>
                 </div>
 
             </div>
