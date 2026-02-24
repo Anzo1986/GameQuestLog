@@ -221,20 +221,10 @@ export function useAchievements() {
         const dailyLoginState = JSON.parse(localStorage.getItem('game-tracker-daily-login') || '{}');
         const currentStreak = dailyLoginState.currentStreak || 0;
 
-        // HELPER: Validate condition. If false, revoke achievement!
-        // This ensures strict consistency (e.g. completed 5 games -> unlock; remove one -> lock again).
+        // HELPER: Validate condition.
         const check = (id, condition) => {
             if (condition) {
                 unlock(id);
-            } else {
-                // STRICT REVOCATION: If enabled (unlocked or claimed) but condition false -> Revoke.
-                // This will naturally deduct value from totalQuestScore (and thus Balance).
-                if (unlockedAchievements.value[id]) {
-                    delete unlockedAchievements.value[id];
-                    saveAchievements();
-                    // Clean up UI
-                    recentUnlocks.value = recentUnlocks.value.filter(a => a.id !== id);
-                }
             }
         };
 
