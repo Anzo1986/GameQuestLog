@@ -94,15 +94,18 @@ export function useGames() {
         const raw = [...(dlcs || []), ...(expansions || [])];
         const unique = Array.from(new Map(raw.map(item => [item.id, item])).values());
 
-        return unique.sort((a, b) => (a.first_release_date || 0) - (b.first_release_date || 0))
-            .map(item => ({
-                id: item.id,
-                name: item.name,
-                released: item.first_release_date ? new Date(item.first_release_date * 1000).toISOString().split('T')[0] : null,
-                cover_image: item.cover ? `https://images.igdb.com/igdb/image/upload/t_cover_big/${item.cover.image_id}.jpg` :
-                    (item.screenshots && item.screenshots.length > 0) ? `https://images.igdb.com/igdb/image/upload/t_screenshot_med/${item.screenshots[0].image_id}.jpg` : null,
-                background_image: getBestIGDBBackground(item) // Keep high-res reference too
-            }));
+        return unique.sort((a, b) => {
+            const timeA = a.first_release_date || Number.MAX_SAFE_INTEGER;
+            const timeB = b.first_release_date || Number.MAX_SAFE_INTEGER;
+            return timeA - timeB;
+        }).map(item => ({
+            id: item.id,
+            name: item.name,
+            released: item.first_release_date ? new Date(item.first_release_date * 1000).toISOString().split('T')[0] : null,
+            cover_image: item.cover ? `https://images.igdb.com/igdb/image/upload/t_cover_big/${item.cover.image_id}.jpg` :
+                (item.screenshots && item.screenshots.length > 0) ? `https://images.igdb.com/igdb/image/upload/t_screenshot_med/${item.screenshots[0].image_id}.jpg` : null,
+            background_image: getBestIGDBBackground(item) // Keep high-res reference too
+        }));
     };
 
     const aggregateIGDBRelated = (items) => {
@@ -129,7 +132,11 @@ export function useGames() {
         }
         return Array.from(new Map(series.map(item => [item.id, item])).values())
             .filter(item => item.id !== igdbGame.id)
-            .sort((a, b) => new Date(a.released || 0) - new Date(b.released || 0));
+            .sort((a, b) => {
+                const timeA = a.released ? new Date(a.released).getTime() : Number.MAX_SAFE_INTEGER;
+                const timeB = b.released ? new Date(b.released).getTime() : Number.MAX_SAFE_INTEGER;
+                return timeA - timeB;
+            });
     };
 
     // Helper: Fetch RAWG Additions (DLCs)
