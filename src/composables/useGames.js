@@ -105,6 +105,33 @@ export function useGames() {
             }));
     };
 
+    const aggregateIGDBRelated = (items) => {
+        if (!items || !Array.isArray(items)) return [];
+        return items.map(item => ({
+            id: item.id,
+            name: item.name,
+            released: item.first_release_date ? new Date(item.first_release_date * 1000).toISOString().split('T')[0] : null,
+            cover_image: item.cover ? `https://images.igdb.com/igdb/image/upload/t_cover_big/${item.cover.image_id}.jpg` : null,
+            background_image: getBestIGDBBackground(item)
+        }));
+    };
+
+    // Helper: Parse Series Games
+    const extractSeriesGames = (igdbGame) => {
+        const series = [];
+        if (igdbGame.collection?.games) {
+            series.push(...aggregateIGDBRelated(igdbGame.collection.games));
+        }
+        if (igdbGame.franchises) {
+            igdbGame.franchises.forEach(f => {
+                if (f.games) series.push(...aggregateIGDBRelated(f.games));
+            });
+        }
+        return Array.from(new Map(series.map(item => [item.id, item])).values())
+            .filter(item => item.id !== igdbGame.id)
+            .sort((a, b) => new Date(a.released || 0) - new Date(b.released || 0));
+    };
+
     // Helper: Fetch RAWG Additions (DLCs)
     const fetchRAWGAdditions = async (gameId) => {
         if (!settings.apiKey.value) return [];
@@ -158,7 +185,7 @@ export function useGames() {
                         'Authorization': `Bearer ${settings.igdbAccessToken.value.trim()}`,
                         'Accept': 'application/json',
                     },
-                    body: `fields name, summary, cover.image_id, artworks.image_id, screenshots.image_id, first_release_date, platforms.name, aggregated_rating, genres.name, involved_companies.company.name, websites.category, websites.url, dlcs.name, dlcs.first_release_date, dlcs.cover.image_id, dlcs.screenshots.image_id, expansions.name, expansions.first_release_date, expansions.cover.image_id, expansions.screenshots.image_id; where id = ${newGameData.id};`
+                    body: `fields name, summary, cover.image_id, artworks.image_id, screenshots.image_id, first_release_date, platforms.name, aggregated_rating, genres.name, involved_companies.company.name, websites.category, websites.url, dlcs.name, dlcs.first_release_date, dlcs.cover.image_id, dlcs.screenshots.image_id, expansions.name, expansions.first_release_date, expansions.cover.image_id, expansions.screenshots.image_id, similar_games.name, similar_games.first_release_date, similar_games.cover.image_id, similar_games.screenshots.image_id, similar_games.artworks.image_id, franchises.games.name, franchises.games.first_release_date, franchises.games.cover.image_id, franchises.games.screenshots.image_id, franchises.games.artworks.image_id, collection.games.name, collection.games.first_release_date, collection.games.cover.image_id, collection.games.screenshots.image_id, collection.games.artworks.image_id; where id = ${id || newGameData?.id};`
                 });
 
                 if (response.ok) {
@@ -180,7 +207,9 @@ export function useGames() {
                             genres: aggregateIGDBGenres(igdbGame.genres),
                             developers: igdbGame.involved_companies ? igdbGame.involved_companies.map(c => ({ name: c.company.name })) : [],
                             websites: getAllIGDBWebsites(igdbGame.websites),
-                            additions: aggregateIGDBAdditions(igdbGame.dlcs, igdbGame.expansions)
+                            additions: aggregateIGDBAdditions(igdbGame.dlcs, igdbGame.expansions),
+                            similar_games: aggregateIGDBRelated(igdbGame.similar_games),
+                            series_games: extractSeriesGames(igdbGame)
                         };
 
                         gameData.updateGame(newGameData.id, {
@@ -400,7 +429,7 @@ export function useGames() {
                         'Authorization': `Bearer ${settings.igdbAccessToken.value.trim()}`,
                         'Accept': 'application/json'
                     },
-                    body: `fields name, summary, cover.image_id, artworks.image_id, screenshots.image_id, first_release_date, platforms.name, aggregated_rating, genres.name, involved_companies.company.name, websites.category, websites.url, dlcs.name, dlcs.first_release_date, dlcs.cover.image_id, dlcs.screenshots.image_id, expansions.name, expansions.first_release_date, expansions.cover.image_id, expansions.screenshots.image_id; where id = ${id};`
+                    body: `fields name, summary, cover.image_id, artworks.image_id, screenshots.image_id, first_release_date, platforms.name, aggregated_rating, genres.name, involved_companies.company.name, websites.category, websites.url, dlcs.name, dlcs.first_release_date, dlcs.cover.image_id, dlcs.screenshots.image_id, expansions.name, expansions.first_release_date, expansions.cover.image_id, expansions.screenshots.image_id, similar_games.name, similar_games.first_release_date, similar_games.cover.image_id, similar_games.screenshots.image_id, similar_games.artworks.image_id, franchises.games.name, franchises.games.first_release_date, franchises.games.cover.image_id, franchises.games.screenshots.image_id, franchises.games.artworks.image_id, collection.games.name, collection.games.first_release_date, collection.games.cover.image_id, collection.games.screenshots.image_id, collection.games.artworks.image_id; where id = ${id || newGameData?.id};`
                 });
 
                 if (response.ok) {
@@ -421,7 +450,9 @@ export function useGames() {
                             genres: aggregateIGDBGenres(igdbGame.genres),
                             developers: igdbGame.involved_companies ? igdbGame.involved_companies.map(c => ({ name: c.company.name })) : [],
                             websites: getAllIGDBWebsites(igdbGame.websites),
-                            additions: aggregateIGDBAdditions(igdbGame.dlcs, igdbGame.expansions)
+                            additions: aggregateIGDBAdditions(igdbGame.dlcs, igdbGame.expansions),
+                            similar_games: aggregateIGDBRelated(igdbGame.similar_games),
+                            series_games: extractSeriesGames(igdbGame)
                         };
                         gameData.updateGame(id, {
                             ...details,
@@ -485,7 +516,7 @@ export function useGames() {
                         'Authorization': `Bearer ${settings.igdbAccessToken.value.trim()}`,
                         'Accept': 'application/json'
                     },
-                    body: `fields name, summary, cover.image_id, artworks.image_id, screenshots.image_id, first_release_date, platforms.name, aggregated_rating, genres.name, involved_companies.company.name, websites.category, websites.url, dlcs.name, dlcs.first_release_date, dlcs.cover.image_id, dlcs.screenshots.image_id, expansions.name, expansions.first_release_date, expansions.cover.image_id, expansions.screenshots.image_id; where id = ${id};`
+                    body: `fields name, summary, cover.image_id, artworks.image_id, screenshots.image_id, first_release_date, platforms.name, aggregated_rating, genres.name, involved_companies.company.name, websites.category, websites.url, dlcs.name, dlcs.first_release_date, dlcs.cover.image_id, dlcs.screenshots.image_id, expansions.name, expansions.first_release_date, expansions.cover.image_id, expansions.screenshots.image_id, similar_games.name, similar_games.first_release_date, similar_games.cover.image_id, similar_games.screenshots.image_id, similar_games.artworks.image_id, franchises.games.name, franchises.games.first_release_date, franchises.games.cover.image_id, franchises.games.screenshots.image_id, franchises.games.artworks.image_id, collection.games.name, collection.games.first_release_date, collection.games.cover.image_id, collection.games.screenshots.image_id, collection.games.artworks.image_id; where id = ${id || newGameData?.id};`
                 });
 
                 if (response.ok) {
@@ -506,7 +537,9 @@ export function useGames() {
                             genres: aggregateIGDBGenres(igdbGame.genres),
                             developers: igdbGame.involved_companies ? igdbGame.involved_companies.map(c => ({ name: c.company.name })) : [],
                             websites: getAllIGDBWebsites(igdbGame.websites),
-                            additions: aggregateIGDBAdditions(igdbGame.dlcs, igdbGame.expansions)
+                            additions: aggregateIGDBAdditions(igdbGame.dlcs, igdbGame.expansions),
+                            similar_games: aggregateIGDBRelated(igdbGame.similar_games),
+                            series_games: extractSeriesGames(igdbGame)
                         };
                     }
                 }

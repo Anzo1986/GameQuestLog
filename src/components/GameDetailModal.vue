@@ -457,6 +457,46 @@ const allWebsites = computed(() => {
                       </div>
                   </div>
 
+                  <!-- Row 5: Explore More (Related Games) -->
+                  <div v-if="(gameDetails.similar_games && gameDetails.similar_games.length > 0) || (gameDetails.series_games && gameDetails.series_games.length > 0)" class="pt-4 border-t border-white/10 mt-4 space-y-3">
+                      <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest">Explore More</h4>
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <button 
+                            v-if="gameDetails.series_games && gameDetails.series_games.length > 0"
+                            @click="openModal('relatedGames', { title: 'Series & Franchise', games: gameDetails.series_games })"
+                            class="flex items-center justify-between p-3 rounded-xl bg-gray-800/50 border border-gray-700 hover:border-primary/50 hover:bg-gray-800 transition-all group"
+                          >
+                              <div class="flex items-center gap-3">
+                                  <div class="p-2 bg-primary/20 text-primary rounded-lg group-hover:scale-110 transition-transform">
+                                      <Layers class="w-5 h-5" />
+                                  </div>
+                                  <div class="text-left">
+                                      <p class="text-sm font-bold text-gray-200 group-hover:text-white transition-colors">Series & Franchise</p>
+                                      <p class="text-[10px] text-gray-500 uppercase tracking-wide">{{ gameDetails.series_games.length }} Games</p>
+                                  </div>
+                              </div>
+                              <span class="text-gray-600 group-hover:text-primary transition-colors">→</span>
+                          </button>
+                          
+                          <button 
+                            v-if="gameDetails.similar_games && gameDetails.similar_games.length > 0"
+                            @click="openModal('relatedGames', { title: 'Similar Games', games: gameDetails.similar_games })"
+                            class="flex items-center justify-between p-3 rounded-xl bg-gray-800/50 border border-gray-700 hover:border-purple-500/50 hover:bg-gray-800 transition-all group"
+                          >
+                              <div class="flex items-center gap-3">
+                                  <div class="p-2 bg-purple-500/20 text-purple-400 rounded-lg group-hover:scale-110 transition-transform">
+                                      <Gamepad2 class="w-5 h-5" />
+                                  </div>
+                                  <div class="text-left">
+                                      <p class="text-sm font-bold text-gray-200 group-hover:text-white transition-colors">Similar Games</p>
+                                      <p class="text-[10px] text-gray-500 uppercase tracking-wide">{{ gameDetails.similar_games.length }} Games</p>
+                                  </div>
+                              </div>
+                              <span class="text-gray-600 group-hover:text-purple-400 transition-colors">→</span>
+                          </button>
+                      </div>
+                  </div>
+
                </div>
 
             </div>

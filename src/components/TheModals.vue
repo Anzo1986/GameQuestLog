@@ -19,6 +19,7 @@ import ConfirmModal from './ConfirmModal.vue';
 import AIQuestModal from './AIQuestModal.vue';
 import PromptModal from './PromptModal.vue';
 import RefreshGameModal from './RefreshGameModal.vue';
+import RelatedGamesModal from './RelatedGamesModal.vue';
 
 const { activeModal, modalProps, openModal, resetModal } = useModals(); // Added openModal and resetModal
 const { updateStatus, removeGame, userLevel, userTitle, games } = useGames();
@@ -76,6 +77,14 @@ onUnmounted(() => {
       v-if="activeModal === 'refreshGame'"
       :is-open="true"
       :game-id="modalProps.gameId"
+      @close="handleClose"
+    />
+
+    <RelatedGamesModal
+      v-if="activeModal === 'relatedGames'"
+      :is-open="true"
+      :title="modalProps.title"
+      :games="modalProps.games"
       @close="handleClose"
     />
 
