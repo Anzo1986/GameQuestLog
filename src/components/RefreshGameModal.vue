@@ -34,6 +34,7 @@ const updateSelection = ref({
     cover: true,
     description: true,
     additions: true,
+    related: true,
     metadata: true
 });
 
@@ -47,7 +48,7 @@ watch(() => props.isOpen, (newVal) => {
         localSearchQuery.value = currentGame.value.name;
         newGameDetails.value = null;
         fetchError.value = '';
-        updateSelection.value = { name: false, cover: true, description: true, additions: true, metadata: true };
+        updateSelection.value = { name: false, cover: true, description: true, additions: true, related: true, metadata: true };
         showGallery.value = false;
         galleryImages.value = [];
         
@@ -131,6 +132,10 @@ const applyUpdates = () => {
         updates.description_raw = n.description_raw;
     }
     if (s.additions && n.additions) updates.additions = n.additions;
+    if (s.related) {
+        if (n.similar_games) updates.similar_games = n.similar_games;
+        if (n.series_games) updates.series_games = n.series_games;
+    }
     if (s.metadata) {
         if (n.parent_platforms) updates.parent_platforms = n.parent_platforms;
         if (n.genres) updates.genres = n.genres;
@@ -330,6 +335,22 @@ const applyUpdates = () => {
                         <h4 class="text-sm font-bold text-white mb-1 flex items-center gap-2"><Layers class="w-4 h-4 text-gray-400" /> DLCs & Expansions</h4>
                         <div class="text-xs text-gray-400">
                             Found <strong class="text-primary">{{ newGameDetails.additions?.length || 0 }}</strong> additions. Note: Syncing this array will update available nested contents.
+                        </div>
+                    </div>
+                </label>
+
+                <!-- Related Games -->
+                <label class="flex gap-3 p-4 bg-gray-900 rounded-xl border border-white/10 hover:border-white/20 transition-colors cursor-pointer select-none" :class="{ 'ring-1 ring-primary border-primary': updateSelection.related }">
+                    <div class="pt-0.5">
+                        <div class="w-5 h-5 rounded border border-gray-600 flex items-center justify-center bg-gray-800" :class="{ 'bg-primary border-primary': updateSelection.related }">
+                            <Check v-if="updateSelection.related" class="w-3.5 h-3.5 text-white" />
+                        </div>
+                        <input type="checkbox" v-model="updateSelection.related" class="hidden" />
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="text-sm font-bold text-white mb-1 flex items-center gap-2"><Gamepad2 class="w-4 h-4 text-gray-400" /> Related Games</h4>
+                        <div class="text-xs text-gray-400 leading-snug">
+                            Found <strong class="text-purple-400">{{ newGameDetails.similar_games?.length || 0 }}</strong> similar games and <strong class="text-primary">{{ newGameDetails.series_games?.length || 0 }}</strong> series titles.
                         </div>
                     </div>
                 </label>
