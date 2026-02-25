@@ -237,6 +237,7 @@ const forceUpdate = async () => {
     // 3. Force Reload
     window.location.reload(true);
 };
+
 const version = __APP_VERSION__;
 </script>
 
@@ -626,6 +627,7 @@ const version = __APP_VERSION__;
               </button>
               <input ref="fileInput" type="file" accept=".json" class="hidden" @change="handleFileChange" />
             </div>
+
             <p v-if="importStatus" class="mt-2 text-sm text-green-400 text-center font-bold animate-pulse">{{ importStatus }}</p>
           </div>
 

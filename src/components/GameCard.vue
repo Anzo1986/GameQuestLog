@@ -4,6 +4,7 @@ import { Play, Check, Trash2, Calendar, MoreVertical, X, Star, Ban, Layers, Game
 import { useGames } from '../composables/useGames';
 import { useShop } from '../composables/useShop';
 import { useModals } from '../composables/useModals';
+import { useSettings } from '../composables/useSettings';
 
 const props = defineProps({
   game: {
@@ -13,6 +14,7 @@ const props = defineProps({
 });
 
 const { activeModal, modalProps } = useModals();
+const { viewMode } = useSettings();
 
 // Check if this card is currently being opened in modal
 const isSelected = computed(() => {
@@ -46,8 +48,11 @@ const formatDate = (dateString) => {
   return new Date(dateString).getFullYear(); // Just year is cleaner for cards
 };
 
-const backgroundImage = computed(() => {
-  return props.game.background_image || null;
+const displayImage = computed(() => {
+    if (viewMode.value === 'cover' && props.game.cover_image) {
+        return props.game.cover_image;
+    }
+    return props.game.background_image || null;
 });
 
 const isNew = computed(() => {
@@ -130,10 +135,10 @@ onUnmounted(() => {
     <div v-if="equippedStyle?.value === 'holo'" class="absolute inset-0 z-20 pointer-events-none bg-gradient-to-tr from-transparent via-white/5 to-transparent mix-blend-overlay"></div>
 
     <!-- Image Background -->
-    <div class="aspect-video w-full overflow-hidden bg-gray-700 relative">
+    <div :class="[viewMode === 'cover' ? 'aspect-[2/3]' : 'aspect-video', 'w-full overflow-hidden bg-gray-700 relative']">
       <img 
-        v-if="backgroundImage" 
-        :src="backgroundImage" 
+        v-if="displayImage" 
+        :src="displayImage" 
         :alt="game.title" 
         class="w-full h-full object-cover transition-opacity duration-300" 
         loading="lazy"

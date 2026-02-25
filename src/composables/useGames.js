@@ -173,6 +173,7 @@ export function useGames() {
                             description_raw: igdbGame.summary || '',
                             released: igdbGame.first_release_date ? new Date(igdbGame.first_release_date * 1000).toISOString().split('T')[0] : null,
                             background_image: getBestIGDBBackground(igdbGame),
+                            cover_image: igdbGame.cover ? `https://images.igdb.com/igdb/image/upload/t_1080p/${igdbGame.cover.image_id}.jpg` : null,
                             metacritic: igdbGame.aggregated_rating ? Math.round(igdbGame.aggregated_rating) : null,
                             rating_top: igdbGame.aggregated_rating ? Math.round((igdbGame.aggregated_rating / 100) * 5) : 0,
                             parent_platforms: aggregateIGDBPlatforms(igdbGame.platforms),
@@ -213,6 +214,7 @@ export function useGames() {
                     // Update via gameData
                     gameData.updateGame(newGameData.id, {
                         ...details,
+                        cover_image: details.background_image, // RAWG fallback
                         additions,
                         websites: rawgWebsites,
                         // Preserve local state
@@ -412,6 +414,7 @@ export function useGames() {
                             description_raw: igdbGame.summary || '',
                             released: igdbGame.first_release_date ? new Date(igdbGame.first_release_date * 1000).toISOString().split('T')[0] : null,
                             background_image: getBestIGDBBackground(igdbGame),
+                            cover_image: igdbGame.cover ? `https://images.igdb.com/igdb/image/upload/t_1080p/${igdbGame.cover.image_id}.jpg` : null,
                             metacritic: igdbGame.aggregated_rating ? Math.round(igdbGame.aggregated_rating) : null,
                             rating_top: igdbGame.aggregated_rating ? Math.round((igdbGame.aggregated_rating / 100) * 5) : 0,
                             parent_platforms: aggregateIGDBPlatforms(igdbGame.platforms),
@@ -452,6 +455,7 @@ export function useGames() {
 
                     gameData.updateGame(id, {
                         ...details,
+                        cover_image: details.background_image || game.cover_image,
                         additions,
                         websites: rawgWebsites,
                         status: game.status,
@@ -495,6 +499,7 @@ export function useGames() {
                             description_raw: igdbGame.summary || '',
                             released: igdbGame.first_release_date ? new Date(igdbGame.first_release_date * 1000).toISOString().split('T')[0] : null,
                             background_image: getBestIGDBBackground(igdbGame),
+                            cover_image: igdbGame.cover ? `https://images.igdb.com/igdb/image/upload/t_1080p/${igdbGame.cover.image_id}.jpg` : null,
                             metacritic: igdbGame.aggregated_rating ? Math.round(igdbGame.aggregated_rating) : null,
                             rating_top: igdbGame.aggregated_rating ? Math.round((igdbGame.aggregated_rating / 100) * 5) : 0,
                             parent_platforms: aggregateIGDBPlatforms(igdbGame.platforms),
@@ -524,6 +529,7 @@ export function useGames() {
 
                     return {
                         ...details,
+                        cover_image: details.background_image,
                         additions,
                         websites: rawgWebsites
                     };

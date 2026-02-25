@@ -16,10 +16,11 @@
 ### 📂 `src/composables/` (The Brain)
 All business logic lives here. **Do not put complex logic in components.**
 -   **`useGames.js`**: The main Facade. It wraps `useGameData`, `useSettings`, `useGamification` to provide a single import for components (`const { games, addGame } = useGames()`).
+    -   *Data Note*: Distinguishes between `background_image` (landscape) and `cover_image` (portrait). UI should fallback to `background_image` if `cover_image` is unavailable.
 -   **`useModals.js`**: Controls global modal state (`activeModal`). Integrates with browser history (back button closes modal).
 -   **`useGameFilters.js`**: Handles Search, Sort, and Tab Filtering (Playing/Backlog/Completed).
 -   **`useShop.js`**: Manages the Economy (Coins), Inventory (Frames, Backgrounds, Themes), and Purchases.
--   **`useSettings.js`**: Persists `apiKey`, `theme`, `avatar` to `localStorage`.
+-   **`useSettings.js`**: Persists `apiKey`, `theme`, `avatar`, and `viewMode` (`grid`, `cover`, `list`, `compact`) to `localStorage`.
 -   **`useSwipe.js`**: Handles touch gestures (swipe left/right) for mobile navigation.
 
 ### 📂 `src/components/` (The UI)

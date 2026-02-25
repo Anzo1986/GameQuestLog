@@ -1,5 +1,5 @@
 <script setup>
-import { Search, ArrowUpDown, Calendar, Star, Type, LayoutGrid, LayoutList } from 'lucide-vue-next';
+import { Search, ArrowUpDown, Calendar, Star, Type, LayoutGrid, LayoutList, Library } from 'lucide-vue-next';
 import { ref } from 'vue';
 import { useSettings } from '../composables/useSettings';
 
@@ -14,7 +14,8 @@ const isOpen = ref(false);
 const { viewMode } = useSettings();
 
 const toggleView = () => {
-    if (viewMode.value === 'grid') viewMode.value = 'list';
+    if (viewMode.value === 'grid') viewMode.value = 'cover';
+    else if (viewMode.value === 'cover') viewMode.value = 'list';
     else if (viewMode.value === 'list') viewMode.value = 'compact';
     else viewMode.value = 'grid';
 };
@@ -87,13 +88,14 @@ const currentLabel = () => sortOptions.find(o => o.value === props.sortOption)?.
     </div>
 
     <!-- View Toggle -->
-    <!-- View Toggle (3-State) -->
+    <!-- View Toggle (4-State) -->
     <button 
         @click="toggleView"
         class="h-11 w-11 bg-gray-800 hover:bg-gray-750 text-gray-300 rounded-xl border border-gray-700 hover:border-gray-600 flex items-center justify-center transition-all hover:text-white flex-shrink-0"
-        :title="viewMode === 'grid' ? 'Switch to List' : viewMode === 'list' ? 'Switch to Compact Grid' : 'Switch to Grid'"
+        :title="viewMode === 'grid' ? 'Switch to Covers' : viewMode === 'cover' ? 'Switch to List' : viewMode === 'list' ? 'Switch to Compact Grid' : 'Switch to Grid'"
     >
-        <LayoutList v-if="viewMode === 'grid'" class="w-5 h-5" />
+        <Library v-if="viewMode === 'grid'" class="w-5 h-5" />
+        <LayoutList v-else-if="viewMode === 'cover'" class="w-5 h-5" />
         <LayoutGrid v-else-if="viewMode === 'list'" class="w-4 h-4" /> <!-- Using smaller grid icon for 'compact' hint -->
         <LayoutGrid v-else class="w-5 h-5" />
     </button>

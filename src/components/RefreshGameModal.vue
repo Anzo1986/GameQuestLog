@@ -118,7 +118,10 @@ const applyUpdates = () => {
     const n = newGameDetails.value;
     const s = updateSelection.value;
     
-    if (s.cover && n.background_image) updates.background_image = n.background_image;
+    if (s.cover) {
+        if (n.background_image) updates.background_image = n.background_image;
+        if (n.cover_image !== undefined) updates.cover_image = n.cover_image;
+    }
     if (s.name && n.name) updates.name = n.name;
     if (s.description && n.description) {
         updates.description = n.description;

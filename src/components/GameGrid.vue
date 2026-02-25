@@ -63,6 +63,7 @@ watch(() => props.searchQuery, () => {
         
         <div :class="{
             'grid grid-cols-[1fr_1fr] sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-1.5 sm:gap-2': viewMode === 'grid',
+            'grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3': viewMode === 'cover',
             'flex flex-col gap-2': viewMode === 'list',
             'grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-1.5 sm:gap-2': viewMode === 'compact'
         }">
@@ -85,7 +86,7 @@ watch(() => props.searchQuery, () => {
                     :style="{ animationDelay: `${index * 50}ms` }"
                 >
                  <GameCard 
-                    v-if="viewMode === 'grid'"
+                    v-if="viewMode === 'grid' || viewMode === 'cover'"
                     :game="game" 
                     @open-details="$emit('click-game', game.id)"
                     @update-status="(id, status) => $emit('update-status', id, status)"
